@@ -1,0 +1,83 @@
+# The Travis build will test both Linux AND OSX distributions, but language
+# needs to be overridden to "generic" for Mac, otherwise the build will fail
+# until Python is downloaded via Homebrew (which is handled in the
+# before_install.sh). Note that none of the test envs or wheels test/create
+# artifacts on <64 bit Linux or Mac. All artifacts are 64-bit ONLY.
+
+language: python
+sudo: required
+
+cache:
+  apt: true
+  directories:
+  - $HOME/.cache/pip
+  - $HOME/.ccache
+
+before_install:
+  - source build_tools/travis/before_install.sh
+env:
+  global:
+    - PYMODULE=reclab
+    - TEST_DIR=/tmp/reclab
+    - OMP_NUM_THREADS=4
+    - OPENBLAS_NUM_THREADS=4
+
+matrix:
+  include:
+    # This environment tests the oldest supported anaconda env.
+    - os: linux
+      dist: trusty
+      services:
+        - docker
+      env: DISTRIB="conda" PYTHON_VERSION="2.7" COVERAGE=true
+           DOCKER_IMAGE="quay.io/pypa/manylinux1_x86_64"
+           DOCKER_CONTAINER_NAME="reclabcontainer" DEPLOY=true
+
+    # This environment tests the same conditions as above, but tests against
+    # MAC OS X
+    - os: osx
+      language: generic
+      env: DISTRIB="conda" PYTHON_VERSION="2.7" COVERAGE=true DEPLOY=true
+
+    # This environment tests Python 3.5 support on linux
+    - os: linux
+      dist: trusty
+      services:
+        - docker
+      env: DISTRIB="conda" PYTHON_VERSION="3.5" COVERAGE=true DEPLOY=true
+           DOCKER_IMAGE="quay.io/pypa/manylinux1_x86_64"
+           DOCKER_CONTAINER_NAME="reclabcontainer"
+
+    # This environment tests Python 3.5 support on MAC OS X
+    - os: osx
+      language: generic
+      env: DISTRIB="conda" PYTHON_VERSION="3.5" COVERAGE=true DEPLOY=true
+
+    # This environment tests the newest supported Anaconda release (4.x) and
+    # runs on linux
+    - os: linux
+      dist: trusty
+      env: DISTRIB="conda" PYTHON_VERSION="3.6.1"
+           COVERAGE=true DEPLOY=false TEST_DOCSTRINGS="true"
+
+install: source build_tools/travis/install.sh
+before_script: bash build_tools/travis/before_script.sh
+script: bash build_tools/travis/test_script.sh
+
+# we set +e to re-instate the error-tolerant state. The problem is Travis is broken on Mac OS
+# builds right now due to Issue 6307 (https://github.com/travis-ci/travis-ci/issues/6307)
+# and fails at the end of a successful build. This will allow the build to recover even if
+# a non-zero status code is encountered. (had `- set +e`)
+after_success:
+  - source build_tools/travis/after_success.sh  # || echo "shell_session_update failed"
+  # Build the wheels every time so we can debug
+  - bash build_tools/travis/build_wheels.sh
+  - ls dist/
+
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: python -m twine upload --skip-existing dist/*.whl
+  on:
+    tags: true # Upload on tagged releases
+    condition: "$DEPLOY = true"

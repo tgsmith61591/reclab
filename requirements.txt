@@ -1,0 +1,7 @@
+implicit>=0.3.6
+nmslib
+annoy
+scipy
+scikit-learn>=0.18
+numpy>=1.12
+cython>=0.23

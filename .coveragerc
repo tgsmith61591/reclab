@@ -1,0 +1,6 @@
+[run]
+source = reclab
+include = */reclab/*
+omit =
+    */reclab/setup.py
+    */setup.py

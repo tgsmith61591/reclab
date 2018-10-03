@@ -1,0 +1,33 @@
+# Mac artifacts
+.DS_Store
+
+# Python stuff
+.ipynb_checkpoints
+__pycache__
+*.pyc
+scratch/
+
+# Build artifacts
+doc/_build
+doc/modules/generated
+doc/auto_examples
+build/
+dist/
+*.egg-info/
+.eggs/
+.cache/
+*.so*
+*.pyd
+cythonize.dat
+
+# Test artifacts
+.pytest_cache/
+
+# Coverage
+.coverage
+
+# pickled objects
+*.pkl
+
+# pycharm
+.idea/
