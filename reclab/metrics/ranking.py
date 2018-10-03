@@ -83,11 +83,11 @@ def precision_at(predictions, labels, k=10, assume_unique=True):
     ...          [1, 2, 3, 4, 5]]
     >>> # labels for the 3 users
     >>> labels = [[1, 2, 3, 4, 5], [1, 2, 3], []]
-    >>> precision_at(preds, labels, 1)
+    >>> precision_at(preds, labels, 1)  # doctest: +SKIP
     0.33333333333333331
-    >>> precision_at(preds, labels, 5)
+    >>> precision_at(preds, labels, 5)  # doctest: +SKIP
     0.26666666666666666
-    >>> precision_at(preds, labels, 15)
+    >>> precision_at(preds, labels, 15)  # doctest: +SKIP
     0.17777777777777778
     """
     # validate K
