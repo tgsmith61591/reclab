@@ -43,17 +43,11 @@ if [[ "$DISTRIB" == "conda" ]]; then
     export PATH=$MINICONDA_PATH/bin:$PATH
     conda update --yes conda
 
-    TO_INSTALL="python=$PYTHON_VERSION numpy pip pytest pytest-cov"
+    TO_INSTALL="python=$PYTHON_VERSION numpy pip pytest pytest-cov Cython"
     if [[ "$INSTALL_MKL" == "true" ]]; then
         TO_INSTALL="$TO_INSTALL mkl"
     else
         TO_INSTALL="$TO_INSTALL nomkl"
-    fi
-
-    # This is a hack, and a result of the way Bear auto-generates this script
-    # if C is required. 'true' is formatted in by the __main__
-    if [[ "true" == "true" ]]; then
-        TO_INSTALL="$TO_INSTALL cython"
     fi
 
     conda create -n testenv --yes $TO_INSTALL
@@ -76,6 +70,12 @@ fi
 if [[ "$TEST_DOCSTRINGS" == "true" ]]; then
     pip install sphinx numpydoc  # numpydoc requires sphinx
 fi
+
+# Other pip requirements
+pip install pybind11
+pip install "implicit>=0.3.6"
+pip install nmslib
+pip install annoy
 
 # now run the python setup. This implicitly builds all the C code with build_ext
 python setup.py develop

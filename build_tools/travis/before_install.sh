@@ -12,12 +12,10 @@ if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
 
   # This is a hack, and a result of the way Bear auto-generates this script
   # if C is required. true is formatted in by the __main__
-  if [[ "true" == "true" ]]; then
-    echo "Downloading gcc, g++ & gfortran"
-    sudo apt-get install -y gcc
-    sudo apt-get install -y g++
-    sudo apt-get install -y gfortran
-  fi
+  echo "Downloading gcc, g++ & gfortran"
+  sudo apt-get install -y gcc
+  sudo apt-get install -y g++
+  sudo apt-get install -y gfortran
 
 # Workaround for https://github.com/travis-ci/travis-ci/issues/6307, which
 # caused the following error on MacOS X workers:
@@ -44,7 +42,5 @@ elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
   # ==> Unlinking Binary '/usr/local/include/c++'.
 
   # After oclint is uninstalled, we should be able to install GCC
-  if [[ "true" == "true" ]]; then
-    brew install gcc
-  fi
+  brew install gcc
 fi

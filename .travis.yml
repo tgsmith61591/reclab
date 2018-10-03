@@ -24,21 +24,6 @@ env:
 
 matrix:
   include:
-    # This environment tests the oldest supported anaconda env.
-    - os: linux
-      dist: trusty
-      services:
-        - docker
-      env: DISTRIB="conda" PYTHON_VERSION="2.7" COVERAGE=true
-           DOCKER_IMAGE="quay.io/pypa/manylinux1_x86_64"
-           DOCKER_CONTAINER_NAME="reclabcontainer" DEPLOY=true
-
-    # This environment tests the same conditions as above, but tests against
-    # MAC OS X
-    - os: osx
-      language: generic
-      env: DISTRIB="conda" PYTHON_VERSION="2.7" COVERAGE=true DEPLOY=true
-
     # This environment tests Python 3.5 support on linux
     - os: linux
       dist: trusty
