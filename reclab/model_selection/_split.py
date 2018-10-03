@@ -200,10 +200,10 @@ def train_test_split(u, i, r, train_size=0.75, random_state=None):
     >>> items = LabelEncoder().fit_transform(items)
     >>> ratings = rs.choice((0., 0.25, 0.5, 0.75, 1.), items.shape[0])
     >>> train, test = train_test_split(users, items, ratings, random_state=rs)
-    >>> train
+    >>> train  # doctest: +SKIP
     <26353x28921 sparse matrix of type '<type 'numpy.float32'>'
         with 77770 stored elements in Compressed Sparse Row format>
-    >>> test
+    >>> test  # doctest: +SKIP
     <26353x28921 sparse matrix of type '<type 'numpy.float32'>'
         with 99994 stored elements in Compressed Sparse Row format>
 
