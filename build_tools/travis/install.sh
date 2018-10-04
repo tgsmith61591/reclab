@@ -73,7 +73,7 @@ fi
 
 # Other pip requirements
 pip install pybind11
-pip install "implicit>=0.3.6"
+pip install "implicit>=0.3.7"
 pip install nmslib
 pip install annoy
 

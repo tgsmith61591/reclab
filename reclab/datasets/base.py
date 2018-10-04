@@ -45,7 +45,7 @@ def _get_cached_data(key, sparse, default=None):
     return sub_dict.get(sparse, default)
 
 
-def load_lastfm(cache=False, as_sparse=False):
+def load_lastfm(cache=False, as_sparse=False, dtype=np.float32):
     """Load and return the lastFM dataset.
 
     Load up the last.fm dataset. The entire dataset can be found here:
@@ -73,6 +73,10 @@ def load_lastfm(cache=False, as_sparse=False):
         Whether to return a sparse CSR array with users along the row axis,
         and items along the column axis.
 
+    dtype : type, optional (default=np.float32)
+        The dtype to use for ratings. Default is np.float32, which the
+        Implicit library favors.
+
     Examples
     --------
     >>> from reclab.datasets import load_lastfm
@@ -80,10 +84,10 @@ def load_lastfm(cache=False, as_sparse=False):
     >>> lastfm = load_lastfm()
     >>> train, test = train_test_split(u=lastfm.users, i=lastfm.products,
     ...                                r=lastfm.ratings, random_state=42)
-    >>> train  # doctest: +SKIP
+    >>> train
     <1892x17632 sparse matrix of type '<type 'numpy.float32'>'
         with 72389 stored elements in Compressed Sparse Row format>
-    >>> test  # doctest: +SKIP
+    >>> test
     <1892x17632 sparse matrix of type '<type 'numpy.float32'>'
         with 92834 stored elements in Compressed Sparse Row format>
 
@@ -115,7 +119,7 @@ def load_lastfm(cache=False, as_sparse=False):
     items = LabelEncoder().fit_transform(data[:, 1])
 
     # need to make the join key in the metadata an int...
-    ratings = data[:, 2]
+    ratings = data[:, 2].astype(dtype)
     data = Bunch(users=users,
                  products=items,
                  ratings=ratings,

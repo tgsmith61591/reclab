@@ -22,7 +22,7 @@ which python
 pip install --extra-index https://antocuni.github.io/pypy-wheels/ubuntu numpy pytest Cython
 pip install "scipy>=1.1.0"
 pip install pybind11
-pip install "implicit>=0.3.6"
+pip install "implicit>=0.3.7"
 pip install nmslib
 pip install annoy
 

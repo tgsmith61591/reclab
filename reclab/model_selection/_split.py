@@ -174,16 +174,16 @@ def train_test_split(u, i, r, train_size=0.75, random_state=None):
     >>> r = [0.5, 1.0, 0.0, 1.0, 0.0, 1.]
     >>> train, test = train_test_split(u, i, r, train_size=0.5,
     ...                                random_state=42)
-    >>> train.toarray()  # doctest: +SKIP
+    >>> train.toarray()
     array([[ 0. ,  0.5,  0. ,  0. ],
            [ 0. ,  0. ,  0. ,  0. ],
            [ 1. ,  0. ,  0. ,  0. ],
-           [ 0. ,  0. ,  1. ,  0. ]], dtype=float32)
-    >>> test.toarray()  # doctest: +SKIP
+           [ 0. ,  0. ,  1. ,  0. ]])
+    >>> test.toarray()
     array([[ 0. ,  0.5,  0. ,  0. ],
            [ 0. ,  0. ,  1. ,  0. ],
            [ 1. ,  0. ,  0. ,  0. ],
-           [ 0. ,  0. ,  1. ,  0. ]], dtype=float32)
+           [ 0. ,  0. ,  1. ,  0. ]])
 
     Here's a more robust example (with more ratings):
 
@@ -199,13 +199,13 @@ def train_test_split(u, i, r, train_size=0.75, random_state=None):
     >>> users = LabelEncoder().fit_transform(users)
     >>> items = LabelEncoder().fit_transform(items)
     >>> ratings = rs.choice((0., 0.25, 0.5, 0.75, 1.), items.shape[0])
-    >>> train, test = train_test_split(users, items, ratings, random_state=rs)
-    >>> train  # doctest: +SKIP
-    <26353x28921 sparse matrix of type '<type 'numpy.float32'>'
-        with 77770 stored elements in Compressed Sparse Row format>
-    >>> test  # doctest: +SKIP
-    <26353x28921 sparse matrix of type '<type 'numpy.float32'>'
-        with 99994 stored elements in Compressed Sparse Row format>
+    >>> train, test = train_test_split(users, items, ratings, random_state=1)
+    >>> train
+    <63235x28921 sparse matrix of type '<type 'numpy.float64'>'
+        with 86110 stored elements in Compressed Sparse Row format>
+    >>> test
+    <63235x28921 sparse matrix of type '<type 'numpy.float64'>'
+        with 100000 stored elements in Compressed Sparse Row format>
 
     Notes
     -----
@@ -295,18 +295,19 @@ class BootstrapCV(BaseCrossValidator):
     >>> from reclab.datasets import load_lastfm
     >>> from reclab.model_selection import BootstrapCV
     >>> X = load_lastfm(as_sparse=True)
-    >>> cv = BootstrapCV(random_state=42, n_splits=3)  # doctest: +SKIP
-    [(<1892x17632 sparse matrix of type '<class 'numpy.float64'>'
+    >>> cv = BootstrapCV(random_state=42, n_splits=3)
+    >>> list(cv.split(X))  # doctest: +SKIP
+    [(<1892x17632 sparse matrix of type '<class 'numpy.float32'>'
     with 65790 stored elements in Compressed Sparse Row format>,
-    <1892x17632 sparse matrix of type '<class 'numpy.float64'>'
+    <1892x17632 sparse matrix of type '<class 'numpy.float32'>'
     with 92834 stored elements in Compressed Sparse Row format>),
-    (<1892x17632 sparse matrix of type '<class 'numpy.float64'>'
+    (<1892x17632 sparse matrix of type '<class 'numpy.float32'>'
     with 65740 stored elements in Compressed Sparse Row format>,
-    <1892x17632 sparse matrix of type '<class 'numpy.float64'>'
+    <1892x17632 sparse matrix of type '<class 'numpy.float32'>'
     with 92834 stored elements in Compressed Sparse Row format>),
-    (<1892x17632 sparse matrix of type '<class 'numpy.float64'>'
+    (<1892x17632 sparse matrix of type '<class 'numpy.float32'>'
     with 65964 stored elements in Compressed Sparse Row format>,
-    <1892x17632 sparse matrix of type '<class 'numpy.float64'>'
+    <1892x17632 sparse matrix of type '<class 'numpy.float32'>'
     with 92834 stored elements in Compressed Sparse Row format>)]
     """
     def _iter_train_mask(self, u, i, r):
