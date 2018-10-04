@@ -57,8 +57,9 @@ class TestAlternatingLeastSquares(RecommenderTestClass):
 
     def test_complex_fit(self):
         # Show we can fit a really complex model
-        AlternatingLeastSquares(random_state=42, use_cg=True, iterations=50,
-                                factors=150, regularization=0.01)
+        AlternatingLeastSquares(random_state=42, use_cg=True, iterations=15,
+                                factors=150, regularization=0.01,
+                                num_threads=1)
 
     def test_recommend_single(self):
         clf = AlternatingLeastSquares(
@@ -84,7 +85,7 @@ class TestAlternatingLeastSquares(RecommenderTestClass):
         # Recommend for ALL users
         clf = AlternatingLeastSquares(
             random_state=1, use_gpu=False, use_cg=True,
-            iterations=5).fit(train)
+            iterations=5, num_threads=1).fit(train)
 
         n = test.shape[1]
         recs = clf.recommend_for_all_users(test, n=n,
@@ -103,7 +104,7 @@ class TestAlternatingLeastSquares(RecommenderTestClass):
     def test_serialize(self):
         clf = AlternatingLeastSquares(
             random_state=1, use_gpu=False, use_cg=True,
-            iterations=5)
+            iterations=5, num_threads=1)
         pkl_location = "als.pkl"
 
         # Test persistence

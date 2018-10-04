@@ -14,6 +14,7 @@ from .b import *
 
 # Import here:
 from .als import *
+from .approximate import *
 from .base import *
 
 __all__ = [s for s in dir() if not s.startswith("_")]

@@ -25,12 +25,6 @@ class BaseRecommender(six.with_metaclass(ABCMeta, BaseEstimator)):
     all ``__init__`` args must be defined with defaults and without keyword
     arguments.
 
-    Attributes
-    ----------
-    estimator_ : implicit Recommender
-        After a model is fit, the ``estimator_`` attribute will hold the fit
-        model.
-
     Notes
     -----
     Some implicit estimators don't play nicely with serialization, but

@@ -2,29 +2,39 @@
 
 from __future__ import absolute_import
 
-from .base import BaseCollaborativeFiltering
-from ..base import BaseRecommender
+from .als import AlternatingLeastSquares
 from ..utils.decorators import inherit_function_doc
 from ..utils.validation import check_sparse_array, get_n_factors
 
-from sklearn.utils.validation import check_is_fitted, check_random_state, \
-    _is_arraylike
+import numpy as np
+from sklearn.utils.validation import check_random_state
 
-from implicit import als
+from implicit import approximate_als as aals
 from implicit import cuda
 
-import numpy as np
+from annoy import AnnoyIndex
+import nmslib
 
 __all__ = [
-    'AlternatingLeastSquares'
+    'AnnoyAlternatingLeastSquares',
+    'NMSAlternatingLeastSquares'
 ]
 
 
-class AlternatingLeastSquares(BaseCollaborativeFiltering):
-    """Alternating Least Squares
+class _BaseApproximateALS(AlternatingLeastSquares):
+    """Base class for approximated ALS variants"""
 
-    An implicit collaborative filtering algorithm based off the algorithms
-    described in [1] with performance optimizations described in [2].
+
+class AnnoyAlternatingLeastSquares(_BaseApproximateALS):
+    pass
+
+
+class NMSAlternatingLeastSquares(_BaseApproximateALS):
+    """(Faster) Alternating Least Squares.
+
+    Speeds up :class:`reclab.collab.AlternatingLeastSquares` by using
+    `NMSLib <https://github.com/searchivarius/nmslib>`_ to create approximate
+    nearest neighbors indices of the latent factors.
 
     Parameters
     ----------
@@ -60,19 +70,30 @@ class AlternatingLeastSquares(BaseCollaborativeFiltering):
         applies for the native extensions. Specifying 0 means to default
         to the number of cores on the machine.
 
-    show_progress : bool, optional (default=True)
-        Whether to show a progress bar while training.
+    method : str, optional (default='hnsw')
+        The NMSLib method to use. Default is "hnsw" (Hierarchical Navigable
+        Small World). For a list of exhaustive methods, see [1]
+
+    index_params: dict, optional (default=None)
+        Optional params to send to the createIndex call in NMSLib
+
+    query_params: dict, optional (default=None)
+        Optional query time params for the NMSLib ``setQueryTimeParams`` call
+
+    approximate_similar_items : bool, optional (default=True)
+        Whether or not to build an NMSLIB index for computing similar_items.
+        Default (recommended) is True.
+
+    approximate_recommend : bool, optional (default=True)
+        Whether or not to build an NMSLIB index for the recommend call.
+        Default (recommended) is True.
 
     random_state : int, RandomState or None, optional (default=None)
         The random state to control random seeding of the item and user
         factor matrices.
 
-    Notes
-    -----
-    The negative items are implicitly defined: this algorithm assumes that
-    non-zero items in the item_users matrix means that the user liked the item.
-    The negatives are left unset in this sparse matrix: the library will assume
-    that means Piu = 0 and Ciu = 1 for all these items.
+    show_progress : bool, optional (default=True)
+        Whether to show a progress bar while training.
 
     Attributes
     ----------
@@ -82,27 +103,29 @@ class AlternatingLeastSquares(BaseCollaborativeFiltering):
 
     References
     ----------
-    .. [1] Y. Hu, Y. Koren, C. Volinsky, "Collaborative Filtering for
-           Implicit Feedback Datasets" (http://yifanhu.net/PUB/cf.pdf)
-
-    .. [2] G. Takacs, I. Pilaszy, D. Tikk, "Applications of the Conjugate
-           Gradient Method for Implicit Feedback Collaborative Filtering"
+    .. [1] Valid NMSLIB method source code
+           https://github.com/nmslib/nmslib/tree/master/similarity_search/include/method
     """
     def __init__(self, factors=100, regularization=0.01,
                  use_native=True, use_cg=True, iterations=15,
                  use_gpu=cuda.HAS_CUDA, calculate_training_loss=False,
-                 num_threads=0, show_progress=True, random_state=None):
+                 num_threads=0, method='hnsw', index_params=None,
+                 query_params=None, approximate_similar_items=True,
+                 approximate_recommend=True, random_state=None,
+                 show_progress=True):
 
-        self.factors = factors
-        self.regularization = regularization
-        self.use_native = use_native
-        self.use_cg = use_cg
-        self.use_gpu = use_gpu
-        self.iterations = iterations
-        self.calculate_training_loss = calculate_training_loss
-        self.num_threads = num_threads
-        self.show_progress = show_progress
-        self.random_state = random_state
+        super(NMSAlternatingLeastSquares, self).__init__(
+            factors=factors, regularization=regularization,
+            use_native=use_native, use_cg=use_cg, iterations=iterations,
+            use_gpu=use_gpu, calculate_training_loss=calculate_training_loss,
+            num_threads=num_threads, random_state=random_state,
+            show_progress=show_progress)
+
+        self.method = method
+        self.index_params = index_params
+        self.query_params = query_params
+        self.approximate_similar_items = approximate_similar_items
+        self.approximate_recommend = approximate_recommend
 
     def _make_estimator(self, X):
         # Get the number of factors
@@ -111,7 +134,11 @@ class AlternatingLeastSquares(BaseCollaborativeFiltering):
 
         # Implicit really only likes numpy float32 for some reason
         dtype = np.float32
-        est = als.AlternatingLeastSquares(
+        est = aals.NMSLibAlternatingLeastSquares(
+            method=self.method, index_params=self.index_params,
+            query_params=self.query_params,
+            approximate_similar_items=self.approximate_similar_items,
+            approximate_recommend=self.approximate_recommend,
             factors=factors, regularization=self.regularization,
             dtype=dtype, use_native=self.use_native, use_cg=self.use_cg,
             use_gpu=self.use_gpu, iterations=self.iterations,
@@ -124,9 +151,9 @@ class AlternatingLeastSquares(BaseCollaborativeFiltering):
             estimator=est, n_users=n_users, n_items=n_items, factors=factors,
             dtype=dtype, random_state=random_state)
 
-    @inherit_function_doc(BaseCollaborativeFiltering)
+    @inherit_function_doc(AlternatingLeastSquares)
     def fit(self, X):
-        # Now validate that X is a sparse array. Implicit forces float32, so
+        # Validate that X is a sparse array. Implicit forces float32, so
         # better to check it now...
         X = check_sparse_array(X, dtype=np.float32, copy=False,
                                force_all_finite=True)
@@ -137,47 +164,9 @@ class AlternatingLeastSquares(BaseCollaborativeFiltering):
 
         return self
 
-    @inherit_function_doc(BaseRecommender)
+    @inherit_function_doc(AlternatingLeastSquares)
     def recommend_for_user(self, userid, R, n=10, filter_previously_rated=True,
                            filter_items=None, return_scores=False,
                            recalculate_user=False):
-        # Make sure the model has been fitted!
-        check_is_fitted(self, "estimator_")
-
-        # Now validate the ratings matrix
-        R = check_sparse_array(R, dtype=np.float32, copy=False,
-                               force_all_finite=True)
-
-        est = self.estimator_
-        user = est._user_factor(userid, R, recalculate_user)
-        item_factors = np.array(est.item_factors)  # this is a copy
-
-        # The scores are just the product of the user array and the items
-        # factors
-        scores = item_factors.dot(user)  # np.ndarray, shape=(n_items,)
-        itms = np.arange(scores.shape[0])
-        keep_mask = np.ones(scores.shape[0], dtype=bool)
-
-        # if we're filtering any items at all, do so now...
-        if filter_items is not None:
-            assert _is_arraylike(filter_items)
-            filter_items = np.asarray(filter_items)
-            keep_mask[filter_items] = False
-
-        # remove rated indices if needed
-        if filter_previously_rated:
-            rated_items = R[userid, :].indices
-            keep_mask[rated_items] = False
-
-        # Now filter out where necessary...
-        scores = scores[keep_mask]
-        itms = itms[keep_mask]
-
-        # get the argsort order (negative for desc)
-        order = np.argsort(-scores)
-        scores = scores[order]
-        itms = itms[order]
-
-        if return_scores:
-            return itms[:n], scores[:n]
-        return itms[:n]
+        # TODO:
+        pass

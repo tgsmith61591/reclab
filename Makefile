@@ -25,7 +25,7 @@ inplace:
 	$(PYTHON) setup.py build_ext -i
 
 trailing-spaces:
-	find python -name "*.py" -exec perl -pi -e 's/[ 	]*$$//' {} \;
+	find python -name "*.py" -exec perl -pi -e 's/[ \t]*$$//' {} \;
 
 ctags:
 	# make tags for symbol based navigation in emacs and vim
