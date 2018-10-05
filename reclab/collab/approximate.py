@@ -400,7 +400,7 @@ class AnnoyAlternatingLeastSquares(_BaseApproximateALS):
             # it will ever get to this code
             n_index = est.extra_
         index = AnnoyIndex(n_index, "angular")
-        index.load(wherefrom)
+        index.load(join(wherefrom, index_key))
         return index
 
 
