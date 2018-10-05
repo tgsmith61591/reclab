@@ -179,8 +179,9 @@ class _BaseApproximateALS(six.with_metaclass(ABCMeta, AlternatingLeastSquares)):
 
         # If we break down, remove the model index directory so as not to
         # blow up the filesystem!
-        except:
+        except Exception:
             shutil.rmtree(model_index_dir)
+            raise
 
         return obj_dict
 
