@@ -7,13 +7,8 @@ from reclab.datasets import load_lastfm
 from reclab.model_selection import train_test_split
 from reclab.utils.testing import RecommenderTestClass
 
-import numpy as np
-from numpy.testing import assert_array_almost_equal, assert_allclose, \
-    assert_array_equal
-from sklearn.externals import joblib
-
+from numpy.testing import assert_array_almost_equal, assert_allclose
 import os
-import types
 
 # set this to avoid the MKL BLAS warning
 os.environ["MKL_NUM_THREADS"] = "1"
@@ -67,19 +62,8 @@ class TestAlternatingLeastSquares(RecommenderTestClass):
             iterations=5, num_threads=1)
         clf.fit(train)
 
-        # Simple recommendation operation
-        recs = clf.recommend_for_user(0, test, n=5,
-                                      filter_previously_rated=False)
-        assert len(recs) == 5
-
-        # Create recommendations for everything, but filter out a single item
-        n = train.shape[1]
-        recs = clf.recommend_for_user(0, test, n=n,
-                                      filter_previously_rated=False,
-                                      filter_items=[1])
-
-        # Show that '1' is not in the recommendations
-        assert not np.in1d([1], recs).any()
+        # Make assertions on the recommendations
+        self._single_recommend_assertions(clf, train, test)
 
     def test_recommend_all(self):
         # Recommend for ALL users
@@ -87,53 +71,12 @@ class TestAlternatingLeastSquares(RecommenderTestClass):
             random_state=1, use_gpu=False, use_cg=True,
             iterations=5, num_threads=1).fit(train)
 
-        n = test.shape[1]
-        recs = clf.recommend_for_all_users(test, n=n,
-                                           return_scores=True,
-                                           filter_previously_rated=True)
-
-        # Show that it's a generator
-        assert isinstance(recs, types.GeneratorType)
-        first_recs, first_scores = next(recs)
-        assert len(first_recs) == len(first_scores)
-
-        # show no rated items in the recs
-        rated = test[0, :].indices
-        assert not np.in1d(rated, first_recs).any()
+        # Mask assertions
+        self._all_recommend_assertions(clf, test)
 
     def test_serialize(self):
         clf = AlternatingLeastSquares(
             random_state=1, use_gpu=False, use_cg=True,
             iterations=5, num_threads=1)
-        pkl_location = "als.pkl"
 
-        # Test persistence
-        try:
-            # Show we can serialize BEFORE it's fit
-            joblib.dump(clf, pkl_location, compress=3)
-            os.unlink(pkl_location)
-
-            # NOW train
-            clf.fit(train)
-
-            # Get recommendations
-            recs1 = clf.recommend_for_user(0, test, n=3, return_scores=False)
-
-            # dump it, recommend again and show the internal state didn't
-            # change while we were pickling it out
-            joblib.dump(clf, pkl_location, compress=3)
-            recs2 = clf.recommend_for_user(0, test, n=3, return_scores=False)
-
-            # open it up and create more recommendations
-            recs3 = joblib.load(pkl_location)\
-                          .recommend_for_user(0, test, n=3,
-                                              return_scores=False)
-
-            # Now show they're all the same
-            assert_array_equal(recs1, recs2,
-                               err_msg="%s != %s" % (str(recs1), str(recs2)))
-            assert_array_equal(recs1, recs3,
-                               err_msg="%s != %s" % (str(recs1), str(recs3)))
-
-        finally:
-            os.unlink(pkl_location)
+        self._serialization_assertions(clf, train, test)

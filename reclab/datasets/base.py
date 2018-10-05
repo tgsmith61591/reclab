@@ -131,7 +131,8 @@ def load_lastfm(cache=False, as_sparse=False, dtype=np.float32):
 
     # we can also cache the sparse
     if as_sparse:
-        data = to_sparse_csr(u=users, i=items, r=ratings, axis=0)
+        data = to_sparse_csr(u=users, i=items, r=ratings,
+                             axis=0, dtype=dtype)
         if cache:
             _cache_data(data, cache_key, True)
 
