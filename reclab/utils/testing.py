@@ -78,7 +78,8 @@ class RecommenderTestClass(six.with_metaclass(ABCMeta)):
         assert not mask.any()
 
     @staticmethod
-    def _serialization_assertions(clf, train_data, test_data):
+    def _serialization_assertions(clf, train_data, test_data,
+                                  tolerate_fail=False):
         pkl_location = "als.pkl"
 
         # Test persistence
@@ -107,10 +108,13 @@ class RecommenderTestClass(six.with_metaclass(ABCMeta)):
                                     return_scores=False)
 
             # Now show they're all the same
-            assert_array_equal(recs1, recs2,
-                               err_msg="%s != %s" % (str(recs1), str(recs2)))
-            assert_array_equal(recs1, recs3,
-                               err_msg="%s != %s" % (str(recs1), str(recs3)))
+            if not tolerate_fail:
+                assert_array_equal(recs1, recs2,
+                                   err_msg="%s != %s" % (str(recs1),
+                                                         str(recs2)))
+                assert_array_equal(recs1, recs3,
+                                   err_msg="%s != %s" % (str(recs1),
+                                                         str(recs3)))
 
         finally:
             os.unlink(pkl_location)

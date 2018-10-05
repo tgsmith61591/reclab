@@ -155,6 +155,10 @@ class _BaseApproximateALS(six.with_metaclass(ABCMeta, AlternatingLeastSquares)):
         # pickled out.
         obj_dict['estimator_'] = copy.deepcopy(est)
 
+        # The model key will get mangled, too, since the constructor gets
+        # called again. Need to hang onto the proper one...
+        obj_dict['_model_key'] = self._model_key
+
         # If the model key already exists in the cache, remove it now
         model_index_dir = join(RECLAB_CACHE, self._model_key)
         if exists(model_index_dir):
@@ -226,7 +230,8 @@ class AnnoyAlternatingLeastSquares(_BaseApproximateALS):
 
     Improves :class:`reclab.collab.AlternatingLeastSquares` by using
     `Annoy <https://github.com/spotify/annoy>`_ to create an approximate
-    nearest neighbors index of the latent factors.
+    nearest neighbors index of the latent factors. This dramatically reduces
+    inference time.
 
     Parameters
     ----------
@@ -410,7 +415,8 @@ class NMSAlternatingLeastSquares(_BaseApproximateALS):
 
     Improves :class:`reclab.collab.AlternatingLeastSquares` by using
     `NMSLib <https://github.com/searchivarius/nmslib>`_ to create an
-    approximate nearest neighbors index of the latent factors.
+    approximate nearest neighbors index of the latent factors. This
+    dramatically reduces inference time.
 
     Parameters
     ----------

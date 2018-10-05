@@ -24,11 +24,11 @@ def test_check_consistent_length():
     i = np.arange(5)
     r = np.arange(5)
 
-    # show they come back OK with u, i as the same refs and r changed
+    # show they come back OK with u, i, r as the same refs
     users, items, ratings = check_consistent_length(u, i, r)
     assert u is users
     assert i is items
-    assert ratings is not r  # dtype changed
+    assert ratings is r  # dtype does not change like it used to
 
     # change len of one
     i = np.arange(3)

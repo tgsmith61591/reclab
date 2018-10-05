@@ -8,12 +8,10 @@ from reclab.collab import NMSAlternatingLeastSquares, \
 from reclab.datasets import load_lastfm
 from reclab.model_selection import train_test_split
 
-from numpy.testing import assert_array_equal, assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal
 
 import os
 import pytest
-
-import numpy as np
 
 # set this to avoid the MKL BLAS warning
 os.environ["MKL_NUM_THREADS"] = "1"
@@ -97,8 +95,18 @@ class TestApproximateAlternatingLeastSquares(RecommenderTestClass):
         'cls', [NMSAlternatingLeastSquares,
                 AnnoyAlternatingLeastSquares])
     def test_serialize(self, cls):
-        clf = cls(
-            random_state=1, use_gpu=False, use_cg=True,
-            iterations=5, num_threads=1)
+        # I hate doing this in a loop, but show that this works for all
+        # variants of the "approximate" functions
+        for asim, arec in ((True, True), (True, False),
+                           (False, True), (False, False)):
+            clf = cls(
+                random_state=1, use_gpu=False, use_cg=True,
+                iterations=5, num_threads=1,
+                approximate_recommend=arec,
+                approximate_similar_items=asim)
 
-        self._serialization_assertions(clf, train, test)
+            self._serialization_assertions(
+                clf, train, test,
+
+                # Only give wiggle room if no index objects created
+                tolerate_fail=(not asim) and (not arec))

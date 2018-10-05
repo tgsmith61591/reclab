@@ -18,7 +18,6 @@ __all__ = [
 ]
 
 ITYPE = np.int32
-DTYPE = np.float64  # implicit asks for doubles, not float32s...
 
 
 def check_consistent_length(u, i, r):
@@ -36,10 +35,10 @@ def check_consistent_length(u, i, r):
         A numpy array of the ratings.
     """
     skval.check_consistent_length(u, i, r)
-    return np.asarray(u), np.asarray(i), np.asarray(r, dtype=DTYPE)
+    return np.asarray(u), np.asarray(i), np.asarray(r)
 
 
-def _make_sparse_csr(data, rows, cols, dtype=DTYPE):
+def _make_sparse_csr(data, rows, cols, dtype=np.float32):
     # check lengths
     check_consistent_length(data, rows, cols)
     data, rows, cols = (np.asarray(x) for x in (data, rows, cols))
@@ -187,7 +186,7 @@ def is_iterable(x):
     return hasattr(x, '__iter__')
 
 
-def to_sparse_csr(u, i, r, axis=0, dtype=DTYPE):
+def to_sparse_csr(u, i, r, axis=0, dtype=np.float32):
     """Create a sparse ratings matrix.
 
     Create a sparse ratings matrix with users and items as rows and columns,

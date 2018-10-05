@@ -3,5 +3,6 @@ source = reclab
 include = */reclab/*
 omit =
     */reclab/_build_utils/*
+    */reclab/__init__.py
     */reclab/setup.py
     */setup.py
