@@ -9,12 +9,12 @@ Setup
 reclab depends on several Python packages:
 
 * implicit>=0.3.6
-nmslib
-annoy
-scipy
-scikit-learn>=0.18
-numpy>=1.12
-cython>=0.23
+* nmslib
+* annoy
+* scipy
+* scikit-learn>=0.18
+* numpy>=1.12
+* cython>=0.23
 
 To install, simply use the ``setup.py``
 
