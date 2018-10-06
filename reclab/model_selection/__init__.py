@@ -12,6 +12,7 @@ from .a import *
 from .b import *
 """
 
+from ._search import *
 from ._split import *
 
 __all__ = [s for s in dir() if not s.startswith("_")]

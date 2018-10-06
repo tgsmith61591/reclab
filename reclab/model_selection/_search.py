@@ -12,7 +12,6 @@ from sklearn.model_selection._search import ParameterSampler, ParameterGrid
 from sklearn.utils.validation import check_is_fitted, check_random_state
 from sklearn.externals.joblib import delayed, Parallel
 from sklearn.externals import six
-from sklearn.utils.metaestimators import if_delegate_has_method
 
 import numpy as np
 
@@ -90,13 +89,16 @@ class _CVWrapper(object):
     """Wrapper class for either CV or train/validation evaluation.
 
     This is just a hacky wrapper that allows us to treat train/val splits in
-    the same exact fashion as we'd treat cross-val splits.
+    the same exact fashion as we'd treat cross-val splits. Train/val splits can
+    be considered single splits that will be returned in a list with a single
+    tuple.
     """
     def __init__(self, cv, validation):
         self.cv = check_cv(cv) if validation is None else None
         self.validation = validation
 
     def get_n_splits(self):
+        """Get the number of splits for the CV class"""
         if self.cv is not None:
             return self.cv.get_n_splits()
         return 1
@@ -105,7 +107,7 @@ class _CVWrapper(object):
         if self.cv is not None:
             return self.cv.split(X)
         # Otherwise it's just single-fold splitting basically
-        return [X, self.validation]
+        return [(X, self.validation)]
 
 
 class _BaseRecommenderSearchCV(six.with_metaclass(ABCMeta, BaseRecommender)):
@@ -131,7 +133,7 @@ class _BaseRecommenderSearchCV(six.with_metaclass(ABCMeta, BaseRecommender)):
         Returns
         -------
         grid : iterable
-            The parameters that will be searched.
+            The parameter space that will be searched.
         """
 
     def fit(self, X, validation_set=None):
@@ -157,6 +159,10 @@ class _BaseRecommenderSearchCV(six.with_metaclass(ABCMeta, BaseRecommender)):
         Notes
         -----
         * If ``validation_set`` is provided, CV will not be used
+        * If "filter_previously_rated" is present in ``recommend_params``, it
+          will be popped and a warning will be issued, as previously-rated
+          items are required to be present in for most scoring metrics to show
+          any lift.
         """
         # validate the CV
         cv = _CVWrapper(self.cv, validation_set)
@@ -192,11 +198,12 @@ class _BaseRecommenderSearchCV(six.with_metaclass(ABCMeta, BaseRecommender)):
         score_kwargs = self.scoring_params
         if not rec_kwargs:
             rec_kwargs = dict()
-        if "filter_previously_rated" in rec_kwargs:
+        filter_key = "filter_previously_rated"
+        if filter_key in rec_kwargs:
             warnings.warn("Scoring requires that previously-rated items NOT "
-                          "be filtered from recommendations. Removing from "
-                          "'recommend_params'")
-            rec_kwargs.pop("filter_previously_rated")
+                          "be filtered from recommendations. Removing '%s' "
+                          "from 'recommend_params'" % filter_key)
+            rec_kwargs.pop(filter_key)
 
         if not score_kwargs:
             score_kwargs = dict()
@@ -253,30 +260,56 @@ class _BaseRecommenderSearchCV(six.with_metaclass(ABCMeta, BaseRecommender)):
         return self
 
     @inherit_function_doc(BaseRecommender)
-    @if_delegate_has_method(delegate="best_estimator_")
     def recommend_for_user(self, userid, R, n=10, filter_previously_rated=True,
                            filter_items=None, return_scores=False, **kwargs):
-        return self.best_estimator_.recommend(
+        check_is_fitted(self, "best_estimator_")
+        return self.best_estimator_.recommend_for_user(
             userid, R, n=n, filter_previously_rated=filter_previously_rated,
             filter_items=filter_items, return_scores=return_scores, **kwargs)
 
     def score(self, X, recommend_kwargs=None, **score_kwargs):
-        """Compute the score on the test set using the ``scoring`` param."""
+        r"""Compute the score on the test set.
+
+        Generate recommendatinos for all users and compute the score for the
+        estimator using the provided ``scoring`` metric.
+
+        Parameters
+        ----------
+        X : scipy.sparse.csr_matrix, shape=(n_samples, n_products)
+            The sparse ratings matrix.
+
+        recommend_kwargs : dict or None
+            Any keyword args to pass to the ``recommend_for_all_users``
+            function.
+
+        **scoring_kwargs : dict or None, optional (default=None)
+            Any keyword args to pass to the scoring function.
+        """
         check_is_fitted(self, "best_estimator_")
         scorer = check_permitted_value(_valid_metrics, self.scoring)
 
+        # We have to make sure we pass this as a dict and not None!
         if not recommend_kwargs:
             recommend_kwargs = dict()
+
+        # This is a generator of all the users' recommendations. Expensive to
+        # iterate...
         recs = self.recommend_for_all_users(
             X, return_scores=False,
-            **recommend_kwargs)  # this is a generator
-
+            **recommend_kwargs)
         return _compute_score(scorer, X, recs, **score_kwargs)
 
 
 class RecommenderGridSearchCV(_BaseRecommenderSearchCV):
-    """Randomized search on hyper parameters to discover the best
-    parameters for a recommender model fit.
+    """Exhaustive search on hyper parameters.
+
+    Discover the best hyper parameters for a recommender model fit by searching
+    exhaustively over the given parameter space. The parameters of the estimator
+    are optimized by cross-validated search over parameter settings, with the
+    parameters selected being those that maximize the mean score of the held-
+    out cross validation folds, according to the ``scoring`` method.
+
+    See notes for exceptions.
 
     Parameters
     ----------
@@ -309,9 +342,10 @@ class RecommenderGridSearchCV(_BaseRecommenderSearchCV):
 
     Notes
     -----
-    The parameters selected are those that maximize the score of
-    the held-out data (the validation set provided) according to the
-    ``scoring`` parameter.
+    * If a ``validation_set`` is provided to the ``fit`` method, the validation
+      set will be used as the held-out fold for each fit, and CV will not be
+      performed. This is not always recommended, but for extremely large data
+      may be necessary.
     """
     def __init__(self, estimator, param_grid, scoring='mean_average_precision',
                  cv=3, recommend_params=None, scoring_params=None, n_jobs=1,
@@ -331,8 +365,15 @@ class RecommenderGridSearchCV(_BaseRecommenderSearchCV):
 
 
 class RandomizedRecommenderSearchCV(_BaseRecommenderSearchCV):
-    """Randomized search on hyper parameters to discover the best
-    parameters for a recommender model fit.
+    """Randomized search on hyper parameters.
+
+    Discover the best hyper parameters for a recommender model fit by randomly
+    searching over the given parameter space. The parameters of the estimator
+    are optimized by cross-validated search over parameter settings, with the
+    parameters selected being those that maximize the mean score of the held-
+    out cross validation folds, according to the ``scoring`` method.
+
+    See notes for exceptions.
 
     Parameters
     ----------
@@ -377,9 +418,10 @@ class RandomizedRecommenderSearchCV(_BaseRecommenderSearchCV):
 
     Notes
     -----
-    The parameters selected are those that maximize the score of
-    the held-out data (the validation set provided) according to the
-    ``scoring`` parameter.
+    * If a ``validation_set`` is provided to the ``fit`` method, the validation
+      set will be used as the held-out fold for each fit, and CV will not be
+      performed. This is not always recommended, but for extremely large data
+      may be necessary.
     """
     def __init__(self, estimator, param_distributions, n_iter=10,
                  scoring='mean_average_precision', cv=3, recommend_params=None,

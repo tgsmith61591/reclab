@@ -174,12 +174,12 @@ def train_test_split(u, i, r, train_size=0.75, random_state=None):
     >>> r = [0.5, 1.0, 0.0, 1.0, 0.0, 1.]
     >>> train, test = train_test_split(u, i, r, train_size=0.5,
     ...                                random_state=42)
-    >>> train.toarray()
+    >>> train.toarray()  # doctest: +NORMALIZE_WHITESPACE
     array([[ 0. ,  0.5,  0. ,  0. ],
            [ 0. ,  0. ,  0. ,  0. ],
            [ 1. ,  0. ,  0. ,  0. ],
            [ 0. ,  0. ,  1. ,  0. ]])
-    >>> test.toarray()
+    >>> test.toarray()  # doctest: +NORMALIZE_WHITESPACE
     array([[ 0. ,  0.5,  0. ,  0. ],
            [ 0. ,  0. ,  1. ,  0. ],
            [ 1. ,  0. ,  0. ,  0. ],

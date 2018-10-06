@@ -27,3 +27,6 @@ class TestLoadLastFM:
     def test_load_sparse(self):
         X = load_lastfm(cache=True, as_sparse=True)
         assert sparse.issparse(X)
+
+        # Show that the next time we load this after caching, it's the same ref
+        assert load_lastfm(cache=True, as_sparse=True) is X

@@ -85,10 +85,10 @@ def load_lastfm(cache=False, as_sparse=False, dtype=np.float32):
     >>> train, test = train_test_split(u=lastfm.users, i=lastfm.products,
     ...                                r=lastfm.ratings, random_state=42)
     >>> train
-    <1892x17632 sparse matrix of type '<type 'numpy.float32'>'
+    <1892x17632 sparse matrix of type '<class 'numpy.float32'>'
         with 72389 stored elements in Compressed Sparse Row format>
     >>> test
-    <1892x17632 sparse matrix of type '<type 'numpy.float32'>'
+    <1892x17632 sparse matrix of type '<class 'numpy.float32'>'
         with 92834 stored elements in Compressed Sparse Row format>
 
     Returns
