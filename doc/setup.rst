@@ -16,7 +16,7 @@ reclab depends on several Python packages:
 * numpy>=1.12
 * cython>=0.23
 
-To install, simply use the ``setup.py``
+To install, simply use the ``setup.py`` script:
 
 .. code-block:: bash
 

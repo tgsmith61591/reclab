@@ -21,7 +21,7 @@ __all__ = [
 
 
 class AlternatingLeastSquares(BaseCollaborativeFiltering):
-    """Alternating Least Squares
+    r"""Alternating Least Squares
 
     An implicit collaborative filtering algorithm based off the algorithms
     described in [1] with performance optimizations described in [2].
@@ -73,12 +73,6 @@ class AlternatingLeastSquares(BaseCollaborativeFiltering):
     non-zero items in the item_users matrix means that the user liked the item.
     The negatives are left unset in this sparse matrix: the library will assume
     that means Piu = 0 and Ciu = 1 for all these items.
-
-    Attributes
-    ----------
-    estimator_ : implicit Recommender
-        After the model is fit, the ``estimator_`` attribute will hold the fit
-        ALS model.
 
     References
     ----------

@@ -63,6 +63,19 @@ Look how easy that was!
 
    <br/>
 
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+
+   API Reference <./modules/classes.rst>
+   Examples <./auto_examples/index.rst>
+   User Guide <./user_guide.rst>
+
+
+.. raw:: html
+
+   <br/>
+
 Quick refs, indices and tables
 ==============================
 
@@ -70,8 +83,9 @@ Helpful quickstart sections:
 
 * :ref:`about`
 * :ref:`setup`
-* :ref:`contrib`
 * :ref:`api_ref`
+* :ref:`contrib`
+* :ref:`user_guide`
 
 To search for specific sections or class documentation, visit the index.
 

@@ -1,15 +1,5 @@
 """
-__init__ script for utils. In this file, you should include import
-statements from files within the submodule. I.e., if your module resembles
-the following:
-
-  my_submodule/
-    |_ a.py
-    |_ b.py
-
-Your __init__.py would include:
-from .a import *
-from .b import *
+Utilities and validation functions used commonly across the package.
 """
 
 # Import here:

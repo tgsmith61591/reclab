@@ -290,12 +290,6 @@ class AnnoyAlternatingLeastSquares(_BaseApproximateALS):
     show_progress : bool, optional (default=True)
         Whether to show a progress bar while training.
 
-    Attributes
-    ----------
-    estimator_ : implicit Recommender
-        After the model is fit, the ``estimator_`` attribute will hold the fit
-        ALS model.
-
     References
     ----------
     .. [1] https://www.benfrederickson.com/approximate-nearest-neighbours-for-recommender-systems/
@@ -476,12 +470,6 @@ class NMSAlternatingLeastSquares(_BaseApproximateALS):
 
     show_progress : bool, optional (default=True)
         Whether to show a progress bar while training.
-
-    Attributes
-    ----------
-    estimator_ : implicit Recommender
-        After the model is fit, the ``estimator_`` attribute will hold the fit
-        ALS model.
 
     References
     ----------

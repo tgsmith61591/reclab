@@ -4,6 +4,7 @@ from __future__ import absolute_import
 
 from reclab.model_selection import RandomizedRecommenderSearchCV, \
     RecommenderGridSearchCV, train_test_split, BootstrapCV
+from reclab.model_selection._search import _CVWrapper
 from reclab.collab import AlternatingLeastSquares, \
     NMSAlternatingLeastSquares
 from reclab.datasets import load_lastfm
@@ -113,3 +114,19 @@ class TestRandomizedSearch:
             n_iter=2)
 
         self._search_fit_assert(search, val=test)
+
+
+def test_cv_wrapper():
+    # Test that the CV wrapper produces exactly what we think it does...
+    wrapper = _CVWrapper(cv=None, validation=test)
+    split = wrapper.split(train)
+
+    # The split should be a list of a single tuple
+    assert isinstance(split, list), split
+    assert len(split) == 1, split
+
+    # The tuple element should be len 2
+    tup = split[0]
+    assert len(tup) == 2, tup
+    assert tup[0] is train
+    assert tup[1] is test

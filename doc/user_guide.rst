@@ -10,6 +10,7 @@ User Guide
 
 Getting started
 ---------------
+
 The following guides cover how to get started with a reclab distribution.
 
 .. raw:: html
@@ -19,4 +20,16 @@ The following guides cover how to get started with a reclab distribution.
 .. toctree::
 
    about.rst
+   contributing.rst
    setup.rst
+   train_test.rst
+
+API reference
+-------------
+
+The :ref:`api_ref` covers documentation and examples of each of the reclab
+package's submodules.
+
+.. raw:: html
+
+   <br/>

@@ -1,15 +1,7 @@
 """
-__init__ script for model_selection. In this file, you should include import
-statements from files within the submodule. I.e., if your module resembles
-the following:
-
-  my_submodule/
-    |_ a.py
-    |_ b.py
-
-Your __init__.py would include:
-from .a import *
-from .b import *
+The ``reclab.model_selection`` submodule provides many utilities for cross-
+validating your recommender models, splitting your data into train/test splits
+and performing grid searches.
 """
 
 from ._search import *

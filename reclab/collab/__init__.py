@@ -1,15 +1,7 @@
 """
-__init__ script for collab. In this file, you should include import
-statements from files within the submodule. I.e., if your module resembles
-the following:
-
-  my_submodule/
-    |_ a.py
-    |_ b.py
-
-Your __init__.py would include:
-from .a import *
-from .b import *
+The ``reclab.collab`` sub-module defines a number of collaborative filtering
+recommender algorithms, including popular matrix factorization techniques and
+nearest neighbor methods.
 """
 
 # Import here:

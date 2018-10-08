@@ -92,6 +92,20 @@ class _CVWrapper(object):
     the same exact fashion as we'd treat cross-val splits. Train/val splits can
     be considered single splits that will be returned in a list with a single
     tuple.
+
+    Notes
+    -----
+    The ``split`` function behaves like the cross validation API would. For
+    either case, it returns a list of tuples, where for a true CV split, the
+    list will be longer than 1 element, with tuples of length 2 (train & val
+    matrices respectively)::
+
+        [(train_1, val_1), (train_2, val_2), ..., (train_n, val_n)]
+
+    For a train/validation split, will also return a  list but with only one
+    tuple::
+
+        [(train, val)]
     """
     def __init__(self, cv, validation):
         self.cv = check_cv(cv) if validation is None else None
@@ -282,7 +296,7 @@ class _BaseRecommenderSearchCV(six.with_metaclass(ABCMeta, BaseRecommender)):
             Any keyword args to pass to the ``recommend_for_all_users``
             function.
 
-        **scoring_kwargs : dict or None, optional (default=None)
+        **score_kwargs : dict or None, optional (default=None)
             Any keyword args to pass to the scoring function.
         """
         check_is_fitted(self, "best_estimator_")
@@ -372,6 +386,11 @@ class RandomizedRecommenderSearchCV(_BaseRecommenderSearchCV):
     are optimized by cross-validated search over parameter settings, with the
     parameters selected being those that maximize the mean score of the held-
     out cross validation folds, according to the ``scoring`` method.
+
+    In contrast to :class:`RecommenderGridSearchCV`, not all parameter values
+    are tried out, but rather a fixed number of parameter settings is sampled
+    from the specified distributions. The number of parameter settings that are
+    tried is given by ``n_iter``.
 
     See notes for exceptions.
 

@@ -1,18 +1,9 @@
 """
-__init__ script for metrics. In this file, you should include import
-statements from files within the submodule. I.e., if your module resembles
-the following:
-
-  my_submodule/
-    |_ a.py
-    |_ b.py
-
-Your __init__.py would include:
-from .a import *
-from .b import *
+The ``reclab.metrics`` submodule provides several different rankings metrics
+that are widely used for benchmarking the efficacy of a recommender algorithm.
 """
 
 # Import here:
-# from .a import *
+from .ranking import *
 
 __all__ = [s for s in dir() if not s.startswith("_")]

@@ -138,6 +138,8 @@ def train_test_split(u, i, r, train_size=0.75, random_state=None):
     that preserves at least one of each user and item in the training split
     to prevent inducing a cold-start situation.
 
+    See :ref:`train_test` for more information.
+
     Parameters
     ----------
     u : array-like, shape=(n_samples,)

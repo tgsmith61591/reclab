@@ -57,6 +57,15 @@ SETUPTOOLS_COMMANDS = {
     '--single-version-externally-managed'
 }
 
+# If the user is trying to test from the setup.py, scold appropriately
+if "test" in sys.argv:
+    raise ValueError("""
+To test the package, setup with the 'develop' option and then use pytest:
+
+    $ python setup.py develop
+    $ pytest
+""")
+
 # are we building from install or develop? Since "install" is not in the
 # SETUPTOOLS_COMMANDS, we have to check that here...
 we_be_buildin = 'install' in sys.argv

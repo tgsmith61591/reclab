@@ -17,10 +17,6 @@ uses.
 :mod:`reclab.collab`: Collaborative filtering in reclab
 =======================================================
 
-The ``reclab.collab`` sub-module defines a number of collaborative filtering
-recommender algorithms, including popular matrix factorization techniques and
-nearest neighbor methods.
-
 .. automodule:: reclab.collab
     :no-members:
     :no-inherited-members:
@@ -34,23 +30,15 @@ Collaborative filtering estimators
     :toctree: generated/
     :template: class.rst
 
-    reclab.AlternatingLeastSquares
-    reclab.AnnoyAlternatingLeastSquares
-    reclab.BM25Recommender
-    reclab.CosineRecommender
-    reclab.ItemItemRecommender
-    reclab.NMSLibAlternatingLeastSquares
-    reclab.TFIDFRecommender
+    collab.AlternatingLeastSquares
+    collab.AnnoyAlternatingLeastSquares
+    collab.NMSAlternatingLeastSquares
 
 
 .. _datasets_ref:
 
 :mod:`reclab.datasets`: Benchmarking ratings data for recommenders
 ==================================================================
-
-The ``reclab.datasets`` submodule provides several different ratings datasets
-used in various examples and tests across the package. If you would like to
-prototype a model, this is a good place to find easy-to-access data.
 
 .. automodule:: reclab.datasets
     :no-members:
@@ -72,9 +60,6 @@ Dataset loading functions
 
 :mod:`reclab.metrics`: Ranking metrics for scoring recommenders
 ===============================================================
-
-The ``reclab.metrics`` submodule provides several different rankings metrics
-that are widely used for benchmarking the efficacy of a recommender algorithm.
 
 .. automodule:: reclab.metrics
     :no-members:
@@ -98,10 +83,6 @@ Ranking metrics
 
 :mod:`reclab.model_selection`: Model selection tools for recommenders
 =====================================================================
-
-The ``reclab.model_selection`` submodule provides many utilities for cross-
-validating your recommender models, splitting your data into train/test splits
-and performing grid searches.
 
 Data splitting
 --------------
@@ -132,8 +113,6 @@ Grid searches
 :mod:`reclab.utils`: Utilities
 ==============================
 
-Utilities and validation functions used commonly across the package.
-
 .. automodule:: reclab.utils
     :no-members:
     :no-inherited-members:
@@ -155,16 +134,3 @@ Validation & array-checking functions
     utils.is_iterable
     utils.safe_mkdirs
     utils.to_sparse_csr
-
-Testing utilities
------------------
-
-Utilities and base classes for testing modules.
-
-.. currentmodule:: reclab
-
-.. autosummary::
-    :toctree: generated/
-    :template: class.rst
-
-    utils.RecommenderTestClass
