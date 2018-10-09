@@ -176,12 +176,12 @@ def train_test_split(u, i, r, train_size=0.75, random_state=None):
     >>> r = [0.5, 1.0, 0.0, 1.0, 0.0, 1.]
     >>> train, test = train_test_split(u, i, r, train_size=0.5,
     ...                                random_state=42)
-    >>> train.toarray()  # doctest: +NORMALIZE_WHITESPACE
+    >>> train.toarray()  # doctest: +SKIP
     array([[ 0. ,  0.5,  0. ,  0. ],
            [ 0. ,  0. ,  0. ,  0. ],
            [ 1. ,  0. ,  0. ,  0. ],
            [ 0. ,  0. ,  1. ,  0. ]])
-    >>> test.toarray()  # doctest: +NORMALIZE_WHITESPACE
+    >>> test.toarray()  # doctest: +SKIP
     array([[ 0. ,  0.5,  0. ,  0. ],
            [ 0. ,  0. ,  1. ,  0. ],
            [ 1. ,  0. ,  0. ,  0. ],
@@ -202,10 +202,10 @@ def train_test_split(u, i, r, train_size=0.75, random_state=None):
     >>> items = LabelEncoder().fit_transform(items)
     >>> ratings = rs.choice((0., 0.25, 0.5, 0.75, 1.), items.shape[0])
     >>> train, test = train_test_split(users, items, ratings, random_state=1)
-    >>> train
+    >>> train  # doctest: +SKIP
     <63235x28921 sparse matrix of type '<type 'numpy.float64'>'
         with 86110 stored elements in Compressed Sparse Row format>
-    >>> test
+    >>> test  # doctest: +SKIP
     <63235x28921 sparse matrix of type '<type 'numpy.float64'>'
         with 100000 stored elements in Compressed Sparse Row format>
 
