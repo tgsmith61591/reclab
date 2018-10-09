@@ -65,6 +65,13 @@ class TestAlternatingLeastSquares(RecommenderTestClass):
         # Make assertions on the recommendations
         self._single_recommend_assertions(clf, train, test)
 
+        # Special assert for ALS only where n + count > len n_items.
+        # Should just end up being n_items.
+        n_items = test.shape[1]
+        recs = clf.recommend_for_user(0, test, n=n_items + 5,
+                                      filter_previously_rated=False)
+        assert len(recs) == n_items, len(recs)
+
     def test_recommend_all(self):
         # Recommend for ALL users
         clf = AlternatingLeastSquares(

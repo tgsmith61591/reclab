@@ -3,15 +3,14 @@
 from __future__ import absolute_import
 
 from .base import BaseMatrixFactorization
-from ..base import BaseRecommender
 from ..utils.decorators import inherit_function_doc
 from ..utils.validation import check_sparse_array, get_n_factors
 
-from sklearn.utils.validation import check_is_fitted, check_random_state, \
-    _is_arraylike
+from sklearn.utils.validation import check_is_fitted, check_random_state
 
 from implicit import als
 from implicit import cuda
+import itertools
 
 import numpy as np
 
@@ -160,43 +159,52 @@ class AlternatingLeastSquares(BaseMatrixFactorization):
     def recommend_for_user(self, userid, R, n=10, filter_previously_rated=True,
                            filter_items=None, return_scores=False,
                            recalculate_user=False):
-        # Make sure the model has been fitted!
+        # Slightly modified version of the implicit-native recommendation code.
+        # This permits us to skip returning the scores if they're not desired.
+
+        # Make sure the model has been fitted or we can't do this.
         check_is_fitted(self, "estimator_")
-
-        # Now validate the ratings matrix
-        R = check_sparse_array(R, dtype=np.float32, copy=False,
-                               force_all_finite=True)
-
         est = self.estimator_
         user = est._user_factor(userid, R, recalculate_user)
-        item_factors = np.array(est.item_factors)  # this is a copy
 
-        # The scores are just the product of the user array and the items
-        # factors
-        scores = item_factors.dot(user)  # np.ndarray, shape=(n_items,)
-        itms = np.arange(scores.shape[0])
-        keep_mask = np.ones(scores.shape[0], dtype=bool)
+        # calculate the top N items, removing the users own liked items
+        # from the results
+        if filter_items is None:
+            filter_items = set()
+        else:
+            # It might be a Numpy array or a list, so this should work either
+            # way... but it might be worth eventually running a specific
+            # check for array-like behavior
+            filter_items = set(filter_items)
 
-        # if we're filtering any items at all, do so now...
-        if filter_items is not None:
-            assert _is_arraylike(filter_items)
-            filter_items = np.asarray(filter_items)
-            keep_mask[filter_items] = False
-
-        # remove rated indices if needed
+        # If we intend to filter out the previously rated, let's go ahead and
+        # add them to the filter items set
         if filter_previously_rated:
-            rated_items = R[userid, :].indices
-            keep_mask[rated_items] = False
+            filter_items = filter_items.union(set(R[userid].indices))
 
-        # Now filter out where necessary...
-        scores = scores[keep_mask]
-        itms = itms[keep_mask]
+        # The scores are simply the dot product with the user vector
+        scores = est.item_factors.dot(user)
+        count = n + len(filter_items)
+        if count < len(scores):
+            ids = np.argpartition(scores, -count)[-count:]
+            best = sorted(zip(ids, scores[ids]), key=lambda x: -x[1])
+        else:
+            best = sorted(enumerate(scores), key=lambda x: -x[1])
 
-        # get the argsort order (negative for desc)
-        order = np.argsort(-scores)
-        scores = scores[order]
-        itms = itms[order]
-
+        # Several things:
+        # * Use itertools since it allows us to break early (short-circuit)
+        #   given the set check criteria
+        # * If we don't want the scores, we have to have a separate expression.
+        #   I hate having the duplicated code... better ideas?
         if return_scores:
-            return itms[:n], scores[:n]
-        return itms[:n]
+            recs, scores = zip(
+                *itertools.islice(
+                    (rec for rec in best
+                     if rec[0] not in filter_items), n))
+            return np.asarray(recs), np.asarray(scores)
+
+        # Otherwise no need to unpack expression prior to returning
+        return np.asarray(list(
+            itertools.islice(
+                (rec[0] for rec in best
+                 if rec[0] not in filter_items), n)))

@@ -60,6 +60,12 @@ class RecommenderTestClass(six.with_metaclass(ABCMeta)):
         mask = np.in1d([1], recs)  # type: np.ndarray
         assert not mask.any()
 
+        # Show we can also create recommendations with return_scores=True
+        recs, scores = clf.recommend_for_user(
+            0, test_data, n=5, return_scores=True)
+        assert len(recs) == len(scores) == 5, (recs, scores)
+        assert all(isinstance(arr, np.ndarray) for arr in (recs, scores))
+
     @staticmethod
     def _all_recommend_assertions(clf, test_data):
         n = test_data.shape[1]

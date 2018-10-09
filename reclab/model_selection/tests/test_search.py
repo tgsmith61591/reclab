@@ -94,7 +94,7 @@ class TestRandomizedSearch:
 
             # Verify...
             assert len(w)
-            assert any(["previously-rated" in str(warn.message)
+            assert any(["filter_previously_rated" in str(warn.message)
                         for warn in w])
 
     def test_random_val_fit(self):
