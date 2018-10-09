@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 from .base import BaseMatrixFactorization
+from ..base import _recommend_items_and_maybe_scores
 from ..utils.decorators import inherit_function_doc
 from ..utils.validation import check_sparse_array, get_n_factors
 
@@ -10,7 +11,6 @@ from sklearn.utils.validation import check_is_fitted, check_random_state
 
 from implicit import als
 from implicit import cuda
-import itertools
 
 import numpy as np
 
@@ -191,20 +191,6 @@ class AlternatingLeastSquares(BaseMatrixFactorization):
         else:
             best = sorted(enumerate(scores), key=lambda x: -x[1])
 
-        # Several things:
-        # * Use itertools since it allows us to break early (short-circuit)
-        #   given the set check criteria
-        # * If we don't want the scores, we have to have a separate expression.
-        #   I hate having the duplicated code... better ideas?
-        if return_scores:
-            recs, scores = zip(
-                *itertools.islice(
-                    (rec for rec in best
-                     if rec[0] not in filter_items), n))
-            return np.asarray(recs), np.asarray(scores)
-
-        # Otherwise no need to unpack expression prior to returning
-        return np.asarray(list(
-            itertools.islice(
-                (rec[0] for rec in best
-                 if rec[0] not in filter_items), n)))
+        return _recommend_items_and_maybe_scores(
+            best=best, filter_items=filter_items,
+            return_scores=return_scores, n=n)

@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 from .als import AlternatingLeastSquares
+from ..base import _recommend_items_and_maybe_scores
 from ..utils.decorators import inherit_function_doc
 from ..utils.validation import check_sparse_array, get_n_factors
 from ..utils.system import safe_mkdirs
@@ -34,28 +35,31 @@ __all__ = [
 def _get_filter_items(filter_previously_rated, previously_liked, filter_items):
     """Determine which items to filter out."""
     if filter_previously_rated:
+        previously_liked = set(previously_liked)
+
         if filter_items is not None:
-            previously_liked = np.append(previously_liked, filter_items)
-        return previously_liked  # type: np.ndarray
+            filter_items = set(filter_items)
+            previously_liked = previously_liked.union(filter_items)
+
+        return previously_liked  # type: set
     else:
         if filter_items is not None:
-            return np.asarray(filter_items)
+            return set(filter_items)
         else:
-            return np.array([], dtype=np.int)
+            return set()
 
 
-def _do_filter(items, scores, filter_out):
+def _do_filter(items, scores, filter_out, return_scores, n):
     """Filter items out of the recommendations.
 
     Given a list of items to filter out, remove them from recommended items
     and scores.
     """
-    # If the filter is empty, just return (don't mask)
-    if filter_out.shape[0] == 0:
-        return items, scores
-
-    remove_mask = np.in1d(items, filter_out)
-    return items[~remove_mask], scores[~remove_mask]
+    # Zip items/scores up
+    best = zip(items, scores)
+    return _recommend_items_and_maybe_scores(
+        best=best, return_scores=return_scores, n=n,
+        filter_items=filter_out)
 
 
 def _recommend_aals_annoy(est, userid, R, n, filter_items,
@@ -63,7 +67,6 @@ def _recommend_aals_annoy(est, userid, R, n, filter_items,
                           return_scores, recommend_function,
                           scaling_function, *args, **kwargs):
     """Produce recommendations for Annoy and NMS ALS algorithms"""
-
     user = est._user_factor(userid, R, recalculate_user)
 
     # Calculate the top N items, only removing the liked items from the
@@ -79,7 +82,7 @@ def _recommend_aals_annoy(est, userid, R, n, filter_items,
     if n is None:
         n = est.item_factors.shape[0]
 
-    # The count the produce
+    # The count to produce
     count = n + len(filter_out)
 
     # See [1] in docstring for why we do this...
@@ -96,10 +99,8 @@ def _recommend_aals_annoy(est, userid, R, n, filter_items,
         dist = scaling_function(dist, scaling)  # sig: f(dist, scaling)
 
     # if we're filtering anything out...
-    ids, dist = _do_filter(ids, dist, filter_out=filter_out)
-    if return_scores:
-        return ids[:n], dist[:n]
-    return ids[:n]
+    return _do_filter(ids, dist, filter_out=filter_out,
+                      return_scores=return_scores, n=n)
 
 
 class _BaseApproximateALS(six.with_metaclass(ABCMeta, AlternatingLeastSquares)):

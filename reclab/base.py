@@ -6,10 +6,62 @@ from sklearn.base import BaseEstimator
 from sklearn.externals import six
 
 from abc import ABCMeta, abstractmethod
+import itertools
+import numpy as np
 
 __all__ = [
     'BaseRecommender'
 ]
+
+
+def _recommend_items_and_maybe_scores(best, return_scores, filter_items, n):
+    """Internal method for recommender inference.
+
+    Returns recommendations for items as well as maybe their corresponding
+    scores if a user actually wants them.
+
+    Parameters
+    ----------
+    best : iterable
+        Iterable of tuples, where first index is the item and the second
+        is the score.
+
+    return_scores : bool
+        Whether to get the scores back.
+
+    filter_items : set
+        Items to filter out
+
+    n : int
+        The number to return
+
+    Examples
+    --------
+    If return_scores is False, we just get the filtered down item IDs back:
+
+    >>> best = [(4, 0.98), (2, 0.91), (3, 0.76), (0, 0.52)]
+    >>> _recommend_items_and_maybe_scores(best=best, return_scores=False,
+    ...     filter_items={2}, n=5)
+    array([4, 3, 0])
+
+    If return_scores is true, we get a tuple back:
+
+    >>> _recommend_items_and_maybe_scores(best=best, return_scores=True,
+    ...     filter_items={2}, n=5)
+    (array([4, 3, 0]), array([0.98, 0.76, 0.52]))
+    """
+    if return_scores:
+        recs, scores = zip(
+            *itertools.islice(
+                (rec for rec in best
+                 if rec[0] not in filter_items), n))
+        return np.asarray(recs), np.asarray(scores)
+
+    # Otherwise no need to unpack expression prior to returning
+    return np.asarray(list(
+        itertools.islice(
+            (rec[0] for rec in best
+             if rec[0] not in filter_items), n)))
 
 
 class BaseRecommender(six.with_metaclass(ABCMeta, BaseEstimator)):
