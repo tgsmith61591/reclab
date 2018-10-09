@@ -48,7 +48,8 @@ class _CVResults(namedtuple('_ScoreResults',
 
 def _compute_score(scorer, X, recommendations, **scoring_kwargs):
     # TODO: better way to do this???
-    rated_items = [X[i, :].indices for i in range(X.shape[0])]
+    # rated_items = [X[i, :].indices for i in range(X.shape[0])]
+    rated_items = np.split(X.indices, X.indptr)[1:-1]
 
     # produce the score and return it
     return scorer(predictions=recommendations, labels=rated_items,
@@ -68,7 +69,7 @@ def _fit_and_score(estimator, train, val, parameters, verbose, metric,
 
     recs = estimator.recommend_for_all_users(
         val, filter_previously_rated=False,
-        # return_scores=False,
+        return_scores=False,
         **recommend_kwargs)  # this is a generator
 
     score_start = time.time()
@@ -212,12 +213,14 @@ class _BaseRecommenderSearchCV(six.with_metaclass(ABCMeta, BaseRecommender)):
         score_kwargs = self.scoring_params
         if not rec_kwargs:
             rec_kwargs = dict()
-        filter_key = "filter_previously_rated"
-        if filter_key in rec_kwargs:
-            warnings.warn("Scoring requires that previously-rated items NOT "
-                          "be filtered from recommendations. Removing '%s' "
-                          "from 'recommend_params'" % filter_key)
-            rec_kwargs.pop(filter_key)
+
+        filter_keys = ("filter_previously_rated", "return_scores")
+        for filter_key in filter_keys:
+            if filter_key in rec_kwargs:
+                warnings.warn("%s cannot be set in grid search recommend "
+                              "kwargs, as the scoring behavior is very "
+                              "specific to the search process." % filter_key)
+                rec_kwargs.pop(filter_key)
 
         if not score_kwargs:
             score_kwargs = dict()

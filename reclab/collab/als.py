@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import
 
-from .base import BaseCollaborativeFiltering
+from .base import BaseMatrixFactorization
 from ..base import BaseRecommender
 from ..utils.decorators import inherit_function_doc
 from ..utils.validation import check_sparse_array, get_n_factors
@@ -20,11 +20,12 @@ __all__ = [
 ]
 
 
-class AlternatingLeastSquares(BaseCollaborativeFiltering):
+class AlternatingLeastSquares(BaseMatrixFactorization):
     r"""Alternating Least Squares
 
-    An implicit collaborative filtering algorithm based off the algorithms
-    described in [1] with performance optimizations described in [2].
+    An implicit collaborative filtering algorithm via matrix factorization
+    based off the algorithms described in [1] with performance optimizations
+    described in [2].
 
     Parameters
     ----------
@@ -42,7 +43,10 @@ class AlternatingLeastSquares(BaseCollaborativeFiltering):
         Use native extensions to speed up model fitting.
 
     use_cg : bool, optional (default=True)
-        Use a faster Conjugate Gradient solver to calculate factors
+        Use a faster Conjugate Gradient solver to calculate factors. This is
+        the method proposed in the paper by Takacs, et. al, "Applications
+        of the Conjugate Gradient Method for Implicit Feedback Collaborative
+        Filtering"
 
     use_gpu : bool, optional
         Fit on the GPU if available, default is to run on GPU only if
@@ -73,6 +77,27 @@ class AlternatingLeastSquares(BaseCollaborativeFiltering):
     non-zero items in the item_users matrix means that the user liked the item.
     The negatives are left unset in this sparse matrix: the library will assume
     that means Piu = 0 and Ciu = 1 for all these items.
+
+    Examples
+    --------
+    Fitting an ALS model:
+
+    >>> from reclab.datasets import load_lastfm
+    >>> from reclab.model_selection import train_test_split
+    >>> lastfm = load_lastfm(cache=True)
+    >>> train, test = train_test_split(u=lastfm.users, i=lastfm.products,
+    ...                                r=lastfm.ratings, random_state=42)
+    >>> model = AlternatingLeastSquares(random_state=1, show_progress=False)
+    >>> model.fit(train)
+    AlternatingLeastSquares(calculate_training_loss=False, factors=100,
+                iterations=15, num_threads=0, random_state=1,
+                regularization=0.01, show_progress=False, use_cg=True,
+                use_gpu=False, use_native=True)
+
+    Inference for a given user:
+
+    >>> model.recommend_for_user(0, test, n=5)  # doctest: +SKIP
+    array([ 149, 2504,  153,  221, 1064])
 
     References
     ----------
@@ -118,7 +143,7 @@ class AlternatingLeastSquares(BaseCollaborativeFiltering):
             estimator=est, n_users=n_users, n_items=n_items, factors=factors,
             dtype=dtype, random_state=random_state)
 
-    @inherit_function_doc(BaseCollaborativeFiltering)
+    @inherit_function_doc(BaseMatrixFactorization)
     def fit(self, X):
         # Now validate that X is a sparse array. Implicit forces float32, so
         # better to check it now...
@@ -131,7 +156,7 @@ class AlternatingLeastSquares(BaseCollaborativeFiltering):
 
         return self
 
-    @inherit_function_doc(BaseRecommender)
+    @inherit_function_doc(BaseMatrixFactorization)
     def recommend_for_user(self, userid, R, n=10, filter_previously_rated=True,
                            filter_items=None, return_scores=False,
                            recalculate_user=False):

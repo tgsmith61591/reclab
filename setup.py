@@ -117,14 +117,11 @@ if SETUPTOOLS_COMMANDS.intersection(sys.argv):
     extra_setuptools_args = dict(
         zip_safe=False,  # the package can run out of an .egg file
         include_package_data=True,
-        package_data=dict(DISTNAME=['*']),
+        package_data=dict(DISTNAME=['*',
+                                    'datasets/*',
+                                    'datasets/data/*']),
         distclass=BinaryDistribution
     )
-
-    # if we have to build and C is required, we need to add cython to
-    # the requirements
-    if C_required:
-        REQUIREMENTS.append("cython>=0.23")
 else:
     extra_setuptools_args = dict()
 
@@ -196,11 +193,15 @@ def do_setup():
                     license=LICENSE,
                     version=VERSION,
                     classifiers=[
-                        'Programming Language :: Python'
+                        'Intended Audience :: Science/Research',
+                        'Programming Language :: Python',
+                        'Topic :: Machine Learning',
+                        'Topic :: Software Development'
                     ],
                     python_requires='>=3.5',
                     platforms=["Windows", "Linux", "Unix", "Mac OS-X"],
                     cmdclass=cmdclass,
+                    keywords="recommender collaborative-filtering",
                     setup_requires=REQUIREMENTS,
                     install_requires=REQUIREMENTS,
                     **extra_setuptools_args)

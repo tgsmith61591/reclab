@@ -28,19 +28,17 @@ def configuration(parent_package='', top_path=None):
     # This is where submodules get added:
     config.add_subpackage('collab')
     config.add_subpackage('datasets')
-    config.add_subpackage('metrics')
     config.add_subpackage('model_selection')
     config.add_subpackage('utils')
 
     # This is where submodule test dirs are added:
     config.add_subpackage('collab/tests')
-    config.add_subpackage('datasets/tests')
-    config.add_subpackage('metrics/tests')
+    # config.add_subpackage('datasets/tests')  # Added in submodule
     config.add_subpackage('model_selection/tests')
     config.add_subpackage('utils/tests')
 
     # This is where the submodules that need cythonizing go:
-    # put them here...
+    config.add_subpackage('metrics')  # adds its own test submodule
 
     # And this is where we cythonize
     maybe_cythonize_extensions(top_path, config)

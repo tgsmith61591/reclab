@@ -84,6 +84,10 @@ Ranking metrics
 :mod:`reclab.model_selection`: Model selection tools for recommenders
 =====================================================================
 
+.. automodule:: reclab.model_selection
+    :no-members:
+    :no-inherited-members:
+
 Data splitting
 --------------
 

@@ -6,7 +6,7 @@
 Setup
 =====
 
-reclab depends on several Python packages:
+reclab depends on several Python packages, all of which are available on PyPi:
 
 * implicit>=0.3.6
 * nmslib
@@ -29,16 +29,21 @@ If you wish to setup the package for further development and testing, use the
 
     $ python setup.py develop
 
-|
+.. raw:: html
+
+   <br/>
 
 .. _testing:
 
 Testing
 -------
 
-The following are some guidelines for creating and running unit test cases.
+The following are some guidelines for creating and running unit test cases. Before
+you can run any unit tests, make sure you've build the package using ``python setup.py develop``.
 
-|
+.. raw:: html
+
+   <br/>
 
 Creating test cases
 ~~~~~~~~~~~~~~~~~~~
@@ -94,3 +99,9 @@ And with coverage, if you have the ``coverage`` and ``pytest-cov`` package:
 .. code-block:: bash
 
     $ pytest --cov reclab
+
+See :ref:`contrib` to learn more about contributing code to the package.
+
+.. raw:: html
+
+   <br/>

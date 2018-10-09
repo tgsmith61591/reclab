@@ -17,8 +17,8 @@ recommender systems in Python. However, not many are easy to use, and the litera
 and code availability of evaluating recommenders is few and far-between.
 
 Reclab's aim is to provide a centralized hub of easy-to-use, serializable recommender
-estimators as well as model selection tools such as data splitting, cross-validation and
-model selection.
+estimators for implicit ratings, as well as model selection tools such as data splitting,
+cross-validation and model selection.
 
 |
 

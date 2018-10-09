@@ -9,6 +9,8 @@ About reclab
 Reclab is a practical library for recommenders that wraps the Implicit package,
 providing various cross-validation & model selection tools
 
+|
+
 Why?
 ----
 
@@ -17,6 +19,11 @@ code availability is very limited. While you could follow 50 different Medium ar
 about building a bespoke recommender system, reclab was built to fill a perceived gap
 in open source recommender libraries.
 
+The goal of reclab is to provide a user-friendly library of out-of-the-box recommender
+solutions similar to scikit-learn.
+
+|
+
 What does it have to offer?
 ---------------------------
 
@@ -24,10 +31,14 @@ Though reclab internally wraps other implementations of recommender systems, it
 offers a lot more than just the algorithms themselves:
 
 * A consistent API (more than can be said for most libraries in the field)
+
 * Model selection utilities, such as:
+
   * :ref:`train_test`
   * Cross-validation
   * Grid searches
+
 * Scoring metrics & evaluation utilities
+
 * Model persistence
 

@@ -17,8 +17,12 @@ dist/
 .eggs/
 .cache/
 *.so*
+*.c
 *.pyd
 cythonize.dat
+
+# Cython annotations
+reclab/metrics/*.html
 
 # Test artifacts
 .pytest_cache/

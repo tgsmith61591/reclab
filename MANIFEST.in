@@ -1,2 +1,2 @@
 recursive-include reclab/ *
-recursive-include reclab/datasets/data *.csv.gz *.tsv.gz
+recursive-include reclab/datasets *.csv.gz *.tsv.gz

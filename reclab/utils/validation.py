@@ -149,11 +149,27 @@ def get_n_factors(n_dim, n_factors):
     Parameters
     ----------
     n_dim : int
-        The dimensions in the input space.
+        The dimensions in the input space. This is typically the number of
+        items or products in a system's catalog.
 
     n_factors : int or float
         The number of factors or the ratio of factors to compute. If a float,
-        must be > 0.
+        must be > 0. Note that this value *can* exceed the number of products
+        (``n_dim``).
+
+    Examples
+    --------
+    A float will return the ratio of the dimensions:
+    >>> get_n_factors(100, 0.25)
+    25
+
+    An integer will simply be returned on its own:
+    >>> get_n_factors(100, 20)
+    20
+
+    A non-rational float will round up to the nearest integer:
+    >>> get_n_factors(100, 0.333333)
+    34
     """
     if isinstance(n_factors, (int, float)):
         # If it's <= 0, raise

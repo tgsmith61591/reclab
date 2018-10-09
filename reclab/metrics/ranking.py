@@ -10,7 +10,7 @@ from __future__ import absolute_import
 
 import numpy as np
 
-import warnings
+from ._ranking_fast import _precision_at, _mean_average_precision, _ndcg_at
 
 __all__ = [
     'mean_average_precision',
@@ -21,26 +21,20 @@ __all__ = [
 
 def _require_positive_k(k):
     """Helper function to avoid copy/pasted code for validating K"""
+    if not isinstance(k, int):
+        raise TypeError("K must be an integer")
     if k <= 0:
         raise ValueError("ranking position k should be positive")
 
 
-def _mean_ranking_metric(predictions, labels, metric):
-    """Helper function for precision_at_k and mean_average_precision"""
-    # do not zip, as this will require an extra pass of O(N). Just assert
-    # equal length and index (compute in ONE pass of O(N)).
-    # if len(predictions) != len(labels):
-    #     raise ValueError("dim mismatch in predictions and labels!")
-    return np.mean([
-        metric(np.asarray(prd), np.asarray(labels[i]))
-        for i, prd in enumerate(predictions)  # lazy eval if generator
-    ])
+def _check_arrays(pred, lab):
+    # pred = np.asarray(pred)
+    # lab = np.asarray(lab)
 
-
-def _warn_for_empty_labels():
-    """Helper for missing ground truth sets"""
-    warnings.warn("Empty ground truth set! Check input data")
-    return 0.
+    # If not 2d, raise
+    # if any(arr.ndim != 2 for arr in (pred, lab)):
+    #     raise ValueError("predicted and label arrays must be 2-dimensional")
+    return pred, lab
 
 
 def precision_at(predictions, labels, k=10, assume_unique=True):
@@ -92,21 +86,8 @@ def precision_at(predictions, labels, k=10, assume_unique=True):
     """
     # validate K
     _require_positive_k(k)
-
-    def _inner_pk(pred, lab):
-        # need to compute the count of the number of values in the predictions
-        # that are present in the labels. We'll use numpy in1d for this (set
-        # intersection in O(1))
-        if lab.shape[0] > 0:
-            n = min(pred.shape[0], k)
-            msk = np.in1d(pred[:n], lab,
-                          assume_unique=assume_unique)  # type: np.ndarray
-            cnt = msk.sum()
-            return float(cnt) / k
-        else:
-            return _warn_for_empty_labels()
-
-    return _mean_ranking_metric(predictions, labels, _inner_pk)
+    pred, lab = _check_arrays(predictions, labels)
+    return _precision_at(pred, lab, k=k, assume_unique=assume_unique)
 
 
 def mean_average_precision(predictions, labels, assume_unique=True):
@@ -144,39 +125,8 @@ def mean_average_precision(predictions, labels, assume_unique=True):
     >>> mean_average_precision(preds, labels)
     0.35502645502645497
     """
-    def _inner_map(pred, lab):
-        if lab.shape[0]:
-            # compute the number of elements within the predictions that are
-            # present in the actual labels, and get the cumulative sum weighted
-            # by the index of the ranking
-            n = pred.shape[0]
-
-            # Scala code from Spark source:
-            # var i = 0
-            # var cnt = 0
-            # var precSum = 0.0
-            # val n = pred.length
-            # while (i < n) {
-            #     if (labSet.contains(pred(i))) {
-            #         cnt += 1
-            #         precSum += cnt.toDouble / (i + 1)
-            #     }
-            #     i += 1
-            # }
-            # precSum / labSet.size
-
-            arange = np.arange(n, dtype=np.float32) + 1.  # this is the denom
-            present = np.in1d(pred[:n], lab,
-                              assume_unique=assume_unique)  # type: np.ndarray
-
-            prec_sum = np.ones(present.sum()).cumsum()
-            denom = arange[present]
-            return (prec_sum / denom).sum() / lab.shape[0]
-
-        else:
-            return _warn_for_empty_labels()
-
-    return _mean_ranking_metric(predictions, labels, _inner_map)
+    pred, lab = _check_arrays(predictions, labels)
+    return _mean_average_precision(pred, lab, assume_unique=assume_unique)
 
 
 def ndcg_at(predictions, labels, k=10, assume_unique=True):
@@ -234,37 +184,5 @@ def ndcg_at(predictions, labels, k=10, assume_unique=True):
     """
     # validate K
     _require_positive_k(k)
-
-    def _inner_ndcg(pred, lab):
-        if lab.shape[0]:
-            # if we do NOT assume uniqueness, the set is a bit different here
-            if not assume_unique:
-                lab = np.unique(lab)
-
-            n_lab = lab.shape[0]
-            n_pred = pred.shape[0]
-            n = min(max(n_pred, n_lab), k)  # min(min(p, l), k)?
-
-            # similar to mean_avg_prcsn, we need an arange, but this time +2
-            # since python is zero-indexed, and the denom typically needs +1.
-            # Also need the log base2...
-            arange = np.arange(n, dtype=np.float32)  # length n
-
-            # since we are only interested in the arange up to n_pred, truncate
-            # if necessary
-            arange = arange[:n_pred]
-            denom = np.log2(arange + 2.)  # length n
-            gains = 1. / denom  # length n
-
-            # compute the gains where the prediction is present in the labels
-            dcg_mask = np.in1d(pred[:n], lab, assume_unique=assume_unique)
-            dcg = gains[dcg_mask].sum()
-
-            # the max DCG is sum of gains where the index < the label set size
-            max_dcg = gains[arange < n_lab].sum()
-            return dcg / max_dcg
-
-        else:
-            return _warn_for_empty_labels()
-
-    return _mean_ranking_metric(predictions, labels, _inner_ndcg)
+    pred, lab = _check_arrays(predictions, labels)
+    return _ndcg_at(pred, lab, k=k, assume_unique=assume_unique)

@@ -50,7 +50,8 @@ class TestRandomizedSearch:
 
     def test_grid_cv_fit_recommend(self):
         # Create the estimator
-        clf = NMSAlternatingLeastSquares(random_state=42, use_cg=True)
+        clf = NMSAlternatingLeastSquares(random_state=42, use_cg=True,
+                                         iterations=5, factors=15)
 
         # These are the hyper parameters we'll use. Don't use many for
         # the grid search since it will fit every combination...
@@ -69,21 +70,22 @@ class TestRandomizedSearch:
     def test_random_cv_fit_recommend(self):
         """Test a simple fit"""
         # Create the estimator
-        clf = AlternatingLeastSquares(random_state=42, use_cg=True)
+        clf = AlternatingLeastSquares(random_state=42, use_cg=True,
+                                      iterations=5, factors=15)
 
         # These are the hyper parameters we'll use
         hyper = {
-            'factors': randint(5, 10),
-            'regularization': uniform(0.01, 0.05),
-            'iterations': [5, 10, 15]
+            'factors': randint(5, 6),
+            'regularization': uniform(0.01, 0.05)
         }
 
         # Make our cv
-        cv = BootstrapCV(n_splits=3, random_state=1)
+        cv = BootstrapCV(n_splits=2, random_state=1)
         search = RandomizedRecommenderSearchCV(
             estimator=clf, cv=cv, random_state=42,
             param_distributions=hyper, n_jobs=1,
-            n_iter=2, recommend_params={"filter_previously_rated": True})
+            n_iter=2, recommend_params={"filter_previously_rated": True},
+            verbose=1, scoring='ndcg')
 
         # While we're fitting, assert we get a warning about the
         # "filter_previously_rated" key in the fit params...
@@ -98,20 +100,20 @@ class TestRandomizedSearch:
     def test_random_val_fit(self):
         """Test a simple fit"""
         # Create the estimator
-        clf = AlternatingLeastSquares(random_state=42, use_cg=True)
+        clf = AlternatingLeastSquares(random_state=42, use_cg=True,
+                                      iterations=5, factors=10)
 
         # These are the hyper parameters we'll use
         hyper = {
-            'factors': randint(5, 10),
-            'regularization': uniform(0.01, 0.05),
-            'iterations': [5, 10]
+            'factors': randint(5, 6),
+            'regularization': uniform(0.01, 0.05)
         }
 
         # Create search with no CV and use validation set instead
         search = RandomizedRecommenderSearchCV(
             estimator=clf, cv=None, random_state=42,
             param_distributions=hyper, n_jobs=1,
-            n_iter=2)
+            n_iter=2, verbose=1)
 
         self._search_fit_assert(search, val=test)
 

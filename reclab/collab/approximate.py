@@ -249,7 +249,10 @@ class AnnoyAlternatingLeastSquares(_BaseApproximateALS):
         Use native extensions to speed up model fitting.
 
     use_cg : bool, optional (default=True)
-        Use a faster Conjugate Gradient solver to calculate factors
+        Use a faster Conjugate Gradient solver to calculate factors. This is
+        the method proposed in the paper by Takacs, et. al, "Applications
+        of the Conjugate Gradient Method for Implicit Feedback Collaborative
+        Filtering"
 
     use_gpu : bool, optional
         Fit on the GPU if available, default is to run on GPU only if
@@ -289,6 +292,30 @@ class AnnoyAlternatingLeastSquares(_BaseApproximateALS):
 
     show_progress : bool, optional (default=True)
         Whether to show a progress bar while training.
+
+    Examples
+    --------
+    Fitting an Annoy ALS model:
+
+    >>> from reclab.datasets import load_lastfm
+    >>> from reclab.model_selection import train_test_split
+    >>> lastfm = load_lastfm(cache=True)
+    >>> train, test = train_test_split(u=lastfm.users, i=lastfm.products,
+    ...                                r=lastfm.ratings, random_state=42)
+    >>> model = AnnoyAlternatingLeastSquares(
+    ...             random_state=1, show_progress=False)
+    >>> model.fit(train)
+    AnnoyAlternatingLeastSquares(approximate_recommend=True,
+                   approximate_similar_items=True,
+                   calculate_training_loss=False, factors=100, iterations=15,
+                   n_trees=50, num_threads=0, random_state=1,
+                   regularization=0.01, search_k=-1, show_progress=False,
+                   use_cg=True, use_gpu=False, use_native=True)
+
+    Inference for a given user:
+
+    >>> model.recommend_for_user(0, test, n=5)  # doctest: +SKIP
+    array([ 149, 2504,  153,  174,  221])
 
     References
     ----------
@@ -428,7 +455,10 @@ class NMSAlternatingLeastSquares(_BaseApproximateALS):
         Use native extensions to speed up model fitting.
 
     use_cg : bool, optional (default=True)
-        Use a faster Conjugate Gradient solver to calculate factors
+        Use a faster Conjugate Gradient solver to calculate factors. This is
+        the method proposed in the paper by Takacs, et. al, "Applications
+        of the Conjugate Gradient Method for Implicit Feedback Collaborative
+        Filtering"
 
     use_gpu : bool, optional
         Fit on the GPU if available, default is to run on GPU only if
@@ -470,6 +500,31 @@ class NMSAlternatingLeastSquares(_BaseApproximateALS):
 
     show_progress : bool, optional (default=True)
         Whether to show a progress bar while training.
+
+    Examples
+    --------
+    Fitting an nmslib-index ALS model:
+
+    >>> from reclab.datasets import load_lastfm
+    >>> from reclab.model_selection import train_test_split
+    >>> lastfm = load_lastfm(cache=True)
+    >>> train, test = train_test_split(u=lastfm.users, i=lastfm.products,
+    ...                                r=lastfm.ratings, random_state=42)
+    >>> model = NMSAlternatingLeastSquares(
+    ...             random_state=1, show_progress=False)
+    >>> model.fit(train)
+    NMSAlternatingLeastSquares(approximate_recommend=True,
+                  approximate_similar_items=True,
+                  calculate_training_loss=False, factors=100,
+                  index_params=None, iterations=15, method='hnsw',
+                  num_threads=0, query_params=None, random_state=1,
+                  regularization=0.01, show_progress=False, use_cg=True,
+                  use_gpu=False, use_native=True)
+
+    Inference for a given user:
+
+    >>> model.recommend_for_user(0, test, n=5)  # doctest: +SKIP
+    array([ 149,  153,  221, 1064,  174])
 
     References
     ----------
