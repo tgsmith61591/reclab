@@ -60,10 +60,10 @@ class TestRandomizedSearch:
         }
 
         # Make our cv
-        cv = BootstrapCV(n_splits=3, random_state=1)
+        cv = BootstrapCV(n_splits=2, random_state=1)
         search = RecommenderGridSearchCV(
             estimator=clf, cv=cv, param_grid=hyper,
-            n_jobs=1)
+            n_jobs=1, verbose=1)
 
         self._search_fit_assert(search)
 
