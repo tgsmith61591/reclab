@@ -8,8 +8,6 @@
 
 from __future__ import absolute_import
 
-import numpy as np
-
 from ._ranking_fast import _precision_at, _mean_average_precision, _ndcg_at
 
 __all__ = [
@@ -28,16 +26,17 @@ def _require_positive_k(k):
 
 
 def _check_arrays(pred, lab):
+    # TODO: Can't do this, but should validate in some other way?
     # pred = np.asarray(pred)
     # lab = np.asarray(lab)
-
     # If not 2d, raise
     # if any(arr.ndim != 2 for arr in (pred, lab)):
     #     raise ValueError("predicted and label arrays must be 2-dimensional")
+
     return pred, lab
 
 
-def precision_at(predictions, labels, k=10, assume_unique=True):
+def precision_at(predictions, labels, k=10):
     r"""Compute the precision at K.
 
     Compute the average precision of all the queries, truncated at
@@ -64,11 +63,6 @@ def precision_at(predictions, labels, k=10, assume_unique=True):
     k : int, optional (default=10)
         The rank at which to measure the precision.
 
-    assume_unique : bool, optional (default=True)
-        Whether to assume the items in the labels and predictions are each
-        unique. That is, the same item is not predicted multiple times or
-        rated multiple times.
-
     Examples
     --------
     >>> # predictions for 3 users
@@ -87,10 +81,10 @@ def precision_at(predictions, labels, k=10, assume_unique=True):
     # validate K
     _require_positive_k(k)
     pred, lab = _check_arrays(predictions, labels)
-    return _precision_at(pred, lab, k=k, assume_unique=assume_unique)
+    return _precision_at(pred, lab, k=k)
 
 
-def mean_average_precision(predictions, labels, assume_unique=True):
+def mean_average_precision(predictions, labels):
     r"""Compute the mean average precision on predictions and labels.
 
     Returns the mean average precision (MAP) of all the queries. If a query
@@ -109,11 +103,6 @@ def mean_average_precision(predictions, labels, assume_unique=True):
     labels : array-like, shape=(n_ratings,)
         The labels (positively-rated items).
 
-    assume_unique : bool, optional (default=True)
-        Whether to assume the items in the labels and predictions are each
-        unique. That is, the same item is not predicted multiple times or
-        rated multiple times.
-
     Examples
     --------
     >>> # predictions for 3 users
@@ -126,10 +115,10 @@ def mean_average_precision(predictions, labels, assume_unique=True):
     0.35502645502645497
     """
     pred, lab = _check_arrays(predictions, labels)
-    return _mean_average_precision(pred, lab, assume_unique=assume_unique)
+    return _mean_average_precision(pred, lab)
 
 
-def ndcg_at(predictions, labels, k=10, assume_unique=True):
+def ndcg_at(predictions, labels, k=10):
     """Compute the normalized discounted cumulative gain at K.
 
     Compute the average NDCG value of all the queries, truncated at ranking
@@ -154,11 +143,6 @@ def ndcg_at(predictions, labels, k=10, assume_unique=True):
 
     k : int, optional (default=10)
         The rank at which to measure the NDCG.
-
-    assume_unique : bool, optional (default=True)
-        Whether to assume the items in the labels and predictions are each
-        unique. That is, the same item is not predicted multiple times or
-        rated multiple times.
 
     Examples
     --------
@@ -185,4 +169,4 @@ def ndcg_at(predictions, labels, k=10, assume_unique=True):
     # validate K
     _require_positive_k(k)
     pred, lab = _check_arrays(predictions, labels)
-    return _ndcg_at(pred, lab, k=k, assume_unique=assume_unique)
+    return _ndcg_at(pred, lab, k=k)

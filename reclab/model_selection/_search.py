@@ -47,8 +47,6 @@ class _CVResults(namedtuple('_ScoreResults',
 
 
 def _compute_score(scorer, X, recommendations, **scoring_kwargs):
-    # TODO: better way to do this???
-    # rated_items = [X[i, :].indices for i in range(X.shape[0])]
     rated_items = np.split(X.indices, X.indptr)[1:-1]
 
     # produce the score and return it

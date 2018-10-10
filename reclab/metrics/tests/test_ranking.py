@@ -3,9 +3,10 @@
 from __future__ import absolute_import
 
 from reclab.metrics.ranking import mean_average_precision, ndcg_at, \
-    precision_at
+    precision_at, _require_positive_k
 from numpy.testing import assert_almost_equal
 import warnings
+import pytest
 
 preds = [[1, 6, 2, 7, 8, 3, 9, 10, 4, 5],
          [4, 1, 5, 6, 2, 7, 3, 8, 9, 10],
@@ -23,6 +24,18 @@ def assert_warning_caught(func):
             func(*args, **kwargs)
             assert len(w)  # assert there's something there...
     return test_wrapper
+
+
+def test_require_k():
+    with pytest.raises(ValueError):
+        _require_positive_k(-1)
+
+    with pytest.raises(TypeError):
+        _require_positive_k(1.)
+
+    # These work
+    _require_positive_k(1)
+    _require_positive_k(2)
 
 
 @assert_warning_caught

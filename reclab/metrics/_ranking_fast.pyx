@@ -44,11 +44,9 @@ np.import_array()
 
 # Classes for metrics
 cdef class Metric:
-    cdef bool assume_unique
     cdef INTP k
 
-    def __cinit__(self, bool assume_unique, INTP k):
-        self.assume_unique = assume_unique
+    def __cinit__(self, INTP k):
         self.k = k
 
     cdef float compute(self, long[::1] predicted, long[::1] labels):
@@ -66,21 +64,20 @@ cdef class PrecisionAtK(Metric):
         # need to compute the count of the number of values in the predictions
         # that are present in the labels. We'll use numpy in1d for this (set
         # intersection in O(1))
-        cdef INTP n_labels = labels.shape[0]
-        cdef INTP n_pred = predicted.shape[0]
-        cdef INTP n, cnt
-        cdef INTP k = self.k
-        cdef bool assume_unique = self.assume_unique
-
-        # This is the mask we'll sum up
-        # cdef np.ndarray[np.bool, ndim=1, mode='c'] msk
-        cdef np.ndarray msk
+        cdef INTP n_labels = labels.shape[0], n_pred = predicted.shape[0]
+        cdef INTP i = 0, n, k = self.k, pred
+        cdef float cnt = 0.
+        cdef set labset = set(labels)
+        cdef INTP n_labset = len(labset)
 
         if n_labels > 0:
             n = min(n_pred, k)
-            msk = np.in1d(predicted[:n], labels, assume_unique=assume_unique)
-            cnt = np.sum(msk)
-            return float(cnt) / k
+            for i in range(n):
+                pred = predicted[i]
+                if pred in labset:
+                    cnt += 1.
+
+            return cnt / k
         else:
             return self._warn_for_empty_labels()
 
@@ -90,16 +87,16 @@ cdef class MeanAveragePrecision(Metric):
 
         cdef INTP n_labels = labels.shape[0]
         cdef INTP present_sum
-        cdef bool assume_unique = self.assume_unique
 
         # compute the number of elements within the predictions that are
         # present in the actual labels, and get the cumulative sum weighted
         # by the index of the ranking
-        cdef INTP n = predicted.shape[0]
-        cdef np.ndarray[float, ndim=1, mode='c'] arange, denom
-        cdef np.ndarray[double, ndim=1, mode='c'] ones, prec_sum
-        # cdef np.ndarray[np.bool, ndim=1, mode='c'] present
-        cdef np.ndarray present
+        cdef INTP pred, i = 0, n = predicted.shape[0]
+
+        # Use a set rather than the numpy in1d call
+        cdef set labset = set(labels)
+        cdef INTP n_labset = len(labset)
+        cdef float prec_sum, cnt = 0.
 
         if n_labels > 0:
             # Scala code from Spark source:
@@ -116,16 +113,13 @@ cdef class MeanAveragePrecision(Metric):
             # }
             # precSum / labSet.size
 
-            arange = np.arange(1, n + 1, dtype=np.float32)  # this is the denom
-            present = np.in1d(predicted[:n], labels,
-                              assume_unique=assume_unique)
+            for i in range(n):
+                pred = predicted[i]
+                if pred in labset:
+                    cnt += 1.
+                    prec_sum += cnt / (i + 1)
 
-            present_sum = np.sum(present)
-            ones = np.ones(present_sum, dtype=float)
-            prec_sum = ones.cumsum()
-            denom = arange[present]
-
-            return (prec_sum / denom).sum() / float(n_labels)
+            return prec_sum / n_labset
 
         else:
             return self._warn_for_empty_labels()
@@ -133,35 +127,23 @@ cdef class MeanAveragePrecision(Metric):
 
 cdef class NDCG(Metric):
     cdef float compute(self, long[::1] predicted, long[::1] labels):
-        cdef INTP n_labels = labels.shape[0]
-        cdef INTP n_preds = predicted.shape[0]
-        cdef INTP n, i
-        cdef INTP k = self.k
-        cdef bool assume_unique = self.assume_unique
+        cdef INTP n_labels = labels.shape[0], n_preds = predicted.shape[0]
+        cdef INTP n, i = 0, k = self.k, pred
 
-        cdef np.ndarray[float, ndim=1, mode='c'] arange
-        cdef np.ndarray[float, ndim=1, mode='c'] denom, gains
-        cdef np.ndarray[long, ndim=1, mode='c'] dcg_mask
+        cdef set labset = set(labels)
+        cdef INTP labset_size = len(labset)
         cdef double dcg = 0., max_dcg = 0., d, g
 
-        if n_labels:
-            # if we do NOT assume uniqueness, the set is a bit different here
-            if not assume_unique:
-                labels = np.unique(labels)
-                n_labels = labels.shape[0]
-
+        if n_labels > 0:
             # compute the gains where the prediction is present in the labels
-            n = min(max(n_preds, n_labels), k)  # min(min(p, l), k)?
-            dcg_mask = np.in1d(predicted[:n], labels,
-                               assume_unique=assume_unique).astype(int)
-
+            n = min(max(n_preds, labset_size), k)  # min(min(p, l), k)?
             for i in range(n):
-                d = log2(float(i + 2.))
-                g = 1. / d
+                pred = predicted[i]
+                g = 1. / log2(float(i + 2.))
 
-                if dcg_mask[i] == 1:
+                if i < n_preds and pred in labset:
                     dcg += g
-                if i < n_labels:
+                if i < labset_size:
                     max_dcg += g
 
             return dcg / max_dcg
@@ -195,14 +177,14 @@ cdef _mean_ranking_metric(predictions, labels, Metric metric):
 
 def _precision_at(predictions, labels, k=10, bool assume_unique=True):
     return _mean_ranking_metric(
-        predictions, labels, PrecisionAtK(assume_unique, k))
+        predictions, labels, PrecisionAtK(k))
 
 
 def _mean_average_precision(predictions, labels, bool assume_unique=True):
     return _mean_ranking_metric(predictions, labels,
-                                MeanAveragePrecision(assume_unique, -1))
+                                MeanAveragePrecision(-1))
 
 
 def _ndcg_at(predictions, labels, INTP k=10, bool assume_unique=True):
     return _mean_ranking_metric(predictions, labels,
-                                NDCG(assume_unique, k))
+                                NDCG(k))
