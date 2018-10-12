@@ -36,7 +36,8 @@ class BaseCollaborativeFiltering(six.with_metaclass(ABCMeta, BaseRecommender)):
             ranking events (i.e., number of listens, etc.)
         """
 
-    def _initialize_factors(self, estimator, n_users, n_items, factors,
+    @staticmethod
+    def _initialize_factors(estimator, n_users, n_items, factors,
                             dtype, random_state):
         """Initialize the factor matrices.
 

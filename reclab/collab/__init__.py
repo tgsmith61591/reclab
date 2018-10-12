@@ -8,5 +8,6 @@ nearest neighbor methods.
 from .als import *
 from .approximate import *
 from .base import *
+from .neighbors import *
 
 __all__ = [s for s in dir() if not s.startswith("_")]
