@@ -12,6 +12,39 @@ function raw specifications may not be enough to give full guidelines on their
 uses.
 
 
+.. _base_ref:
+
+:mod:`reclab.base`: Base classes and functions for reclab
+=========================================================
+
+.. automodule:: reclab.base
+    :no-members:
+    :no-inherited-members:
+
+Base recommender class
+----------------------
+
+.. currentmodule:: reclab
+
+.. autosummary::
+    :toctree: generated/
+    :template: class.rst
+
+    base.BaseRecommender
+
+Common-use functions
+--------------------
+
+.. currentmodule:: reclab
+
+.. autosummary::
+    :toctree: generated/
+    :template: function.rst
+
+    base.clone
+    base._recommend_items_and_maybe_scores
+
+
 .. _collab_ref:
 
 :mod:`reclab.collab`: Collaborative filtering in reclab

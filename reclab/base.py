@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+Base class for recommenders and other functions used package-wide.
+"""
 
 from __future__ import absolute_import
 
