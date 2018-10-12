@@ -2,7 +2,7 @@
 # Auto-generated with bear v0.1.9, (c) Taylor G Smith
 
 
-__version__ = '0.0.1'
+__version__ = '0.0.5'
 
 try:
     # This variable is injected in the __builtins__ by the build

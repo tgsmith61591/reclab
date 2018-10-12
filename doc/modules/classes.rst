@@ -32,6 +32,7 @@ Collaborative filtering estimators
 
     collab.AlternatingLeastSquares
     collab.AnnoyAlternatingLeastSquares
+    collab.ItemItemRecommender
     collab.NMSAlternatingLeastSquares
 
 

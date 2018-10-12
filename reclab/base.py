@@ -2,14 +2,16 @@
 
 from __future__ import absolute_import
 
-from sklearn.base import BaseEstimator
+from sklearn import base
 from sklearn.externals import six
 
 from abc import ABCMeta, abstractmethod
 import itertools
 import numpy as np
+import uuid
 
 __all__ = [
+    'clone',
     'BaseRecommender'
 ]
 
@@ -64,7 +66,35 @@ def _recommend_items_and_maybe_scores(best, return_scores, filter_items, n):
              if rec[0] not in filter_items), n)))
 
 
-class BaseRecommender(six.with_metaclass(ABCMeta, BaseEstimator)):
+def clone(estimator, safe=True, clone_model_key=False):
+    """Constructs a new estimator with the same parameters.
+
+    Clone does a deep copy of the model in an estimator
+    without actually copying attached data. It yields a new estimator
+    with the same parameters that has not been fit on any data.
+
+    This is a wrapper of the scikit-learn ``clone`` method, but will
+    also clone the ``_model_key`` attribute of the base recommenders.
+
+    Parameters
+    ----------
+    estimator : BaseRecommender
+        The estimator or group of estimators to be cloned
+
+    safe : bool, optional (default=True)
+        If safe is false, clone will fall back to a deep copy on objects
+        that are not estimators.
+
+    clone_model_key : bool, optional (default=True)
+        Whether to clone the same model key.
+    """
+    est = base.clone(estimator, safe=safe)
+    if hasattr(estimator, "_model_key") and clone_model_key:
+        est._model_key = estimator._model_key
+    return est
+
+
+class BaseRecommender(six.with_metaclass(ABCMeta, base.BaseEstimator)):
     """Base class for all recommenders.
 
     All recommenders must implement a ``fit`` method as well as the following
@@ -83,6 +113,10 @@ class BaseRecommender(six.with_metaclass(ABCMeta, BaseEstimator)):
     subclasses of BaseRecommender should. That means some subclasses will have
     ``__getstate__`` and ``__setstate__`` hacks.
     """
+    def __init__(self):
+        # Assign a model key. This is used to load the model index from disk
+        self._model_key = "%s-%s" % (self.__class__.__name__,
+                                     str(uuid.uuid4()))
 
     @abstractmethod
     def fit(self, X):

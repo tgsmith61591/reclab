@@ -111,6 +111,9 @@ class AlternatingLeastSquares(BaseMatrixFactorization):
                  use_gpu=cuda.HAS_CUDA, calculate_training_loss=False,
                  num_threads=0, show_progress=True, random_state=None):
 
+        # Call to super constructor
+        super(AlternatingLeastSquares, self).__init__()
+
         self.factors = factors
         self.regularization = regularization
         self.use_native = use_native

@@ -56,5 +56,4 @@ class TestNeighborsAlgos(RecommenderTestClass):
     @pytest.mark.parametrize("metric", metrics)
     def test_serialize(self, metric):
         clf = ItemItemRecommender(metric=metric, k=5)
-        # TODO:
-        # self._serialization_assertions(clf, train, test)
+        self._serialization_assertions(clf, train, test)

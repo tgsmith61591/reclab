@@ -3,14 +3,21 @@
 from __future__ import absolute_import
 
 from .base import BaseCollaborativeFiltering
-from ..base import _recommend_items_and_maybe_scores
+from ..base import _recommend_items_and_maybe_scores, clone
 from ..utils.decorators import inherit_function_doc
+from ..utils.system import safe_mkdirs
 from ..utils.validation import check_sparse_array, check_permitted_value
+from .._config import RECLAB_CACHE
 
+from os.path import join, exists
+from scipy import sparse
 import numpy as np
-from sklearn.utils.validation import check_is_fitted
+import shutil
+import copy
 
+from sklearn.utils.validation import check_is_fitted
 from implicit import nearest_neighbours as nn
+from implicit._nearest_neighbours import NearestNeighboursScorer
 
 __all__ = [
     'ItemItemRecommender'
@@ -68,6 +75,25 @@ class ItemItemRecommender(BaseCollaborativeFiltering):
     show_progress : bool, optional (default=True)
         Whether to show a progress bar while training.
 
+    Examples
+    --------
+    Fitting a item-item recommender with cosine similarity:
+
+    >>> from reclab.datasets import load_lastfm
+    >>> from reclab.model_selection import train_test_split
+    >>> lastfm = load_lastfm(cache=True)
+    >>> train, test = train_test_split(u=lastfm.users, i=lastfm.products,
+    ...                                r=lastfm.ratings, random_state=42)
+    >>> model = ItemItemRecommender(k=5, metric='cosine', show_progress=False)
+    >>> model.fit(train)  # doctest: +NORMALIZE_WHITESPACE
+    ItemItemRecommender(b=0.75, k=5, k1=1.2, metric='cosine',
+                  show_progress=False)
+
+    Inference for a given user:
+
+    >>> model.recommend_for_user(0, test, n=5)  # doctest: +SKIP
+    array([12673,  4229,  8762,  2536, 14711], dtype=int32)
+
     References
     ----------
     .. [1] https://en.wikipedia.org/wiki/Okapi_BM25
@@ -75,6 +101,9 @@ class ItemItemRecommender(BaseCollaborativeFiltering):
     """
     def __init__(self, metric='kernel', k=20, k1=1.2, b=0.75,
                  show_progress=True):
+
+        # Call to super constructor
+        super(ItemItemRecommender, self).__init__()
 
         self.metric = metric
         self.k = k
@@ -140,3 +169,73 @@ class ItemItemRecommender(BaseCollaborativeFiltering):
         filter_out = set() if not filter_previously_rated else rated
         return _recommend_items_and_maybe_scores(
             best, return_scores=return_scores, filter_items=filter_out, n=n)
+
+    def __getstate__(self):
+        """Pickle sub-hook"""
+        # If it's not fit, we just return this dictionary
+        if not hasattr(self, "estimator_"):
+            return self.__dict__
+
+        # Otherwise we have to separately save the similarity matrix
+        est = self.estimator_
+
+        # Remove the estimator object to clone
+        sim = est.similarity
+        scorer = est.scorer
+        est.similarity = None
+        est.scorer = None
+
+        # Since the signatures of the __init__ functions should play nice with
+        # sklearn, and since we've removed the un-picklables, we should be able
+        # to copy this now.
+        obj_dict = clone(self, clone_model_key=True).__dict__
+
+        # Make sure to bind the estimator to the object dictionary so it gets
+        # pickled out.
+        obj_dict['estimator_'] = copy.deepcopy(est)
+
+        # Re-bind the scorer and re-attach the similarity to the estimator
+        # for calling the save function later
+        est.similarity = sim
+        est.scorer = scorer
+
+        # If the model key already exists in the cache, remove it now
+        model_index_dir = join(RECLAB_CACHE, self._model_key)
+        if exists(model_index_dir):
+            shutil.rmtree(model_index_dir)
+        safe_mkdirs(model_index_dir)
+
+        # Save the indices to Disk. wrap this in try/finally so if something
+        # breaks halfway through we don't blow up the disk space over time...
+        try:
+            loc = join(model_index_dir, "similarity")
+            np.savez(loc, data=sim.data, indptr=sim.indptr,
+                     indices=sim.indices, shape=sim.shape)
+
+        # If we break down, remove the model index directory so as not to
+        # blow up the filesystem!
+        except Exception:
+            shutil.rmtree(model_index_dir)
+            raise
+
+        return obj_dict
+
+    def __setstate__(self, state):
+        """Unpickle sub-hook"""
+        self.__dict__ = state
+
+        # If the estimator_ attribute exists, we know we need to re-bind the
+        # similarity attribute, otherwise the estimator was not previously fit.
+        if hasattr(self, "estimator_"):
+            est = self.estimator_
+            # Numpy forces .npz suffix
+            location = join(RECLAB_CACHE, self._model_key, "similarity.npz")
+
+            # Load the similarity matrix
+            arr = np.load(location)
+            est.similarity = sparse.csr_matrix(
+                (arr['data'], arr['indices'], arr['indptr']),
+                shape=arr['shape'])
+            est.scorer = NearestNeighboursScorer(est.similarity)
+
+        return self

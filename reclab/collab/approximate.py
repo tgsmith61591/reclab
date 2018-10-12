@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 
 from .als import AlternatingLeastSquares
-from ..base import _recommend_items_and_maybe_scores
+from ..base import _recommend_items_and_maybe_scores, clone
 from ..utils.decorators import inherit_function_doc
 from ..utils.validation import check_sparse_array, get_n_factors
 from ..utils.system import safe_mkdirs
@@ -12,7 +12,6 @@ from .._config import RECLAB_CACHE
 import numpy as np
 from sklearn.utils.validation import check_random_state, check_is_fitted
 from sklearn.externals import six
-from sklearn.base import clone
 from abc import ABCMeta, abstractmethod
 
 from implicit import approximate_als as aals
@@ -20,10 +19,9 @@ from implicit import cuda
 
 from annoy import AnnoyIndex
 import nmslib
+import copy
 
 from os.path import join, exists
-import uuid
-import copy
 import shutil
 
 __all__ = [
@@ -109,10 +107,6 @@ class _BaseApproximateALS(six.with_metaclass(ABCMeta, AlternatingLeastSquares)):
         # Pass the args for the constructor up
         super(_BaseApproximateALS, self).__init__(*args, **kwargs)
 
-        # Assign a model key. This is used to load the model index from disk
-        self._model_key = "%s-%s" % (self.__class__.__name__,
-                                     str(uuid.uuid4()))
-
     @inherit_function_doc(AlternatingLeastSquares)
     def fit(self, X):
         # Validate that X is a sparse array. Implicit forces float32, so
@@ -150,15 +144,11 @@ class _BaseApproximateALS(six.with_metaclass(ABCMeta, AlternatingLeastSquares)):
         # Since the signatures of the __init__ functions should play nice with
         # sklearn, and since we've removed the un-picklables, we should be able
         # to copy this now.
-        obj_dict = clone(self).__dict__
+        obj_dict = clone(self, clone_model_key=True).__dict__
 
         # Make sure to bind the estimator to the object dictionary so it gets
         # pickled out.
         obj_dict['estimator_'] = copy.deepcopy(est)
-
-        # The model key will get mangled, too, since the constructor gets
-        # called again. Need to hang onto the proper one...
-        obj_dict['_model_key'] = self._model_key
 
         # If the model key already exists in the cache, remove it now
         model_index_dir = join(RECLAB_CACHE, self._model_key)
@@ -292,7 +282,7 @@ class AnnoyAlternatingLeastSquares(_BaseApproximateALS):
         factor matrices.
 
     show_progress : bool, optional (default=True)
-        Whether to show a progress bar while training.
+        Whether to show a progress bar while training and indexing.
 
     Examples
     --------
@@ -500,7 +490,7 @@ class NMSAlternatingLeastSquares(_BaseApproximateALS):
         factor matrices.
 
     show_progress : bool, optional (default=True)
-        Whether to show a progress bar while training.
+        Whether to show a progress bar while training and indexing.
 
     Examples
     --------
