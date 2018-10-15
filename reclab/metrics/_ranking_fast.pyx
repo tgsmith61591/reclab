@@ -45,9 +45,11 @@ np.import_array()
 # Classes for metrics
 cdef class Metric:
     cdef INTP k
+    cdef INTP encountered_warning
 
     def __cinit__(self, INTP k):
         self.k = k
+        self.encountered_warning = 0
 
     cdef float compute(self, long[::1] predicted, long[::1] labels):
         """Sub-classes should extend this!!!"""
@@ -55,7 +57,12 @@ cdef class Metric:
 
     cdef float _warn_for_empty_labels(self):
         """Helper for missing ground truth sets"""
-        warnings.warn("Empty ground truth set! Check input data")
+        # Start warning at the end, otherwise we almost always get a warning
+        # since a user might have been masked out by a CV split... always
+        # warning also creates a lot more Python interaction, which slows down
+        # the Cython.
+        # warnings.warn("Empty ground truth set! Check input data")
+        self.encountered_warning = 1
         return 0.
 
 
@@ -172,6 +179,10 @@ cdef _mean_ranking_metric(predictions, labels, Metric metric):
         # Increment the index for labels
         i += 1
 
+    # If the sum is 0, it means we might have had empty ground truth sets
+    # somewhere. Only warn under both conditions, though.
+    if sm == 0 and metric.encountered_warning == 1:
+        warnings.warn("Empty ground truth set! Check input data")
     return sm / float(i)
 
 

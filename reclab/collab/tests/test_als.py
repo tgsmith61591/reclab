@@ -15,9 +15,8 @@ os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 
 # Load data and split into train/test
-lastfm = load_lastfm(cache=True)
-train, test = train_test_split(u=lastfm.users, i=lastfm.products,
-                               r=lastfm.ratings, random_state=42)
+lastfm = load_lastfm(cache=True, as_sparse=True)
+train, test = train_test_split(lastfm.ratings, random_state=42)
 
 
 class TestAlternatingLeastSquares(RecommenderTestClass):

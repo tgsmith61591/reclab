@@ -66,7 +66,7 @@ def _fit_and_score(estimator, train, val, parameters, verbose, metric,
     fit_time = time.time() - start
 
     recs = estimator.recommend_for_all_users(
-        val, filter_previously_rated=False,
+        val, filter_previously_rated=False,  # to eval test vs. new preds
         return_scores=False,
         **recommend_kwargs)  # this is a generator
 
@@ -130,6 +130,10 @@ class _BaseRecommenderSearchCV(six.with_metaclass(ABCMeta, BaseRecommender)):
 
     def __init__(self, estimator, scoring, cv, recommend_params,
                  scoring_params, n_jobs, verbose):
+
+        # Call to super to get the model key for the search, though this is
+        # pretty unnecessary...
+        super(_BaseRecommenderSearchCV, self).__init__()
 
         self.estimator = estimator
         self.scoring = scoring
@@ -342,7 +346,9 @@ class RecommenderGridSearchCV(_BaseRecommenderSearchCV):
         ('precision_at_k', 'ndcg')
 
     cv : BaseCrossValidator, int, or None, optional (default=3)
-        The cross validation class instance.
+        The cross validation class instance. If None or an integer, KFold
+        cross validation will be used by default (unless fit with a
+        ``validation_set``)
 
     recommend_params : dict or None, optional (default=None)
         Any keyword args to pass to the ``recommend_for_all_users`` function.
@@ -419,7 +425,9 @@ class RandomizedRecommenderSearchCV(_BaseRecommenderSearchCV):
         ('precision_at_k', 'ndcg')
 
     cv : BaseCrossValidator, int, or None, optional (default=3)
-        The cross validation class instance.
+        The cross validation class instance. If None or an integer, KFold
+        cross validation will be used by default (unless fit with a
+        ``validation_set``)
 
     recommend_params : dict or None, optional (default=None)
         Any keyword args to pass to the ``recommend_for_all_users`` function.

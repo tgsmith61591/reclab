@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 
 from reclab.model_selection import RandomizedRecommenderSearchCV, \
-    RecommenderGridSearchCV, train_test_split, BootstrapCV
+    RecommenderGridSearchCV, train_test_split, KFold
 from reclab.model_selection._search import _CVWrapper
 from reclab.collab import AlternatingLeastSquares, \
     NMSAlternatingLeastSquares
@@ -18,9 +18,8 @@ import shutil
 import warnings
 
 
-lastfm = load_lastfm(cache=True)
-train, test = train_test_split(u=lastfm.users, i=lastfm.products,
-                               r=lastfm.ratings, random_state=42)
+lastfm = load_lastfm(cache=True, as_sparse=True)
+train, test = train_test_split(lastfm.ratings, random_state=42)
 
 
 class TestRandomizedSearch:
@@ -60,7 +59,7 @@ class TestRandomizedSearch:
         }
 
         # Make our cv
-        cv = BootstrapCV(n_splits=2, random_state=1)
+        cv = KFold(n_splits=2, random_state=1, shuffle=True)
         search = RecommenderGridSearchCV(
             estimator=clf, cv=cv, param_grid=hyper,
             n_jobs=1, verbose=1)
@@ -80,7 +79,7 @@ class TestRandomizedSearch:
         }
 
         # Make our cv
-        cv = BootstrapCV(n_splits=2, random_state=1)
+        cv = KFold(n_splits=2, random_state=1, shuffle=True)
         search = RandomizedRecommenderSearchCV(
             estimator=clf, cv=cv, random_state=42,
             param_distributions=hyper, n_jobs=1,
