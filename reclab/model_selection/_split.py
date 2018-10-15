@@ -226,9 +226,10 @@ def train_test_split(X, train_size=0.75, random_state=None):
 train_test_split.__test__ = False
 
 
-# These are formatted into CV docstrings.
-_cv_params = """
-Parameters
+class BaseCrossValidator(six.with_metaclass(ABCMeta, BaseEstimator)):
+    """Base class for all CV
+
+    Parameters
     ----------
     n_splits : int, optional (default=3)
         The number of splits for the cross-validation procedure. Default
@@ -236,15 +237,7 @@ Parameters
 
     random_state : RandomState, int or None, optional (default=None)
         The random state used to seed the train and test masks.
-"""
-
-
-class BaseCrossValidator(six.with_metaclass(ABCMeta, BaseEstimator)):
-    """Base class for all CV
-    
-    {parameters}
-    """.format(parameters=_cv_params)
-
+    """
     def __init__(self, n_splits=3, random_state=None):
         self.n_splits = n_splits
         self.random_state = random_state
@@ -282,7 +275,14 @@ class KFold(BaseCrossValidator):
     Applies K-fold cross validation with no stratification to mask a subset
     of ratings events from a sparse ratings matrix.
 
-    {parameters}
+    Parameters
+    ----------
+    n_splits : int, optional (default=3)
+        The number of splits for the cross-validation procedure. Default
+        is 3.
+
+    random_state : RandomState, int or None, optional (default=None)
+        The random state used to seed the train and test masks.
     
     shuffle : bool, optional (default=True)
         Whether to shuffle the train/test ratings events. Default is True.
@@ -294,10 +294,21 @@ class KFold(BaseCrossValidator):
     >>> from reclab.datasets import load_lastfm
     >>> lfm = load_lastfm(as_sparse=True, cache=True)
     >>> cv = KFold(n_splits=3, random_state=42, shuffle=True)
-    >>> splits = list(cv.split(lfm))
-    
-    """.format(parameters=_cv_params)
-
+    >>> splits = list(cv.split(lfm.ratings))
+    >>> splits  # doctest: +SKIP
+    [(<1892x17632 sparse matrix of type '<class 'numpy.float32'>'
+            with 61889 stored elements in Compressed Sparse Row format>, 
+      <1892x17632 sparse matrix of type '<class 'numpy.float32'>'
+            with 30945 stored elements in Compressed Sparse Row format>), 
+     (<1892x17632 sparse matrix of type '<class 'numpy.float32'>'
+            with 61889 stored elements in Compressed Sparse Row format>, 
+      <1892x17632 sparse matrix of type '<class 'numpy.float32'>'
+            with 30945 stored elements in Compressed Sparse Row format>), 
+     (<1892x17632 sparse matrix of type '<class 'numpy.float32'>'
+            with 61890 stored elements in Compressed Sparse Row format>, 
+      <1892x17632 sparse matrix of type '<class 'numpy.float32'>'
+            with 30944 stored elements in Compressed Sparse Row format>)]
+    """
     def __init__(self, n_splits=3, random_state=None, shuffle=True):
         super(KFold, self).__init__(
             n_splits=n_splits, random_state=random_state)

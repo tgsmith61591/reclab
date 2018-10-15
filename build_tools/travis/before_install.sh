@@ -15,6 +15,8 @@ if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
   echo "Downloading gcc, g++ & gfortran"
   sudo apt-get install -y gcc
   sudo apt-get install -y g++
+  sudo apt-get install -y libblas-dev
+  sudo apt-get install -y liblapack-dev
   sudo apt-get install -y gfortran
 
 # Workaround for https://github.com/travis-ci/travis-ci/issues/6307, which

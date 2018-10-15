@@ -8,7 +8,7 @@ from reclab.model_selection._search import _CVWrapper
 from reclab.collab import AlternatingLeastSquares, \
     NMSAlternatingLeastSquares
 from reclab.datasets import load_lastfm
-from reclab._config import RECLAB_CACHE
+from reclab._config import RECLAB_CACHE, set_blas_singlethread
 
 from sklearn.externals import joblib
 from scipy.stats import randint, uniform
@@ -17,6 +17,8 @@ import os
 import shutil
 import warnings
 
+# set this to avoid the MKL BLAS warning
+set_blas_singlethread()
 
 lastfm = load_lastfm(cache=True, as_sparse=True)
 train, test = train_test_split(lastfm.ratings, random_state=42)

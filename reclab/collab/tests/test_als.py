@@ -6,13 +6,12 @@ from reclab.collab import AlternatingLeastSquares
 from reclab.datasets import load_lastfm
 from reclab.model_selection import train_test_split
 from reclab.utils.testing import RecommenderTestClass
+from reclab._config import set_blas_singlethread
 
 from numpy.testing import assert_array_almost_equal, assert_allclose
-import os
 
 # set this to avoid the MKL BLAS warning
-os.environ["MKL_NUM_THREADS"] = "1"
-os.environ["OPENBLAS_NUM_THREADS"] = "1"
+set_blas_singlethread()
 
 # Load data and split into train/test
 lastfm = load_lastfm(cache=True, as_sparse=True)
