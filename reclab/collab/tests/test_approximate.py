@@ -31,13 +31,13 @@ class TestApproximateAlternatingLeastSquares(RecommenderTestClass):
             approximate_recommend=True,
             approximate_similar_items=True,
             random_state=1, use_gpu=False, use_cg=True,
-            iterations=5, num_threads=1)
+            iterations=5)
 
         clf2 = cls(
             approximate_recommend=True,
             approximate_similar_items=True,
             random_state=1, use_gpu=False, use_cg=True,
-            iterations=5, num_threads=1)
+            iterations=5)
 
         # Show that the _make_estimator will initialize the matrices in a
         # replicable fashion given the random seed
@@ -58,7 +58,7 @@ class TestApproximateAlternatingLeastSquares(RecommenderTestClass):
     def test_complex_fit(self, cls):
         # Show we can fit a really complex model
         cls(approximate_similar_items=False,
-            approximate_recommend=True, num_threads=1,
+            approximate_recommend=True,
             random_state=42, use_cg=True, iterations=10,
             factors=150, regularization=0.01)
 
@@ -70,7 +70,7 @@ class TestApproximateAlternatingLeastSquares(RecommenderTestClass):
             approximate_recommend=True,
             approximate_similar_items=True,
             random_state=1, use_gpu=False, use_cg=True,
-            iterations=5, num_threads=1)
+            iterations=5)
         clf.fit(train)
 
         # Make assertions on the recommendations
@@ -83,7 +83,7 @@ class TestApproximateAlternatingLeastSquares(RecommenderTestClass):
         # Recommend for ALL users
         clf = cls(
             random_state=1, use_gpu=False, use_cg=True,
-            iterations=5, num_threads=1)
+            iterations=5)
         clf.fit(train)
 
         # Mask assertions
@@ -99,8 +99,7 @@ class TestApproximateAlternatingLeastSquares(RecommenderTestClass):
                            (False, True), (False, False)):
             clf = cls(
                 random_state=1, use_gpu=False, use_cg=True,
-                iterations=5, num_threads=1,
-                approximate_recommend=arec,
+                iterations=5, approximate_recommend=arec,
                 approximate_similar_items=asim)
 
             self._serialization_assertions(

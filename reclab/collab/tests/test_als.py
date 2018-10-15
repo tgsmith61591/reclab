@@ -22,11 +22,11 @@ class TestAlternatingLeastSquares(RecommenderTestClass):
     def test_simple_fit(self):
         clf1 = AlternatingLeastSquares(
             random_state=1, use_gpu=False, use_cg=True,
-            iterations=5, num_threads=1)
+            iterations=5)
 
         clf2 = AlternatingLeastSquares(
             random_state=1, use_gpu=False, use_cg=True,
-            iterations=5, num_threads=1)
+            iterations=5)
 
         # Show that the _make_estimator will initialize the matrices in a
         # replicable fashion given the random seed
@@ -57,7 +57,7 @@ class TestAlternatingLeastSquares(RecommenderTestClass):
     def test_recommend_single(self):
         clf = AlternatingLeastSquares(
             random_state=1, use_gpu=False, use_cg=True,
-            iterations=5, num_threads=1)
+            iterations=5)
         clf.fit(train)
 
         # Make assertions on the recommendations
@@ -74,7 +74,7 @@ class TestAlternatingLeastSquares(RecommenderTestClass):
         # Recommend for ALL users
         clf = AlternatingLeastSquares(
             random_state=1, use_gpu=False, use_cg=True,
-            iterations=5, num_threads=1).fit(train)
+            iterations=5).fit(train)
 
         # Mask assertions
         self._all_recommend_assertions(clf, test)
@@ -82,6 +82,6 @@ class TestAlternatingLeastSquares(RecommenderTestClass):
     def test_serialize(self):
         clf = AlternatingLeastSquares(
             random_state=1, use_gpu=False, use_cg=True,
-            iterations=5, num_threads=1)
+            iterations=5)
 
         self._serialization_assertions(clf, train, test)
