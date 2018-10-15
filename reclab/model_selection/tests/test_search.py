@@ -18,7 +18,7 @@ import shutil
 import warnings
 
 # set this to avoid the MKL BLAS warning
-set_blas_singlethread()
+# set_blas_singlethread()
 
 lastfm = load_lastfm(cache=True, as_sparse=True)
 train, test = train_test_split(lastfm.ratings, random_state=42)

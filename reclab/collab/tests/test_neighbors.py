@@ -11,7 +11,7 @@ from reclab._config import set_blas_singlethread
 import pytest
 
 # set this to avoid the MKL BLAS warning
-set_blas_singlethread()
+# set_blas_singlethread()
 
 # Load data and split into train/test
 lastfm = load_lastfm(cache=True, as_sparse=True)

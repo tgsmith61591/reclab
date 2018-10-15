@@ -11,7 +11,7 @@ from reclab._config import set_blas_singlethread
 from numpy.testing import assert_array_almost_equal, assert_allclose
 
 # set this to avoid the MKL BLAS warning
-set_blas_singlethread()
+# set_blas_singlethread()
 
 # Load data and split into train/test
 lastfm = load_lastfm(cache=True, as_sparse=True)
@@ -40,9 +40,9 @@ class TestAlternatingLeastSquares(RecommenderTestClass):
         # Are they the same POST-fit? They SHOULD be... (note this is only
         # the case if use_cg is FALSE!!)
         clf1.fit(train)
-        clf2.fit(train)
 
         # This SHOULD work--is something in implicit random?...
+        # clf2.fit(train)
         # assert_allclose(clf1.estimator_.item_factors,
         #                 clf2.estimator_.item_factors, rtol=1e-5)
         # assert_allclose(clf1.estimator_.user_factors,
