@@ -27,7 +27,8 @@ print(repr(test))
 
 # #############################################################################
 # Fit our model
-als = ALS(factors=100, use_gpu=False, iterations=10, use_cg=False)
+als = ALS(random_state=1, use_gpu=False, use_cg=True,
+          iterations=25, factors=100)
 als.fit(train)
 
 # #############################################################################
@@ -43,8 +44,10 @@ print("\nUser #%i listened to Mayhem %i times.\nThis user's top 5 "
          str(artists[np.argsort(
              -train[mayhem_appreciator, :].toarray())][0, :5])))
 
-recommended = als.recommend_for_user(mayhem_appreciator, test,
-                                     return_scores=False, n=5)
+# Use the most current ratings matrix and filter ones the user has seen
+recommended = als.recommend_for_user(mayhem_appreciator, lastfm.ratings,
+                                     return_scores=False, n=5,
+                                     filter_previously_rated=True)
 mapped_recs = lastfm.artists[recommended]
 print("User #%i's top 5 recommended artists: %s"
       % (mayhem_appreciator, str(mapped_recs)))
