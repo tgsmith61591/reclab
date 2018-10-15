@@ -9,29 +9,33 @@ from sklearn.externals import six
 from sklearn.utils.validation import check_random_state
 from sklearn.base import BaseEstimator
 
-from ..utils.validation import to_sparse_csr, check_consistent_length
+from ..utils.validation import check_sparse_array
 
 import numbers
 
 __all__ = [
-    'BootstrapCV',
     'check_cv',
-    'train_test_split'
+    'train_test_split',
+    'KFold'
 ]
 
 MAX_SEED = 1e6
 
 
 def check_cv(cv=3):
-    """Input validation for cross-validation classes.
+    """Validate the CV input.
+
+    Input validation for cross-validation classes. Takes a CV value of either
+    an integer, None or BaseCrossValidator and returns an appropriate CV
+    method. For integers or None, default is KFold.
 
     Parameters
     ----------
     cv : int, None or BaseCrossValidator
         The CV class or number of folds.
 
-        - None will default to 3-fold BootstrapCV
-        - integer will default to ``integer``-fold BootstrapCV
+        - None will default to 3-fold KFold
+        - integer will default to ``integer``-fold KFold
         - BaseCrossValidator will pass through untouched
 
     Returns
@@ -43,7 +47,7 @@ def check_cv(cv=3):
         cv = 3
 
     if isinstance(cv, numbers.Integral):
-        return BootstrapCV(n_splits=int(cv))
+        return KFold(n_splits=int(cv))
     if not hasattr(cv, "split") or isinstance(cv, six.string_types):
         raise ValueError("Expected integer or CV class, but got %r (type=%s)"
                          % (cv, type(cv)))
@@ -56,164 +60,141 @@ def _validate_train_size(train_size):
         "train_size should be a float between 0 and 1"
 
 
-def _get_stratified_tr_mask(u, i, train_size, random_state):
-    _validate_train_size(train_size)  # validate it's a float
-    random_state = check_random_state(random_state)
-    n_events = u.shape[0]
+def _sparsify_from_mask(X, mask):
+    """Make a sparse array even sparser.
 
-    # this is our train mask that we'll update over the course of this method
-    train_mask = random_state.rand(n_events) <= train_size  # type: np.ndarray
+    Parameters
+    ----------
+    X : scipy.sparse.csr_matrix
+        Sparse matrix
 
-    # we have a random mask now. For each of users and items, determine which
-    # are missing from the mask and randomly select one of each of their
-    # ratings to force them into the mask
-    for array in (u, i):
-        # e.g.:
-        # >>> array = np.array([1, 2, 3, 3, 1, 3, 2])
-        # >>> train_mask = np.array([0, 1, 1, 1, 0, 0, 1]).astype(bool)
-        # >>> unique, counts = np.unique(array, return_counts=True)
-        # >>> unique, counts
-        # (array([1, 2, 3]), array([2, 2, 3]))
-
-        # then present:
-        # >>> present
-        # array([2, 3, 3, 2])
-        present = array[train_mask]
-
-        # and the test indices:
-        # >>> test_vals
-        # array([1, 1, 3])
-        test_vals = array[~train_mask]
-
-        # get the test indices that are NOT present (either
-        # missing items or users)
-        # >>> missing
-        # array([1])
-        missing = np.unique(test_vals[np.where(
-            ~np.in1d(test_vals, present))[0]])
-
-        # If there is nothing missing, we got perfectly lucky with our random
-        # split and we'll just go with it...
-        if missing.shape[0] == 0:
-            continue
-
-        # Otherwise, if we get to this point, we have to add in the missing
-        # level to the mask to make sure at least one of each of those makes
-        # it into the training data (so we don't lose a factor level for ALS)
-        array_mask_missing = np.in1d(array, missing)
-
-        # indices in "array" where we have a level that's currently missing
-        # and that needs to be added into the mask
-        where_missing = np.where(array_mask_missing)[0]  # e.g., array([0, 4])
-
-        # I don't love having to loop here... but we'll iterate "where_missing"
-        # to incrementally add in items or users until all are represented
-        # in the training set to some degree
-        added = set()
-        for idx, val in zip(where_missing, array[where_missing]):
-            # if we've already seen and added this one
-            if val in added:  # O(1) lookup
-                continue
-
-            train_mask[idx] = True
-            added.add(val)
-
-    return train_mask
+    mask : scipy.sparse.csr_matrix, bool
+        Boolean mask expression
+    """
+    S = X.copy()
+    S.data[mask] = 0.
+    S.eliminate_zeros()
+    return S
 
 
-def _make_sparse_tr_te(users, items, ratings, train_mask):
-    # now make the sparse matrices
-    r_train = to_sparse_csr(u=users[train_mask], i=items[train_mask],
-                            r=ratings[train_mask], axis=0)
+def _split_between_values(X, permuted, low, high):
+    """Mask a matrix between a low and a high value.
 
-    # TODO: anti mask?
-    r_test = to_sparse_csr(u=users, i=items, r=ratings, axis=0)
-    return r_train, r_test
+    Split a matrix around a mask such that values between low and high
+    (high > values > low) are split into their own mask.
+
+    Parameters
+    ----------
+    X : scipy.sparse.csr_matrix
+        The sparse matrix to split
+
+    permuted : np.ndarray
+        Permuted linspace of values between 0 and 1
+
+    low : float
+        Low value >= 0., < high
+
+    high : float
+        High value <= 1., > low
+    """
+    gt_low = permuted >= low
+    lt_high = permuted < high
+    mask = gt_low & lt_high
+
+    # Get the sparsified matrices (mask gets zeroed, so use inverse)
+    in_range = _sparsify_from_mask(X, ~mask)
+    outside_range = _sparsify_from_mask(X, mask)
+    return in_range, outside_range
 
 
-def train_test_split(u, i, r, train_size=0.75, random_state=None):
-    """Create a train/test split for sparse ratings.
+def _get_train_mask_linspace(n, random_state, shuffle):
+    # This is the train mask that we'll update over the course of this method.
+    # Use a linspace so we're guaranteed an (almost) perfect number of samples,
+    # whereas with random.rand, we can only approximate. +1 for linspace N
+    # since it goes to 1 inclusive, and trim off the last one.
+    values = np.linspace(0, 1, n + 1)[:-1]
+    if shuffle:
+        values = random_state.permutation(values)
+    return values
+
+
+def train_test_split(X, train_size=0.75, random_state=None):
+    """Create a train/test split for sparse ratings matrices.
 
     Given vectors of users, items, and ratings, create a train/test split
-    that preserves at least one of each user and item in the training split
-    to prevent inducing a cold-start situation.
+    that masks users' ratings to the prescribed ratio of training samples.
+    This only works on sparse matrices.
 
     See :ref:`train_test` for more information.
 
     Parameters
     ----------
-    u : array-like, shape=(n_samples,)
-        A numpy array of the users. This vector will be used to stratify the
-        split to ensure that at least of each of the users will be included
-        in the training split. Note that this diminishes the likelihood of a
-        perfectly-sized split (i.e., ``len(train)`` may not exactly equal
-        ``train_size * n_samples``).
-
-    i : array-like, shape=(n_samples,)
-        A numpy array of the items. This vector will be used to stratify the
-        split to ensure that at least of each of the items will be included
-        in the training split. Note that this diminishes the likelihood of a
-        perfectly-sized split (i.e., ``len(train)`` may not exactly equal
-        ``train_size * n_samples``).
-
-    r : array-like, shape=(n_samples,)
-        A numpy array of the ratings.
+    X : scipy.sparse.csr_matrix
+        The sparse ratings matrix with users along the row axis and items
+        along the column axis. Entries represent ratings or other implicit
+        ranking events (i.e., number of listens, etc.).
 
     train_size : float, optional (default=0.75)
         The ratio of the train set size. Should be a float between 0 and 1.
 
     random_state : RandomState, int or None, optional (default=None)
-        The random state used to create the train mask.
+        The random state used to seed the train and test masks.
 
     Examples
     --------
     An example of a sparse matrix split that masks some ratings from the train
-    set, but not from the testing set:
+    set, and leaves them out for the test set.
 
     >>> from reclab.model_selection import train_test_split
+    >>> from scipy import sparse
+    >>> import numpy as np
     >>> u = [0, 1, 0, 2, 1, 3]
     >>> i = [1, 2, 2, 0, 3, 2]
     >>> r = [0.5, 1.0, 0.0, 1.0, 0.0, 1.]
-    >>> train, test = train_test_split(u, i, r, train_size=0.5,
-    ...                                random_state=42)
-    >>> train.toarray()  # doctest: +SKIP
-    array([[ 0. ,  0.5,  0. ,  0. ],
-           [ 0. ,  0. ,  0. ,  0. ],
-           [ 1. ,  0. ,  0. ,  0. ],
-           [ 0. ,  0. ,  1. ,  0. ]])
-    >>> test.toarray()  # doctest: +SKIP
-    array([[ 0. ,  0.5,  0. ,  0. ],
-           [ 0. ,  0. ,  1. ,  0. ],
-           [ 1. ,  0. ,  0. ,  0. ],
-           [ 0. ,  0. ,  1. ,  0. ]])
+    >>> X = sparse.csr_matrix((r, (u, i)), shape=(4, 4))
+    >>> train, test = train_test_split(X, train_size=0.7, random_state=42)
 
-    Here's a more robust example (with more ratings):
+    The output of the train/test split is two sparse matrices:
 
-    >>> from sklearn.preprocessing import LabelEncoder
-    >>> import numpy as np
-    >>> rs = np.random.RandomState(42)
-    >>> users = np.arange(100000)  # 100k users in DB
-    >>> items = np.arange(30000)  # 30k items in DB
-    >>> # Randomly select some for ratings:
-    >>> items = rs.choice(items, users.shape[0])  # 100k rand item rtgs
-    >>> users = rs.choice(users, users.shape[0])  # 100k rand user rtgs
-    >>> # Label encode so they're positional indices:
-    >>> users = LabelEncoder().fit_transform(users)
-    >>> items = LabelEncoder().fit_transform(items)
-    >>> ratings = rs.choice((0., 0.25, 0.5, 0.75, 1.), items.shape[0])
-    >>> train, test = train_test_split(users, items, ratings, random_state=1)
-    >>> train  # doctest: +SKIP
-    <63235x28921 sparse matrix of type '<type 'numpy.float64'>'
-        with 86110 stored elements in Compressed Sparse Row format>
-    >>> test  # doctest: +SKIP
-    <63235x28921 sparse matrix of type '<type 'numpy.float64'>'
-        with 100000 stored elements in Compressed Sparse Row format>
+    >>> train.astype(np.float32)
+    <4x4 sparse matrix of type '<class 'numpy.float32'>'
+            with 3 stored elements in Compressed Sparse Row format>
+    >>> test.astype(np.float32)
+    <4x4 sparse matrix of type '<class 'numpy.float32'>'
+            with 1 stored elements in Compressed Sparse Row format>
+
+    When expanded, it's more clear what was stored and what was masked:
+
+    >>> train.toarray().astype(np.float32)
+    array([[0. , 0.5, 0. , 0. ],
+           [0. , 0. , 0. , 0. ],
+           [1. , 0. , 0. , 0. ],
+           [0. , 0. , 1. , 0. ]], dtype=float32)
+    >>> test.toarray().astype(np.float32)
+    array([[0., 0., 0., 0.],
+           [0., 0., 1., 0.],
+           [0., 0., 0., 0.],
+           [0., 0., 0., 0.]], dtype=float32)
+
+    A more elaborate example:
+
+    >>> from reclab.datasets import load_lastfm
+    >>> lastfm = load_lastfm(as_sparse=True, cache=True)
+    >>> train, test = train_test_split(lastfm.ratings, train_size=0.75,
+    ...                                random_state=1)
+    >>> train.astype(np.float32)
+    <1892x17632 sparse matrix of type '<class 'numpy.float32'>'
+            with 69655 stored elements in Compressed Sparse Row format>
+    >>> test.astype(np.float32)
+    <1892x17632 sparse matrix of type '<class 'numpy.float32'>'
+            with 23179 stored elements in Compressed Sparse Row format>
 
     Notes
     -----
-    ``u``, ``i`` inputs should be encoded (i.e., via LabelEncoder) prior to
-    splitting the data. This is due to the indexing behavior used within the
-    function.
+    Users (rows) and items (column) must be encoded (i.e., via LabelEncoder)
+    prior to creating a sparse matrix of the elements. Since this is required
+    prior to train/test splitting, it's recommended that you store the item
+    and user encoders for later decoding.
 
     Returns
     -------
@@ -223,39 +204,67 @@ def train_test_split(u, i, r, train_size=0.75, random_state=None):
     r_test : scipy.sparse.csr_matrix
         The test set.
     """
-    # make sure all of them are numpy arrays and of the same length
-    users, items, ratings = check_consistent_length(u, i, r)
+    X = check_sparse_array(X)
+    _validate_train_size(train_size)  # validate it's a float
+    random_state = check_random_state(random_state)  # get the random state
 
-    train_mask = _get_stratified_tr_mask(
-        users, items, train_size=train_size,
-        random_state=random_state)
+    # Create a mask of random values in the shape of the sparse array that we
+    # can use for easy masking
+    nnz = X.nnz
+    rand_vals = _get_train_mask_linspace(nnz, random_state, shuffle=True)
 
-    return _make_sparse_tr_te(users, items, ratings, train_mask=train_mask)
+    # Get the mask from the random training values. For train/test split, we
+    # can just use train_size as low
+    test, train = _split_between_values(
+        X, rand_vals, low=train_size, high=1.)
+
+    # Anything over 0 constitutes our mask
+    return train, test
 
 
 # avoid pb w nose
 train_test_split.__test__ = False
 
 
-class BaseCrossValidator(six.with_metaclass(ABCMeta, BaseEstimator)):
-    """Base class for all CV.
+# These are formatted into CV docstrings.
+_cv_params = """
+Parameters
+    ----------
+    n_splits : int, optional (default=3)
+        The number of splits for the cross-validation procedure. Default
+        is 3.
 
-    Iterations must define ``_iter_train_mask``
-    """
+    random_state : RandomState, int or None, optional (default=None)
+        The random state used to seed the train and test masks.
+"""
+
+
+class BaseCrossValidator(six.with_metaclass(ABCMeta, BaseEstimator)):
+    """Base class for all CV
+    
+    {parameters}
+    """.format(parameters=_cv_params)
+
     def __init__(self, n_splits=3, random_state=None):
         self.n_splits = n_splits
         self.random_state = random_state
 
+        # Fail out for an illegal n_splits
+        if self.n_splits < 2:
+            raise ValueError("n_splits must be at least 2.")
+
     def get_n_splits(self):
         return self.n_splits
 
+    @abstractmethod
     def split(self, X):
-        """Generate indices to split data into training and test sets.
+        """Split a dataset into ``n_splits`` folds.
 
         Parameters
         ----------
         X : scipy.sparse.csr_matrix
-            A sparse ratings matrix.
+            A sparse ratings matrix with users along the rows, and products
+            or items along the column axis.
 
         Returns
         -------
@@ -263,62 +272,74 @@ class BaseCrossValidator(six.with_metaclass(ABCMeta, BaseEstimator)):
             The training set
 
         test : scipy.sparse.csr_matrix
-            The test set
-        """
-        ratings = X.data
-        users, items = X.nonzero()
-
-        # make sure all of them are numpy arrays and of the same length
-        # users, items, ratings = check_consistent_length(u, i, r)
-        for train_mask in self._iter_train_mask(users, items, ratings):
-            # yield in a generator so we don't have to store in mem
-            yield _make_sparse_tr_te(users, items, ratings,
-                                     train_mask=train_mask)
-
-    @abstractmethod
-    def _iter_train_mask(self, u, i, r):
-        """Compute the training mask here.
-
-        Returns
-        -------
-        train_mask : np.ndarray
-            The train mask
+            The validation fold
         """
 
 
-class BootstrapCV(BaseCrossValidator):
-    """Cross-validate with bootstrapping.
+class KFold(BaseCrossValidator):
+    """K-fold cross validation.
 
-    The bootstrap CV class makes no guarantees about exclusivity between folds.
-    This is simply a naive way to handle KFold cross-validation.
+    Applies K-fold cross validation with no stratification to mask a subset
+    of ratings events from a sparse ratings matrix.
 
+    {parameters}
+    
+    shuffle : bool, optional (default=True)
+        Whether to shuffle the train/test ratings events. Default is True.
+        Using False is discouraged, as it is more likely to completely mask out
+        users.
+        
     Examples
     --------
     >>> from reclab.datasets import load_lastfm
-    >>> from reclab.model_selection import BootstrapCV
-    >>> X = load_lastfm(as_sparse=True)
-    >>> cv = BootstrapCV(random_state=42, n_splits=3)
-    >>> list(cv.split(X))  # doctest: +SKIP
-    [(<1892x17632 sparse matrix of type '<class 'numpy.float32'>'
-    with 65790 stored elements in Compressed Sparse Row format>,
-    <1892x17632 sparse matrix of type '<class 'numpy.float32'>'
-    with 92834 stored elements in Compressed Sparse Row format>),
-    (<1892x17632 sparse matrix of type '<class 'numpy.float32'>'
-    with 65740 stored elements in Compressed Sparse Row format>,
-    <1892x17632 sparse matrix of type '<class 'numpy.float32'>'
-    with 92834 stored elements in Compressed Sparse Row format>),
-    (<1892x17632 sparse matrix of type '<class 'numpy.float32'>'
-    with 65964 stored elements in Compressed Sparse Row format>,
-    <1892x17632 sparse matrix of type '<class 'numpy.float32'>'
-    with 92834 stored elements in Compressed Sparse Row format>)]
-    """
-    def _iter_train_mask(self, u, i, r):
-        """Compute the training mask here."""
-        train_size = 1. - (1. / self.n_splits)
-        # train_size = 1. - ((n_samples / self.n_splits) / n_samples)
-        random_state = check_random_state(self.random_state)
+    >>> lfm = load_lastfm(as_sparse=True, cache=True)
+    >>> cv = KFold(n_splits=3, random_state=42, shuffle=True)
+    >>> splits = list(cv.split(lfm))
+    
+    """.format(parameters=_cv_params)
 
-        for split in range(self.n_splits):
-            yield _get_stratified_tr_mask(
-                u, i, train_size=train_size,
-                random_state=random_state.randint(MAX_SEED))
+    def __init__(self, n_splits=3, random_state=None, shuffle=True):
+        super(KFold, self).__init__(
+            n_splits=n_splits, random_state=random_state)
+
+        self.shuffle = shuffle
+
+    def split(self, X):
+        """Split a dataset into ``n_splits`` folds.
+
+        Splits a ratings matrix using K-fold cross validation with no
+        stratification. Train and val folds each share the same dimensions
+        (rows x cols) but mask elements out of the train set for collaborative
+        filtering.
+
+        Parameters
+        ----------
+        X : scipy.sparse.csr_matrix
+            A sparse ratings matrix with users along the rows, and products
+            or items along the column axis.
+
+        Returns
+        -------
+        train : scipy.sparse.csr_matrix
+            The training set
+
+        test : scipy.sparse.csr_matrix
+            The validation fold
+        """
+        # Make sure it's a sparse array...
+        X = check_sparse_array(X)
+
+        # Use np.linspace to evenly partition the space between 0 and 1 into
+        # k + 1 pieces so we can use them as "training_sizes"
+        train_sizes = np.linspace(0, 1, self.n_splits + 1)
+
+        # We use a series of "permuted values" to mask out the training/testing
+        # folds.
+        random_state = check_random_state(self.random_state)
+        values = _get_train_mask_linspace(X.nnz, random_state,
+                                          shuffle=self.shuffle)
+
+        # Iterate the fold space bounds in a generator, returning train/test
+        for lower, upper in zip(train_sizes[:-1], train_sizes[1:]):
+            test, train = _split_between_values(X, values, lower, upper)
+            yield train, test

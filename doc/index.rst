@@ -22,47 +22,6 @@ cross-validation and model selection.
 
 |
 
-Example: Build a matrix factorization model on LastFM
------------------------------------------------------
-
-In this example, we'll build an Alternating Least Squares on the implicit ratings
-of the LastFM dataset.
-
-|
-
-.. code-block:: python
-
-
-   from reclab.datasets import load_lastfm
-   from reclab.model_selection import train_test_split
-   from reclab.collab import AlternatingLeastSquares as ALS
-   import numpy as np
-
-   # Load data and split into train/test (train/test splits for collaborative
-   # filtering are a bit different than for other applications)
-   lastfm = load_lastfm()
-   train, test = train_test_split(u=lastfm.users, i=lastfm.products,
-                                  r=lastfm.ratings, random_state=42)
-
-   # Fit our model
-   als = ALS(factors=64, use_gpu=False, iterations=15)
-   als.fit(train)
-
-   # Generate predictions (on the test set) for user 0
-   recommended_artists = als.recommend_for_user(
-       0, test, n=5, return_scores=False)
-
-   # Map the artist keys back to their actual names
-   mapped_recs = [lastfm.artists[i] for i in rec_items]
-   print("User 0's top 5 recommendations: %r" % mapped_recs)
-
-
-Look how easy that was!
-
-.. raw:: html
-
-   <br/>
-
 .. toctree::
    :maxdepth: 2
    :hidden:

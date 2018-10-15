@@ -133,6 +133,17 @@ Data splitting
 
     model_selection.train_test_split
 
+Cross validation
+----------------
+
+.. currentmodule:: reclab
+
+.. autosummary::
+    :toctree: generated/
+    :template: class.rst
+
+    model_selection.KFold
+
 Grid searches
 -------------
 

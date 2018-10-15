@@ -81,9 +81,8 @@ class ItemItemRecommender(BaseCollaborativeFiltering):
 
     >>> from reclab.datasets import load_lastfm
     >>> from reclab.model_selection import train_test_split
-    >>> lastfm = load_lastfm(cache=True)
-    >>> train, test = train_test_split(u=lastfm.users, i=lastfm.products,
-    ...                                r=lastfm.ratings, random_state=42)
+    >>> lastfm = load_lastfm(cache=True, as_sparse=True)
+    >>> train, test = train_test_split(lastfm.ratings, random_state=42)
     >>> model = ItemItemRecommender(k=5, metric='cosine', show_progress=False)
     >>> model.fit(train)  # doctest: +NORMALIZE_WHITESPACE
     ItemItemRecommender(b=0.75, k=5, k1=1.2, metric='cosine',

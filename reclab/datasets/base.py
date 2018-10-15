@@ -79,17 +79,30 @@ def load_lastfm(cache=False, as_sparse=False, dtype=np.float32):
 
     Examples
     --------
+    Example of loading the LastFM dataset as a sparse matrix and splitting it:
+
+    >>> import numpy as np
     >>> from reclab.datasets import load_lastfm
     >>> from reclab.model_selection import train_test_split
-    >>> lastfm = load_lastfm()
-    >>> train, test = train_test_split(u=lastfm.users, i=lastfm.products,
-    ...                                r=lastfm.ratings, random_state=42)
-    >>> train  # doctest: +SKIP
+    >>> lastfm = load_lastfm(as_sparse=True, cache=True)
+    >>> train, test = train_test_split(lastfm.ratings, train_size=0.75,
+    ...                                random_state=1)
+    >>> train.astype(np.float32)
     <1892x17632 sparse matrix of type '<class 'numpy.float32'>'
-        with 72389 stored elements in Compressed Sparse Row format>
-    >>> test  # doctest: +SKIP
+            with 69626 stored elements in Compressed Sparse Row format>
+    >>> test.astype(np.float32)
     <1892x17632 sparse matrix of type '<class 'numpy.float32'>'
-        with 92834 stored elements in Compressed Sparse Row format>
+            with 23208 stored elements in Compressed Sparse Row format>
+
+    Example of loading the LastFM dataset as individual vectors:
+
+    >>> lfm_bunch = load_lastfm(cache=True, as_sparse=False)
+    >>> lfm_bunch.users
+    array([   0,    0,    0, ..., 1891, 1891, 1891])
+    >>> lfm_bunch.products
+    array([   45,    46,    47, ..., 17617, 17618, 17619])
+    >>> lfm_bunch.ratings.astype(np.float32)
+    array([13883., 11690., 11351., ...,   281.,   280.,   263.], dtype=float32)
 
     Returns
     -------
@@ -117,13 +130,14 @@ def load_lastfm(cache=False, as_sparse=False, dtype=np.float32):
     # any index errors in the train/test splits, etc.
     users = LabelEncoder().fit_transform(data[:, 0])
     items = LabelEncoder().fit_transform(data[:, 1])
+    artists = metadata[:, 1]
 
     # need to make the join key in the metadata an int...
     ratings = data[:, 2].astype(dtype)
     data = Bunch(users=users,
                  products=items,
                  ratings=ratings,
-                 artists=metadata[:, 1])
+                 artists=artists)
 
     # cache if necessary
     if cache:
@@ -131,8 +145,12 @@ def load_lastfm(cache=False, as_sparse=False, dtype=np.float32):
 
     # we can also cache the sparse
     if as_sparse:
-        data = to_sparse_csr(u=users, i=items, r=ratings,
-                             axis=0, dtype=dtype)
+        data = Bunch(
+            ratings=to_sparse_csr(
+                u=users, i=items, r=ratings,
+                axis=0, dtype=dtype),
+            artists=artists)
+
         if cache:
             _cache_data(data, cache_key, True)
 

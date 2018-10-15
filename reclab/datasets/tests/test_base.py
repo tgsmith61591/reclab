@@ -25,8 +25,13 @@ class TestLoadLastFM:
             assert_array_equal(unq, np.arange(unq.shape[0]))
 
     def test_load_sparse(self):
-        X = load_lastfm(cache=True, as_sparse=True)
+        bunch = load_lastfm(cache=True, as_sparse=True)
+        X = bunch.ratings
         assert sparse.issparse(X)
 
+        # Assert on artists
+        artists = bunch.artists
+        assert isinstance(artists, np.ndarray)
+
         # Show that the next time we load this after caching, it's the same ref
-        assert load_lastfm(cache=True, as_sparse=True) is X
+        assert load_lastfm(cache=True, as_sparse=True) is bunch
