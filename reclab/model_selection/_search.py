@@ -198,9 +198,10 @@ class _BaseRecommenderSearchCV(six.with_metaclass(ABCMeta, BaseRecommender)):
             n_jobs = 1
 
         # if n_jobs is still parallel, set the MKL var
-        if n_jobs != 1:
-            # Set single threaded if we're using parallel
-            set_blas_singlethread()
+        # TODO: should we do this?...
+        # if n_jobs != 1:
+        #     # Set single threaded if we're using parallel
+        #     set_blas_singlethread()
 
         # get the scoring metric
         scorer = check_permitted_value(_valid_metrics, self.scoring)
@@ -234,7 +235,7 @@ class _BaseRecommenderSearchCV(six.with_metaclass(ABCMeta, BaseRecommender)):
                   "fits (plus one refit at the end)"
                   .format(n_iter, n_splits, n_iter * n_splits))
 
-        out = Parallel(n_jobs=self.n_jobs)(
+        out = Parallel(n_jobs=n_jobs)(
             delayed(_fit_and_score)(
                 clone(est), train, test, parameters, verbose=verbose,
                 metric=scorer, param_num=i // n_splits,

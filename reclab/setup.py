@@ -28,12 +28,14 @@ def configuration(parent_package='', top_path=None):
     # This is where submodules get added:
     config.add_subpackage('collab')
     config.add_subpackage('datasets')
+    config.add_subpackage('model_deployment')
     config.add_subpackage('model_selection')
     config.add_subpackage('utils')
 
     # This is where submodule test dirs are added:
     config.add_subpackage('collab/tests')
     # config.add_subpackage('datasets/tests')  # Added in submodule
+    config.add_subpackage('model_deployment/tests')
     config.add_subpackage('model_selection/tests')
     config.add_subpackage('utils/tests')
 

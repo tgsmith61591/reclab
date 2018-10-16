@@ -26,6 +26,7 @@ else:
     __all__ = [
         'collab',
         'metrics',
+        'model_deployment',
         'model_selection',
         'utils'
     ]

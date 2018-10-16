@@ -8,10 +8,17 @@ from reclab.model_selection import train_test_split
 from reclab.utils.testing import RecommenderTestClass
 from reclab._config import set_blas_singlethread
 
+import logging
+import os
+
 from numpy.testing import assert_array_almost_equal, assert_allclose
 
 # set this to avoid the MKL BLAS warning
 # set_blas_singlethread()
+
+# Set up a logger to make our lives easier as we debug where this stalls
+# on Travis
+logging.basicConfig(level=logging.DEBUG)
 
 # Load data and split into train/test
 lastfm = load_lastfm(cache=True, as_sparse=True)
@@ -20,10 +27,14 @@ train, test = train_test_split(lastfm.ratings, random_state=42)
 
 class TestAlternatingLeastSquares(RecommenderTestClass):
     def test_simple_fit(self):
+        logger = logging.getLogger("ALS_test_simple_fit")
+        logger.debug("\nPre-instantiate clf1")
+
         clf1 = AlternatingLeastSquares(
             random_state=1, use_gpu=False, use_cg=True,
             iterations=5)
 
+        logger.debug("Pre-instantiate clf2")
         clf2 = AlternatingLeastSquares(
             random_state=1, use_gpu=False, use_cg=True,
             iterations=5)
@@ -31,7 +42,9 @@ class TestAlternatingLeastSquares(RecommenderTestClass):
         # Show that the _make_estimator will initialize the matrices in a
         # replicable fashion given the random seed
         # PRE-FIT:
+        logger.debug("Making estimator with clf1")
         est1 = clf1._make_estimator(train)
+        logger.debug("Making estimator with clf2")
         est2 = clf2._make_estimator(train)
         for attr in ('item_factors', 'user_factors'):
             assert_array_almost_equal(getattr(est1, attr),
@@ -39,6 +52,7 @@ class TestAlternatingLeastSquares(RecommenderTestClass):
 
         # Are they the same POST-fit? They SHOULD be... (note this is only
         # the case if use_cg is FALSE!!)
+        logger.debug("Fitting first estimator")
         clf1.fit(train)
 
         # This SHOULD work--is something in implicit random?...

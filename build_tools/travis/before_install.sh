@@ -15,9 +15,6 @@ if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
   echo "Downloading gcc, g++ & gfortran"
   sudo apt-get install -y gcc
   sudo apt-get install -y g++
-  sudo apt-get install -y libblas-dev
-  sudo apt-get install -y liblapack-dev
-  sudo apt-get install -y gfortran
 
 # Workaround for https://github.com/travis-ci/travis-ci/issues/6307, which
 # caused the following error on MacOS X workers:
@@ -29,12 +26,12 @@ elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
   echo "Updating Ruby for Mac OS build"
 
   # stupid travis
-  command curl -sSL https://rvm.io/mpapis.asc | gpg --import -;
-  rvm get stable
+  # command curl -sSL https://rvm.io/mpapis.asc | gpg --import -;
+  # rvm get stable
 
   # See Travis issue (yes another) 8826
   # https://github.com/travis-ci/travis-ci/issues/8826
-  brew cask uninstall oclint
+  # brew cask uninstall oclint
   # This should yield the following:
   # ==> Uninstalling Cask oclint
   # ==> Unlinking Binary '/usr/local/bin/oclint'.
@@ -44,5 +41,6 @@ elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
   # ==> Unlinking Binary '/usr/local/include/c++'.
 
   # After oclint is uninstalled, we should be able to install GCC
+  brew update
   brew install gcc
 fi
