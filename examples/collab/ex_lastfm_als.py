@@ -5,6 +5,10 @@ Fitting ALS on LastFM
 
 Demonstrates how to fit a vanilla Alternating Least Squares model on the
 reclab-native LastFM dataset with implicit ratings.
+
+.. raw:: html
+
+   <br/>
 """
 print(__doc__)
 
@@ -39,7 +43,7 @@ mayhem_listens = train[:, mayhem_id].toarray().ravel()
 mayhem_listeners = np.argsort(-mayhem_listens)
 mayhem_appreciator = mayhem_listeners[0]  # Has the best taste in music :)
 print("\nUser #%i listened to Mayhem %i times.\nThis user's top 5 "
-      "most-listened-to artists are: %s"
+      "most-listened-to artists are:\n%s"
       % (mayhem_appreciator, int(train[mayhem_appreciator, mayhem_id]),
          str(artists[np.argsort(
              -train[mayhem_appreciator, :].toarray())][0, :5])))
@@ -49,5 +53,5 @@ recommended = als.recommend_for_user(mayhem_appreciator, lastfm.ratings,
                                      return_scores=False, n=5,
                                      filter_previously_rated=True)
 mapped_recs = lastfm.artists[recommended]
-print("User #%i's top 5 recommended artists: %s"
+print("\nUser #%i's top 5 recommended (unheard) artists:\n%s"
       % (mayhem_appreciator, str(mapped_recs)))

@@ -280,6 +280,16 @@ class _BaseRecommenderSearchCV(six.with_metaclass(ABCMeta, BaseRecommender)):
         return self
 
     @inherit_function_doc(BaseRecommender)
+    def n_users(self):
+        check_is_fitted(self, "best_estimator_")
+        return self.best_estimator_.n_users()
+
+    @inherit_function_doc(BaseRecommender)
+    def n_items(self):
+        check_is_fitted(self, "best_estimator_")
+        return self.best_estimator_.n_items()
+
+    @inherit_function_doc(BaseRecommender)
     def recommend_for_user(self, userid, R, n=10, filter_previously_rated=True,
                            filter_items=None, return_scores=False, **kwargs):
         check_is_fitted(self, "best_estimator_")

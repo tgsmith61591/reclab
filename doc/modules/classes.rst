@@ -113,6 +113,27 @@ Ranking metrics
     metrics.precision_at
 
 
+.. _model_deployment_ref:
+
+:mod:`reclab.model_deployment`: Model deployment tools for recommenders
+=======================================================================
+
+.. automodule:: reclab.model_deployment
+    :no-members:
+    :no-inherited-members:
+
+Data splitting
+--------------
+
+.. currentmodule:: reclab
+
+.. autosummary::
+    :toctree: generated/
+    :template: class.rst
+
+    model_deployment.RecommenderDeployment
+
+
 .. _model_selection_ref:
 
 :mod:`reclab.model_selection`: Model selection tools for recommenders

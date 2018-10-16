@@ -29,6 +29,7 @@ reclab/metrics/*.html
 
 # Coverage
 .coverage
+.coverage.*
 
 # pickled objects
 *.pkl

@@ -135,6 +135,29 @@ class ItemItemRecommender(BaseCollaborativeFiltering):
 
         return self
 
+    def n_items(self):
+        """The number of items in the recommender.
+
+        Returns
+        -------
+        n_items : int
+            The number of items in the recommender system, which is equal
+            to the row/col dimensions of the item similarity matrix.
+        """
+        check_is_fitted(self, 'estimator_')
+        return self.estimator_.similarity.shape[1]
+
+    def n_users(self):
+        """The number of users in the recommender.
+
+        Returns
+        -------
+        n_users : int
+            The number of users in the fit recommender system.
+        """
+        check_is_fitted(self, 'estimator_')
+        return self.estimator_.similarity.shape[1]
+
     @inherit_function_doc(BaseCollaborativeFiltering)
     def recommend_for_user(self, userid, R, n=10, filter_previously_rated=True,
                            filter_items=None, return_scores=False, **kwargs):

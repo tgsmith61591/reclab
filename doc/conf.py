@@ -210,7 +210,7 @@ texinfo_documents = [
 ]
 
 sphinx_gallery_conf = dict(
-    doc_module='Taylor G Smith',
+    doc_module='reclab',
     backreferences_dir=os.path.join('modules', 'generated'),
     reference_url=dict(reclab=None)
 )
@@ -228,4 +228,5 @@ def setup(app):
 
 # The following is used by sphinx.ext.linkcode to provide links to github
 linkcode_resolve = make_linkcode_resolve(
-    'reclab', u('https://github.com/tgsmith61591/reclab/blob/{revision}/{package}/{path}#L{lineno}'))
+    'reclab', u('https://github.com/tgsmith61591/reclab/blob/'
+                '{revision}/{package}/{path}#L{lineno}'))

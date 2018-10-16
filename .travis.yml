@@ -13,6 +13,8 @@ cache:
   - $HOME/.cache/pip
   - $HOME/.ccache
 
+before_install:
+  - source build_tools/travis/before_install.sh
 env:
   global:
     - PYMODULE=reclab
@@ -46,14 +48,6 @@ matrix:
       env: DISTRIB="conda" PYTHON_VERSION="3.6.1"
            COVERAGE=true DEPLOY=false TEST_DOCSTRINGS="true"
 
-addons:
-  apt:
-    packages:
-    - libblas-dev
-    - liblapack-dev
-    - gfortran
-
-before_install: source build_tools/travis/before_install.sh
 install: source build_tools/travis/install.sh
 before_script: bash build_tools/travis/before_script.sh
 script: bash build_tools/travis/test_script.sh
@@ -67,12 +61,6 @@ after_success:
   # Build the wheels every time so we can debug
   - bash build_tools/travis/build_wheels.sh
   - ls dist/
-
-# Cache the artifacts, make our lives easier
-cache:
-  - apt
-  - directories:
-    - $HOME/.cache/pip
 
 deploy:
   provider: script

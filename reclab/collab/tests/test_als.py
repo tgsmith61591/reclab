@@ -55,6 +55,10 @@ class TestAlternatingLeastSquares(RecommenderTestClass):
         logger.debug("Fitting first estimator")
         clf1.fit(train)
 
+        # Show the n_items is right
+        assert clf1.n_items() == train.shape[1]
+        assert clf1.n_users() == train.shape[0]
+
         # This SHOULD work--is something in implicit random?...
         # clf2.fit(train)
         # assert_allclose(clf1.estimator_.item_factors,
