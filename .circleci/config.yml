@@ -24,6 +24,9 @@ jobs:
           # The path to lastfm data we've unpacked now
           paths:
             - ~/.reclab-cache
+            - ~/.ccache
+            # Because building the nmslib wheel is SUCH a pain!!!!!
+            - ~/.cache/pip
 
   # For testing PyPy rather than CPython
   pypy36:

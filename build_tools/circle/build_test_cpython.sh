@@ -34,3 +34,6 @@ python setup.py develop
 
 # Now run the tests with coverage
 pytest -v --durations=20 --cov-config .coveragerc --cov reclab
+
+# Upload the coverage
+codecov || echo "codecov upload failed"
