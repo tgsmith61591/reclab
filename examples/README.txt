@@ -1,8 +1,5 @@
 .. _general_examples:
 
-Examples
-========
-
 General examples
 ----------------
 

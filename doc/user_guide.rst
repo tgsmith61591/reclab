@@ -24,13 +24,11 @@ recommended you proceed in order if it's your first time to use the package.
    train_test.rst
    contributing.rst
 
-Examples
---------
-
-   See the :ref:`general_examples` section for examples of use.
+Examples of use
+---------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    auto_examples/index.rst
 
