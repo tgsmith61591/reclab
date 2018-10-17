@@ -48,6 +48,11 @@ jobs:
 workflows:
   version: 2
 
+  # All CPython jobs:
+  cpython:
+    jobs:
+      - python3
+
   # All PyPy jobs:
   pypy:
     jobs:
