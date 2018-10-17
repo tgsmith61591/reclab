@@ -27,6 +27,8 @@ jobs:
             - ~/.ccache
             # Because building the nmslib wheel is SUCH a pain!!!!!
             - ~/.cache/pip
+      # Show whether the cache worked as hoped...
+      - run: ls ~/.cache/pip
 
   # For testing PyPy rather than CPython
   pypy36:

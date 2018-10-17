@@ -5,14 +5,8 @@
 # artifacts on <64 bit Linux or Mac. All artifacts are 64-bit ONLY.
 
 language: python
-sudo: required
-
-env:
-  global:
-    - PYMODULE=reclab
-    - TEST_DIR=/tmp/reclab
-    - OMP_NUM_THREADS=1
-    - OPENBLAS_NUM_THREADS=1
+sudo: false
+dist: trusty
 
 matrix:
   include:
@@ -23,7 +17,7 @@ matrix:
       os: osx
       python: 3.6.5
       osx_image: xcode9.3
-      env: PYTHON=3
+      env: PYTHON="3" OPENBLAS_NUM_THREADS="1"
 
 addons:
   apt:
