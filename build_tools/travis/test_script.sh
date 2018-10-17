@@ -7,4 +7,4 @@
 # License: 3-clause BSD
 
 set -e
-$PYTHON -m pytest -v --durations=20
+$PY -m pytest -v --durations=20
