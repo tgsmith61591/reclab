@@ -20,10 +20,10 @@ jobs:
           key: v1-datasets-{{ .Branch }}
       - run: ./build_tools/circle/build_test_cpython.sh
       - save_cache:
-        key: v1-datasets-{{ .Branch }}
-        # The path to lastfm data we've unpacked now
-        paths:
-          - ~/.reclab-cache
+          key: v1-datasets-{{ .Branch }}
+          # The path to lastfm data we've unpacked now
+          paths:
+            - ~/.reclab-cache
 
   # For testing PyPy rather than CPython
   pypy36:
