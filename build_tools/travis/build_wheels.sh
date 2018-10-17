@@ -41,22 +41,10 @@ pushd $(dirname $0) > /dev/null
 _root=$(dirname $(dirname $(pwd -P))) # get one directory up from parent to get to root dir
 popd > /dev/null
 
-if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-    echo "Building LINUX OS wheels"
-
-    for pyver in ${PYTHON_VERSION}; do
-        if [ -z "$UCS_SETTING" ] || [ "$UCS_SETTING" = "ucs2" ]; then
-            build_wheel $pyver "x86_64" "ucs2"
-        elif [ "$UCS_SETTING" = "ucs4" ]; then
-            build_wheel $pyver "x86_64" "ucs4"
-        else
-            echo "Unrecognized UCS_SETTING: ${UCS_SETTING}" 
-        fi
-    done
-elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
     # this should be all that's required, right? We already removed the .egg-info
     # directory so no locally cached SOURCES.txt with absolute paths will blow things up
-    python setup.py bdist_wheel
+    $PYTHON setup.py bdist_wheel
 else
     echo "Cannot build on ${TRAVIS_OS_NAME}."
 fi

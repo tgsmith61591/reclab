@@ -45,7 +45,7 @@ def _get_cached_data(key, sparse, default=None):
     return sub_dict.get(sparse, default)
 
 
-def load_lastfm(cache=False, as_sparse=False, dtype=np.float32):
+def load_lastfm(cache=True, as_sparse=False, dtype=np.float32):
     """Load and return the lastFM dataset.
 
     Load up the last.fm dataset. The entire dataset can be found here:
@@ -64,10 +64,10 @@ def load_lastfm(cache=False, as_sparse=False, dtype=np.float32):
 
     Parameters
     ----------
-    cache : bool, optional (default=False)
+    cache : bool, optional (default=True)
         Whether to cache the bunch result locally to avoid multiple re-reads
         from disk in the event of calling ``load_lastfm`` again. Default is
-        False.
+        True.
 
     as_sparse : bool, optional (default=False)
         Whether to return a sparse CSR array with users along the row axis,
@@ -126,30 +126,42 @@ def load_lastfm(cache=False, as_sparse=False, dtype=np.float32):
     metadata_filename = join(base_dir, "lastfm_artists.tsv.gz")
     metadata = np.loadtxt(metadata_filename, delimiter="\t", dtype=str)
 
-    # we need to label encode the users and artists in order to prevent
-    # any index errors in the train/test splits, etc.
-    users = LabelEncoder().fit_transform(data[:, 0])
-    items = LabelEncoder().fit_transform(data[:, 1])
-    artists = metadata[:, 1]
-
     # need to make the join key in the metadata an int...
+    users = data[:, 0]
+    items = data[:, 1]
     ratings = data[:, 2].astype(dtype)
+    artists = {int(row[0]): row[1] for row in metadata}
     data = Bunch(users=users,
                  products=items,
                  ratings=ratings,
                  artists=artists)
 
-    # cache if necessary
+    # Cache if necessary. If the first time and as_sparse, we actually end
+    # up caching two things
     if cache:
         _cache_data(data, cache_key, False)
 
     # we can also cache the sparse
     if as_sparse:
+        # we need to label encode the users and artists in order to prevent
+        # any index errors in the train/test splits, etc.
+        user_le = LabelEncoder()
+        item_le = LabelEncoder()
+        users = user_le.fit_transform(users)
+        items = item_le.fit_transform(items)
+
+        # Also get the artists into an encoded state
+        keys, values = zip(*artists.items())
+        transformed_keys = item_le.transform(keys)
+        artists = metadata[transformed_keys, 1]
+
         data = Bunch(
             ratings=to_sparse_csr(
                 u=users, i=items, r=ratings,
                 axis=0, dtype=dtype),
-            artists=artists)
+            artists=artists,
+            user_label_encoder=user_le,
+            item_label_encoder=item_le)
 
         if cache:
             _cache_data(data, cache_key, True)

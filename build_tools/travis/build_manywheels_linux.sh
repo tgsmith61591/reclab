@@ -4,8 +4,6 @@
 set -e -x
 
 # Compile wheels
-PYTHON="/opt/python/${PYTHON_VERSION}/bin/python"
-PIP="/opt/python/${PYTHON_VERSION}/bin/pip"
 ${PIP} install --upgrade pip wheel
 ${PIP} install --upgrade setuptools
 ${PIP} install --upgrade cython==0.23.5

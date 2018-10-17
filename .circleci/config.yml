@@ -1,6 +1,35 @@
 version: 2
 
 jobs:
+  # For testing conventional CPython dists
+  python3:
+    docker:
+      # Use the python 3.6 image for simplicity, since version is managed by
+      # the miniconda dist anyways.
+      - image: circleci/python:3.6.1
+    environment:
+      - MINICONDA_PATH: ~/miniconda
+      - CONDA_ENV_NAME: testenv
+      - PYTHON_VERSION: 3
+      - NUMPY_VERSION: 1.15.2
+      - IMPLICIT_VERSION: 0.3.7
+    steps:
+      - checkout
+      - run: ./build_tools/circle/checkout_merge_commit.sh
+      - restore_cache:
+          key: v1-datasets-{{ .Branch }}
+      - run: ./build_tools/circle/build_test_cpython.sh
+      - save_cache:
+          key: v1-datasets-{{ .Branch }}
+          # The path to lastfm data we've unpacked now
+          paths:
+            - ~/.reclab-cache
+            - ~/.ccache
+            # Because building the nmslib wheel is SUCH a pain!!!!!
+            - ~/.cache/pip
+      # Show whether the cache worked as hoped...
+      - run: ls ~/.cache/pip
+
   # For testing PyPy rather than CPython
   pypy36:
     docker:
@@ -23,6 +52,11 @@ jobs:
 
 workflows:
   version: 2
+
+  # All CPython jobs:
+  cpython:
+    jobs:
+      - python3
 
   # All PyPy jobs:
   pypy:

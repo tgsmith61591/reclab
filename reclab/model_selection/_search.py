@@ -65,8 +65,13 @@ def _fit_and_score(estimator, train, val, parameters, verbose, metric,
     estimator.fit(train)
     fit_time = time.time() - start
 
+    # The recommendations are a predicted FUTURE state of a user's ratings.
+    # Therefore, we need to make sure to create FUTURE recommendations based
+    # on the PAST state, which in this case is TRAIN. PREDICT from TRAIN, but
+    # filter previously-rated (i.e., training ratings) such that we evaluate
+    # only the VAL ratings (truth) against the recommendations.
     recs = estimator.recommend_for_all_users(
-        val, filter_previously_rated=False,  # to eval test vs. new preds
+        train, filter_previously_rated=True,  # to eval test vs. new preds
         return_scores=False,
         **recommend_kwargs)  # this is a generator
 
@@ -198,9 +203,10 @@ class _BaseRecommenderSearchCV(six.with_metaclass(ABCMeta, BaseRecommender)):
             n_jobs = 1
 
         # if n_jobs is still parallel, set the MKL var
-        if n_jobs != 1:
-            # Set single threaded if we're using parallel
-            set_blas_singlethread()
+        # TODO: should we do this?...
+        # if n_jobs != 1:
+        #     # Set single threaded if we're using parallel
+        #     set_blas_singlethread()
 
         # get the scoring metric
         scorer = check_permitted_value(_valid_metrics, self.scoring)
@@ -234,7 +240,7 @@ class _BaseRecommenderSearchCV(six.with_metaclass(ABCMeta, BaseRecommender)):
                   "fits (plus one refit at the end)"
                   .format(n_iter, n_splits, n_iter * n_splits))
 
-        out = Parallel(n_jobs=self.n_jobs)(
+        out = Parallel(n_jobs=n_jobs)(
             delayed(_fit_and_score)(
                 clone(est), train, test, parameters, verbose=verbose,
                 metric=scorer, param_num=i // n_splits,
@@ -277,6 +283,16 @@ class _BaseRecommenderSearchCV(six.with_metaclass(ABCMeta, BaseRecommender)):
         self.best_params_ = best_params
 
         return self
+
+    @inherit_function_doc(BaseRecommender)
+    def n_users(self):
+        check_is_fitted(self, "best_estimator_")
+        return self.best_estimator_.n_users()
+
+    @inherit_function_doc(BaseRecommender)
+    def n_items(self):
+        check_is_fitted(self, "best_estimator_")
+        return self.best_estimator_.n_items()
 
     @inherit_function_doc(BaseRecommender)
     def recommend_for_user(self, userid, R, n=10, filter_previously_rated=True,

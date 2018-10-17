@@ -6,6 +6,7 @@ from reclab.datasets import load_lastfm
 
 from numpy.testing import assert_array_equal
 import numpy as np
+import pytest
 
 from scipy import sparse
 
@@ -19,10 +20,11 @@ class TestLoadLastFM:
     def test_load_bunch(self):
         u, i, r = unpack_bunch(load_lastfm(cache=True))
 
-        # Show the users have been encoded, etc. (should be 0 thru max)
+        # Show the users have NOT been encoded
         for array in (u, i):
             unq = np.sort(np.unique(array))
-            assert_array_equal(unq, np.arange(unq.shape[0]))
+            with pytest.raises(AssertionError):
+                assert_array_equal(unq, np.arange(unq.shape[0]))
 
     def test_load_sparse(self):
         bunch = load_lastfm(cache=True, as_sparse=True)

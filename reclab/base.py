@@ -132,6 +132,14 @@ class BaseRecommender(six.with_metaclass(ABCMeta, base.BaseEstimator)):
         """
 
     @abstractmethod
+    def n_users(self):
+        """Get the number of users in the recommender system"""
+
+    @abstractmethod
+    def n_items(self):
+        """Get the number of items in the recommender system"""
+
+    @abstractmethod
     def recommend_for_user(self, userid, R, n=10, filter_previously_rated=True,
                            filter_items=None, return_scores=False, **kwargs):
         """Produce a recommendation for a user given his/her ratings history.
