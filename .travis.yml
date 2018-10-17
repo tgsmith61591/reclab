@@ -1,21 +1,23 @@
-# The Travis build will test both Linux AND OSX distributions, but language
-# needs to be overridden to "generic" for Mac, otherwise the build will fail
-# until Python is downloaded via Homebrew (which is handled in the
-# before_install.sh). Note that none of the test envs or wheels test/create
-# artifacts on <64 bit Linux or Mac. All artifacts are 64-bit ONLY.
-
 language: python
 sudo: false
 dist: trusty
 
+# The Travis build will test OSX distributions ONLY, and the language
+# needs to be overridden to "generic" for Mac, otherwise the build will fail
+# until Python is downloaded via Homebrew (which is handled in the
+# before_install.sh). All artifacts are 64-bit ONLY.
+
 matrix:
   include:
-    # This environment tests Python 3.5 support on MAC OS X
-    # (Maybe just build from source on Mac, since it depends on GCC-8+ and that
-    # can be a pain to depend on for a wheel...)
     - language: generic
       os: osx
-      python: 3.6.5
+      python: 3.5.6
+      osx_image: xcode9.3
+      env: PYTHON="3" OPENBLAS_NUM_THREADS="1"
+
+    - language: generic
+      os: osx
+      python: 3.6.6
       osx_image: xcode9.3
       env: PYTHON="3" OPENBLAS_NUM_THREADS="1"
 
@@ -26,15 +28,14 @@ addons:
     - liblapack-dev
     - gfortran
 
-before_install:
-  - source build_tools/travis/before_install.sh
+before_install: source build_tools/travis/before_install.sh
 install: source build_tools/travis/install.sh
 script: bash build_tools/travis/test_script.sh
 
 cache:
   - apt
-  directories:
-  - $HOME/.cache/pip
+  - directories:
+    - $HOME/.cache/pip
 
 # we set +e to re-instate the error-tolerant state. The problem is Travis is broken on Mac OS
 # builds right now due to Issue 6307 (https://github.com/travis-ci/travis-ci/issues/6307)
