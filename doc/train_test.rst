@@ -64,12 +64,17 @@ and the test set represents the next items the user rated.
 
    <br/>
 
-As an (obviously contrived) example, given the following input data:
+As an (obviously contrived) example, given the following input data of users' listens
+to various metal artists (each of which is worth checking out!):
 
 .. image:: img/input.png
    :scale: 50 %
    :alt: Collaborative filtering ratings matrix
    :align: center
+
+.. raw:: html
+
+   <br/>
 
 We may split the data into a train/test set that resembles the following:
 
@@ -77,6 +82,10 @@ We may split the data into a train/test set that resembles the following:
    :scale: 50 %
    :alt: Collaborative filtering train/test split
    :align: center
+
+.. raw:: html
+
+   <br/>
 
 Obviously, we'd hope the input data had more than 11 ratings events!
 
@@ -137,3 +146,7 @@ There are situations where a conventional train/test split could work for you:
 
 However, since reclab uses sparse matrices, you'll likely have to perform your own
 train/test split on a dense matrix and make it sparse prior to fitting any of the algorithms.
+
+.. raw:: html
+
+   <br/>

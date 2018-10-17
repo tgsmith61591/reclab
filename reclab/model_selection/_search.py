@@ -65,8 +65,13 @@ def _fit_and_score(estimator, train, val, parameters, verbose, metric,
     estimator.fit(train)
     fit_time = time.time() - start
 
+    # The recommendations are a predicted FUTURE state of a user's ratings.
+    # Therefore, we need to make sure to create FUTURE recommendations based
+    # on the PAST state, which in this case is TRAIN. PREDICT from TRAIN, but
+    # filter previously-rated (i.e., training ratings) such that we evaluate
+    # only the VAL ratings (truth) against the recommendations.
     recs = estimator.recommend_for_all_users(
-        val, filter_previously_rated=False,  # to eval test vs. new preds
+        train, filter_previously_rated=True,  # to eval test vs. new preds
         return_scores=False,
         **recommend_kwargs)  # this is a generator
 

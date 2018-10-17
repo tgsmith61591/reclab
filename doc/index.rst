@@ -27,7 +27,6 @@ cross-validation and model selection.
    :hidden:
 
    API Reference <./modules/classes.rst>
-   Examples <./auto_examples/index.rst>
    User Guide <./user_guide.rst>
 
 

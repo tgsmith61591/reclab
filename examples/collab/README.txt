@@ -1,11 +1,13 @@
 .. _collab_examples:
 
 Collaborative filtering
-=======================
+-----------------------
 
-Examples of use for the ``collab`` submodule in reclab.
+The ``collab`` submodule in reclab contains many different approaches to
+collaborative filtering, including matrix factorization techniques, approximate
+Alternating Least Squares approaches, and nearest neighbor/item similarity
+methods.
 
 .. raw:: html
 
    <br/>
-
