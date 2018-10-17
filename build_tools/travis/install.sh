@@ -8,7 +8,7 @@ set -e
 
 # Install pip requirements
 $PIP install numpy cython scikit-learn pybind11
-$PIP install "implicit>=0.3.7" nmslib annoy pytest twine
+$PIP install --user "implicit>=0.3.7" nmslib annoy pytest twine
 
 # now run the python setup. This implicitly builds all the C code with build_ext
 travis_retry $PIP install -e .

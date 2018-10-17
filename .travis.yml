@@ -1,5 +1,5 @@
 language: python
-sudo: false
+sudo: true
 dist: trusty
 
 # The Travis build will test OSX distributions ONLY, and the language
