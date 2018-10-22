@@ -62,8 +62,39 @@ class RecommenderDeployment(BaseEstimator):
             recommendations. If this is the strategy you use, you'll have to
             check for empty recommendations and default to a set of your
             choosing.
-    """
 
+    Examples
+    --------
+    A simple example with no LabelEncoders. First, fit a model and stuff
+    it into a model wrapper:
+
+    >>> from reclab.datasets import load_lastfm
+    >>> from reclab.collab import ItemItemRecommender
+    >>> lastfm = load_lastfm(cache=True, as_sparse=True)
+    >>> X = lastfm.ratings
+    >>> clf = ItemItemRecommender(metric='kernel', k=40, show_progress=False)
+    >>> clf.fit(X)
+    >>> wpr = RecommenderDeployment(estimator=clf)
+
+    Score it with a JSON (or dict) of a user's latest ratings:
+
+    >>> def get_user_ratings_dict(userid):
+    ...     rated_idcs = X[userid, :].nonzero()[1]
+    ...     listens = X[userid, rated_idcs].toarray()[0]
+    ...     return dict(zip(rated_idcs, listens))
+    ...
+    >>>
+    >>> wpr.recommend_for_user(
+    ...     userid=150, ratings=get_user_ratings_dict(150), n=5)
+    array([ 492,   66,  894,  418, 1403], dtype=int32)
+
+    You can also get recommendations with an array of user ratings rather
+    than a dictionary (depending on the architecture of your scoring service):
+
+    >>> wpr.recommend_for_user(
+    ...     userid=150, ratings=X[150, :].toarray()[0], n=5)
+    array([ 492,   66,  894,  418, 1403], dtype=int32)
+    """
     def __init__(self, estimator, item_encoder=None, user_encoder=None,
                  filter_items=None, user_missing_strategy="warn"):
 

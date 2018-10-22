@@ -27,7 +27,7 @@ from ..metrics.ranking import ndcg_at, mean_average_precision, precision_at
 from ..utils.validation import check_permitted_value
 from ..utils.decorators import inherit_function_doc
 from ._split import check_cv
-from .._config import set_blas_singlethread
+# from .._config import set_blas_singlethread
 
 __all__ = ['RandomizedRecommenderSearchCV',
            'RecommenderGridSearchCV']

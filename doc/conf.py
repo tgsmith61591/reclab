@@ -37,6 +37,7 @@ try:
     import sphinx_gallery
     import numpydoc
     import sphinx
+    import sphinx_rtd_theme
 except ImportError:
     raise ImportError("""
 To build the documentation, you'll need to install the following packages:
@@ -44,6 +45,7 @@ To build the documentation, you'll need to install the following packages:
     $ pip install numpydoc
     $ pip install sphinx
     $ pip install sphinx_gallery
+    $ pip install sphinx_rtd_theme
     
 See the README.md for more elaborate instructions on how to build the
 documentation.

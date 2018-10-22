@@ -1,6 +1,10 @@
 """
 The ``reclab.model_deployment`` submodule provides tools for serving your
-selected model and producing recommendations.
+selected model and producing recommendations all within a wrapper, including:
+
+* Automatically encoding/inverse-encoding user and product IDs
+* Producing recommendations from JSON or array (depending on your service
+  architecture)
 """
 
 from .wrapper import *

@@ -11,6 +11,10 @@ the :ref:`full user guide <user_guide>` for further details, as the class and
 function raw specifications may not be enough to give full guidelines on their
 uses.
 
+.. raw:: html
+
+   <br/>
+
 
 .. _base_ref:
 
@@ -20,6 +24,10 @@ uses.
 .. automodule:: reclab.base
     :no-members:
     :no-inherited-members:
+
+.. raw:: html
+
+   <br/>
 
 Base recommender class
 ----------------------
@@ -54,6 +62,10 @@ Common-use functions
     :no-members:
     :no-inherited-members:
 
+.. raw:: html
+
+   <br/>
+
 Collaborative filtering estimators
 ----------------------------------
 
@@ -78,6 +90,10 @@ Collaborative filtering estimators
     :no-members:
     :no-inherited-members:
 
+.. raw:: html
+
+   <br/>
+
 Dataset loading functions
 -------------------------
 
@@ -98,6 +114,10 @@ Dataset loading functions
 .. automodule:: reclab.metrics
     :no-members:
     :no-inherited-members:
+
+.. raw:: html
+
+   <br/>
 
 Ranking metrics
 ---------------
@@ -122,7 +142,7 @@ Ranking metrics
     :no-members:
     :no-inherited-members:
 
-Data splitting
+Deploy wrapper
 --------------
 
 .. currentmodule:: reclab
@@ -142,6 +162,10 @@ Data splitting
 .. automodule:: reclab.model_selection
     :no-members:
     :no-inherited-members:
+
+.. raw:: html
+
+   <br/>
 
 Data splitting
 --------------
@@ -186,6 +210,10 @@ Grid searches
 .. automodule:: reclab.utils
     :no-members:
     :no-inherited-members:
+
+.. raw:: html
+
+   <br/>
 
 Validation & array-checking functions
 -------------------------------------

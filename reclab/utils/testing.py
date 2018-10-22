@@ -12,11 +12,15 @@ import types
 import shutil
 import os
 
-from .._config import RECLAB_CACHE
+from .._config import RECLAB_CACHE, set_blas_singlethread
 
 __all__ = [
     'RecommenderTestClass'
 ]
+
+# The moment anything is imported from in the testing directory, set the
+# BLAS threading to single thread, since we only import here when testing.
+set_blas_singlethread()
 
 
 class RecommenderTestClass(six.with_metaclass(ABCMeta)):
