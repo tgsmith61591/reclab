@@ -3,8 +3,9 @@
 # Modify permissions on file
 set -e -x
 
-# Compile wheels
-${PIP} install --upgrade pip wheel
+# We have to use wheel < 0.32 since they inexplicably removed the open_for_csv
+# function from the package after 0.31.1 and it fails for Python 3.6?!
+${PIP} install --upgrade pip wheel==0.31.1
 ${PIP} install --upgrade setuptools
 ${PIP} install --upgrade cython==0.23.5
 

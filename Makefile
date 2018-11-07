@@ -1,37 +1,47 @@
 # simple makefile to simplify repetitive build env management tasks under posix
-# this is adopted from the sklearn Makefile. This is REQUIRED for deployment via
-# Travis using the build_many_wheels.sh script
+# this is adopted from the sklearn Makefile
 
 # caution: testing won't work on windows
 
 PYTHON ?= python
-CYTHON ?= cython
-CTAGS ?= ctags
 
-# skip doctests on 32bit python
-BITS := $(shell python -c 'import struct; print(8 * struct.calcsize("P"))')
+.PHONY: clean develop test
 
-all: clean inplace #test
-
-clean-ctags:
-	rm -f tags
-
-clean: clean-ctags
+clean:
 	$(PYTHON) setup.py clean
 	rm -rf dist
+	rm -rf build
 
-in: inplace # just a shortcut
-inplace:
-	$(PYTHON) setup.py build_ext -i
+doc-requirements:
+	$(PYTHON) -m pip install -r build_tools/doc/doc_requirements.txt
 
-trailing-spaces:
-	find python -name "*.py" -exec perl -pi -e 's/[ \t]*$$//' {} \;
+requirements:
+	$(PYTHON) -m pip install -r requirements.txt
 
-ctags:
-	# make tags for symbol based navigation in emacs and vim
-	# Install with: sudo apt-get install exuberant-ctags
-	$(CTAGS) --python-kinds=-i -R reclab
+develop: requirements
+	$(PYTHON) setup.py develop
 
-code-analysis:
-	flake8 reclab | grep -v __init__ | grep -v external
-	pylint -E -i y reclab/ -d E1103,E0611,E1101
+install: requirements
+	$(PYTHON) setup.py install
+
+# test-sphinxext:
+#	$(NOSETESTS) -s -v doc/sphinxext/
+#test-doc:
+#ifeq ($(BITS),64)
+#	$(NOSETESTS) -s -v doc/*.rst doc/modules/ doc/datasets/ \
+#	doc/developers doc/tutorial/basic doc/tutorial/statistical_inference \
+#	doc/tutorial/text_analytics
+#endif
+
+test-requirements:
+	$(PYTHON) -m pip install pytest pytest-cov flake8
+
+test-lint: test-requirements
+	$(PYTHON) -m flake8 reclab --filename='*.py' \
+	--ignore E803,F401,F403,W293,W504,W605
+
+test-unit: test-requirements
+	$(PYTHON) -m pytest -v --durations=20 --cov-config .coveragerc --cov reclab
+	rm -rf .coverage.*
+
+test: develop test-unit test-lint
