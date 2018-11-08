@@ -1,0 +1,16 @@
+:mod:`reclab.base`.BaseRecommender
+=========================================
+
+.. currentmodule:: reclab.base
+
+.. autoclass:: BaseRecommender
+
+   
+   .. automethod:: __init__
+   
+
+.. include:: reclab.base.BaseRecommender.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

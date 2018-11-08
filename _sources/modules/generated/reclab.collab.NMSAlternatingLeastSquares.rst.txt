@@ -1,0 +1,16 @@
+:mod:`reclab.collab`.NMSAlternatingLeastSquares
+======================================================
+
+.. currentmodule:: reclab.collab
+
+.. autoclass:: NMSAlternatingLeastSquares
+
+   
+   .. automethod:: __init__
+   
+
+.. include:: reclab.collab.NMSAlternatingLeastSquares.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

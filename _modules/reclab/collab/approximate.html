@@ -1,0 +1,823 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>reclab.collab.approximate &mdash; reclab 0.0.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/style.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> reclab
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/classes.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">reclab</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>reclab.collab.approximate</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for reclab.collab.approximate</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">from</span> <span class="nn">.als</span> <span class="k">import</span> <span class="n">AlternatingLeastSquares</span>
+<span class="kn">from</span> <span class="nn">..base</span> <span class="k">import</span> <span class="n">_recommend_items_and_maybe_scores</span><span class="p">,</span> <span class="n">clone</span>
+<span class="kn">from</span> <span class="nn">..utils.decorators</span> <span class="k">import</span> <span class="n">inherit_function_doc</span>
+<span class="kn">from</span> <span class="nn">..utils.validation</span> <span class="k">import</span> <span class="n">check_sparse_array</span><span class="p">,</span> <span class="n">get_n_factors</span>
+<span class="kn">from</span> <span class="nn">..utils.system</span> <span class="k">import</span> <span class="n">safe_mkdirs</span>
+<span class="kn">from</span> <span class="nn">.._config</span> <span class="k">import</span> <span class="n">RECLAB_CACHE</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="k">import</span> <span class="n">check_random_state</span><span class="p">,</span> <span class="n">check_is_fitted</span>
+<span class="kn">from</span> <span class="nn">sklearn.externals</span> <span class="k">import</span> <span class="n">six</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="k">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="kn">from</span> <span class="nn">implicit</span> <span class="k">import</span> <span class="n">approximate_als</span> <span class="k">as</span> <span class="n">aals</span>
+<span class="kn">from</span> <span class="nn">implicit</span> <span class="k">import</span> <span class="n">cuda</span>
+
+<span class="kn">from</span> <span class="nn">annoy</span> <span class="k">import</span> <span class="n">AnnoyIndex</span>
+<span class="kn">import</span> <span class="nn">nmslib</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span><span class="p">,</span> <span class="n">exists</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;AnnoyAlternatingLeastSquares&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NMSAlternatingLeastSquares&#39;</span>
+<span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_get_filter_items</span><span class="p">(</span><span class="n">filter_previously_rated</span><span class="p">,</span> <span class="n">previously_liked</span><span class="p">,</span> <span class="n">filter_items</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Determine which items to filter out.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">filter_previously_rated</span><span class="p">:</span>
+        <span class="n">previously_liked</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">previously_liked</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">filter_items</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">filter_items</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">filter_items</span><span class="p">)</span>
+            <span class="n">previously_liked</span> <span class="o">=</span> <span class="n">previously_liked</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">filter_items</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">previously_liked</span>  <span class="c1"># type: set</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">filter_items</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">filter_items</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">set</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">_do_filter</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">filter_out</span><span class="p">,</span> <span class="n">return_scores</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Filter items out of the recommendations.</span>
+
+<span class="sd">    Given a list of items to filter out, remove them from recommended items</span>
+<span class="sd">    and scores.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Zip items/scores up</span>
+    <span class="n">best</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">scores</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_recommend_items_and_maybe_scores</span><span class="p">(</span>
+        <span class="n">best</span><span class="o">=</span><span class="n">best</span><span class="p">,</span> <span class="n">return_scores</span><span class="o">=</span><span class="n">return_scores</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span>
+        <span class="n">filter_items</span><span class="o">=</span><span class="n">filter_out</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_recommend_aals_annoy</span><span class="p">(</span><span class="n">est</span><span class="p">,</span> <span class="n">userid</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">filter_items</span><span class="p">,</span>
+                          <span class="n">recalculate_user</span><span class="p">,</span> <span class="n">filter_previously_rated</span><span class="p">,</span>
+                          <span class="n">return_scores</span><span class="p">,</span> <span class="n">recommend_function</span><span class="p">,</span>
+                          <span class="n">scaling_function</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Produce recommendations for Annoy and NMS ALS algorithms&quot;&quot;&quot;</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">est</span><span class="o">.</span><span class="n">_user_factor</span><span class="p">(</span><span class="n">userid</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">recalculate_user</span><span class="p">)</span>
+
+    <span class="c1"># Calculate the top N items, only removing the liked items from the</span>
+    <span class="c1"># results if specified</span>
+    <span class="n">filter_out</span> <span class="o">=</span> <span class="n">_get_filter_items</span><span class="p">(</span><span class="n">filter_previously_rated</span><span class="p">,</span>
+                                   <span class="c1"># Don&#39;t use user, since it might have</span>
+                                   <span class="c1"># been re-estimated:</span>
+                                   <span class="n">R</span><span class="p">[</span><span class="n">userid</span><span class="p">]</span><span class="o">.</span><span class="n">indices</span><span class="p">,</span>
+                                   <span class="n">filter_items</span><span class="p">)</span>
+
+    <span class="c1"># If N is None, we set it to the number of items. The item_factors attr</span>
+    <span class="c1"># exists in all ALS models here</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">est</span><span class="o">.</span><span class="n">item_factors</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># The count to produce</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="n">n</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">filter_out</span><span class="p">)</span>
+
+    <span class="c1"># See [1] in docstring for why we do this...</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># (is this the fastest way?)</span>
+    <span class="n">ids</span><span class="p">,</span> <span class="n">dist</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">,</span>  <span class="c1"># Need to be a Numpy array</span>
+                    <span class="n">recommend_function</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+
+    <span class="c1"># Only compute the dist scaling if we care about them, since it&#39;s</span>
+    <span class="c1"># expensive</span>
+    <span class="k">if</span> <span class="n">return_scores</span><span class="p">:</span>
+        <span class="c1"># convert the distances from euclidean to cosine distance,</span>
+        <span class="c1"># and then rescale the cosine distance to go back to inner product.</span>
+        <span class="n">scaling</span> <span class="o">=</span> <span class="n">est</span><span class="o">.</span><span class="n">max_norm</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">scaling_function</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">scaling</span><span class="p">)</span>  <span class="c1"># sig: f(dist, scaling)</span>
+
+    <span class="c1"># if we&#39;re filtering anything out...</span>
+    <span class="k">return</span> <span class="n">_do_filter</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">filter_out</span><span class="o">=</span><span class="n">filter_out</span><span class="p">,</span>
+                      <span class="n">return_scores</span><span class="o">=</span><span class="n">return_scores</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_BaseApproximateALS</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">with_metaclass</span><span class="p">(</span><span class="n">ABCMeta</span><span class="p">,</span>
+                                             <span class="n">AlternatingLeastSquares</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for approximated ALS variants&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Pass the args for the constructor up</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_BaseApproximateALS</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="nd">@inherit_function_doc</span><span class="p">(</span><span class="n">AlternatingLeastSquares</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="c1"># Validate that X is a sparse array. Implicit forces float32, so</span>
+        <span class="c1"># better to check it now...</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">check_sparse_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                               <span class="n">force_all_finite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Fit the estimator (Implicit likes it in item-user major order...)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span> <span class="o">=</span> <span class="n">est</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_estimator</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">est</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">show_progress</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">_preserialize_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pass-through unless overridden&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pickle subhook for both Annoy and NMS algorithms&quot;&quot;&quot;</span>
+        <span class="c1"># If it&#39;s not fit, this is super easy</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;estimator_&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span>
+
+        <span class="c1"># Otherwise we have to individually save elements of it...</span>
+        <span class="n">est</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_preserialize_hook</span><span class="p">()</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;similar_items_index&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">est</span><span class="o">.</span><span class="n">similar_items_index</span><span class="p">,</span>
+                                           <span class="n">est</span><span class="o">.</span><span class="n">approximate_similar_items</span><span class="p">),</span>
+                   <span class="s2">&quot;recommend_index&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">est</span><span class="o">.</span><span class="n">recommend_index</span><span class="p">,</span>
+                                       <span class="n">est</span><span class="o">.</span><span class="n">approximate_recommend</span><span class="p">)}</span>
+
+        <span class="c1"># Remove the indices from the object for pickling</span>
+        <span class="n">est</span><span class="o">.</span><span class="n">similar_items_index</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">est</span><span class="o">.</span><span class="n">recommend_index</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Since the signatures of the __init__ functions should play nice with</span>
+        <span class="c1"># sklearn, and since we&#39;ve removed the un-picklables, we should be able</span>
+        <span class="c1"># to copy this now.</span>
+        <span class="n">obj_dict</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clone_model_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="vm">__dict__</span>
+
+        <span class="c1"># Make sure to bind the estimator to the object dictionary so it gets</span>
+        <span class="c1"># pickled out.</span>
+        <span class="n">obj_dict</span><span class="p">[</span><span class="s1">&#39;estimator_&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">est</span><span class="p">)</span>
+
+        <span class="c1"># If the model key already exists in the cache, remove it now</span>
+        <span class="n">model_index_dir</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">RECLAB_CACHE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">exists</span><span class="p">(</span><span class="n">model_index_dir</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">model_index_dir</span><span class="p">)</span>
+        <span class="n">safe_mkdirs</span><span class="p">(</span><span class="n">model_index_dir</span><span class="p">)</span>
+
+        <span class="c1"># Save the indices to Disk. wrap this in try/finally so if something</span>
+        <span class="c1"># breaks halfway through we don&#39;t blow up the disk space over time...</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">approx</span><span class="p">)</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">indices</span><span class="p">):</span>
+                <span class="c1"># Only do this if we&#39;re approximating the recommend operation,</span>
+                <span class="c1"># otherwise the index is None anyways...</span>
+                <span class="k">if</span> <span class="n">approx</span><span class="p">:</span>
+                    <span class="n">loc</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">model_index_dir</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+
+                    <span class="c1"># Save index to cache. This is calling the abstract</span>
+                    <span class="c1"># function that&#39;s of the signature f(index, loc) -&gt; None</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_save_index</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
+
+                    <span class="c1"># Re-bind the object to the estimator</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="n">est</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+
+        <span class="c1"># If we break down, remove the model index directory so as not to</span>
+        <span class="c1"># blow up the filesystem!</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">model_index_dir</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+        <span class="k">return</span> <span class="n">obj_dict</span>
+
+    <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load an object from disk.</span>
+
+<span class="sd">        The trick here is loading the similar items and recommend index objects</span>
+<span class="sd">        from disk, as they don&#39;t play nice with Pickle or Joblib.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span> <span class="o">=</span> <span class="n">state</span>
+
+        <span class="c1"># If the estimator_ attribute exists, we know we need to re-bind the</span>
+        <span class="c1"># FloatIndex or AnnoyIndex attributes after we load them from disk</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;estimator_&quot;</span><span class="p">):</span>
+            <span class="c1"># Bind the index objects to the estimator to be able to make</span>
+            <span class="c1"># recommendations</span>
+            <span class="n">est</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">approx</span> <span class="ow">in</span> <span class="p">(</span>
+                    <span class="p">(</span><span class="s2">&quot;similar_items_index&quot;</span><span class="p">,</span> <span class="n">est</span><span class="o">.</span><span class="n">approximate_similar_items</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s2">&quot;recommend_index&quot;</span><span class="p">,</span> <span class="n">est</span><span class="o">.</span><span class="n">approximate_recommend</span><span class="p">)):</span>
+
+                <span class="c1"># Only load it if we approximated, otherwise keep the</span>
+                <span class="c1"># default as None</span>
+                <span class="k">if</span> <span class="n">approx</span><span class="p">:</span>
+                    <span class="c1"># Load the index and set it</span>
+                    <span class="n">location</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">RECLAB_CACHE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_key</span><span class="p">)</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="n">est</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_index</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_save_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">whereto</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Where to save the FloatIndex or AnnoyIndex objects.&quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_load_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wherefrom</span><span class="p">,</span> <span class="n">index_key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load an index from disk&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="AnnoyAlternatingLeastSquares"><a class="viewcode-back" href="../../../modules/generated/reclab.collab.AnnoyAlternatingLeastSquares.html#reclab.collab.AnnoyAlternatingLeastSquares">[docs]</a><span class="k">class</span> <span class="nc">AnnoyAlternatingLeastSquares</span><span class="p">(</span><span class="n">_BaseApproximateALS</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Alternating Least Squares with nearest neighbor indexing.</span>
+
+<span class="sd">    Improves :class:`reclab.collab.AlternatingLeastSquares` by using</span>
+<span class="sd">    `Annoy &lt;https://github.com/spotify/annoy&gt;`_ to create an approximate</span>
+<span class="sd">    nearest neighbors index of the latent factors. This dramatically reduces</span>
+<span class="sd">    inference time.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    factors : int or float, optional (default=100)</span>
+<span class="sd">        The number of latent factors to compute. Generally, fewer factors will</span>
+<span class="sd">        result in a much faster runtime, but also approximates the</span>
+<span class="sd">        reconstruction matrix less accurately.</span>
+
+<span class="sd">    regularization : float, optional (default=0.01)</span>
+<span class="sd">        The regularization (L2) parameter to use. The higher this value, the</span>
+<span class="sd">        more the algorithm will learn to generalize at the cost of training</span>
+<span class="sd">        reconstruction accuracy.</span>
+
+<span class="sd">    use_native : bool, optional (default=True)</span>
+<span class="sd">        Use native extensions to speed up model fitting.</span>
+
+<span class="sd">    use_cg : bool, optional (default=True)</span>
+<span class="sd">        Use a faster Conjugate Gradient solver to calculate factors. This is</span>
+<span class="sd">        the method proposed in the paper by Takacs, et. al, &quot;Applications</span>
+<span class="sd">        of the Conjugate Gradient Method for Implicit Feedback Collaborative</span>
+<span class="sd">        Filtering&quot;</span>
+
+<span class="sd">    use_gpu : bool, optional</span>
+<span class="sd">        Fit on the GPU if available, default is to run on GPU only if</span>
+<span class="sd">        available.</span>
+
+<span class="sd">    iterations : int, optional (default=15)</span>
+<span class="sd">        The number of ALS iterations to use when fitting data. The default</span>
+<span class="sd">        is 25. More iterations will yield a better fit, but will take longer.</span>
+
+<span class="sd">    calculate_training_loss : bool, optional (default=False)</span>
+<span class="sd">        Whether to log out the training loss at each iteration.</span>
+
+<span class="sd">    num_threads : int, optional (default=0)</span>
+<span class="sd">        The number of threads to use for fitting the model. This only</span>
+<span class="sd">        applies for the native extensions. Specifying 0 means to default</span>
+<span class="sd">        to the number of cores on the machine.</span>
+
+<span class="sd">    n_trees : int, optional (default=50)</span>
+<span class="sd">        The number of trees to use when building the Annoy index. More trees</span>
+<span class="sd">        gives higher precision when querying, but takes longer to index.</span>
+
+<span class="sd">    search_k : int, optional (default=-1)</span>
+<span class="sd">        Provides a way to search more trees at runtime, giving the ability to</span>
+<span class="sd">        have more accurate results at the cost of taking more time.</span>
+
+<span class="sd">    approximate_similar_items : bool, optional (default=True)</span>
+<span class="sd">        Whether or not to build an Annoy index for computing similar_items.</span>
+<span class="sd">        Default (recommended) is True.</span>
+
+<span class="sd">    approximate_recommend : bool, optional (default=True)</span>
+<span class="sd">        Whether or not to build an Annoy index for the recommend call.</span>
+<span class="sd">        Default (recommended) is True.</span>
+
+<span class="sd">    random_state : int, RandomState or None, optional (default=None)</span>
+<span class="sd">        The random state to control random seeding of the item and user</span>
+<span class="sd">        factor matrices.</span>
+
+<span class="sd">    show_progress : bool, optional (default=True)</span>
+<span class="sd">        Whether to show a progress bar while training and indexing.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Fitting an Annoy ALS model:</span>
+
+<span class="sd">    &gt;&gt;&gt; from reclab.datasets import load_lastfm</span>
+<span class="sd">    &gt;&gt;&gt; from reclab.model_selection import train_test_split</span>
+<span class="sd">    &gt;&gt;&gt; lastfm = load_lastfm(cache=True, as_sparse=True)</span>
+<span class="sd">    &gt;&gt;&gt; train, test = train_test_split(lastfm, random_state=42)</span>
+<span class="sd">    &gt;&gt;&gt; model = AnnoyAlternatingLeastSquares(</span>
+<span class="sd">    ...             random_state=1, show_progress=False)</span>
+<span class="sd">    &gt;&gt;&gt; model.fit(train)</span>
+<span class="sd">    AnnoyAlternatingLeastSquares(approximate_recommend=True,</span>
+<span class="sd">                   approximate_similar_items=True,</span>
+<span class="sd">                   calculate_training_loss=False, factors=100, iterations=15,</span>
+<span class="sd">                   n_trees=50, num_threads=0, random_state=1,</span>
+<span class="sd">                   regularization=0.01, search_k=-1, show_progress=False,</span>
+<span class="sd">                   use_cg=True, use_gpu=False, use_native=True)</span>
+
+<span class="sd">    Inference for a given user:</span>
+
+<span class="sd">    &gt;&gt;&gt; model.recommend_for_user(0, test, n=5)  # doctest: +SKIP</span>
+<span class="sd">    array([ 149, 2504,  153,  174,  221])</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] https://www.benfrederickson.com/approximate-nearest-neighbours-for-recommender-systems/  # noqa: E501</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="AnnoyAlternatingLeastSquares.__init__"><a class="viewcode-back" href="../../../modules/generated/reclab.collab.AnnoyAlternatingLeastSquares.html#reclab.collab.AnnoyAlternatingLeastSquares.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factors</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">regularization</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+                 <span class="n">use_native</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_cg</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+                 <span class="n">use_gpu</span><span class="o">=</span><span class="n">cuda</span><span class="o">.</span><span class="n">HAS_CUDA</span><span class="p">,</span> <span class="n">calculate_training_loss</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">num_threads</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_trees</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">search_k</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">approximate_similar_items</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">approximate_recommend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">AnnoyAlternatingLeastSquares</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">factors</span><span class="o">=</span><span class="n">factors</span><span class="p">,</span> <span class="n">regularization</span><span class="o">=</span><span class="n">regularization</span><span class="p">,</span>
+            <span class="n">use_native</span><span class="o">=</span><span class="n">use_native</span><span class="p">,</span> <span class="n">use_cg</span><span class="o">=</span><span class="n">use_cg</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="n">iterations</span><span class="p">,</span>
+            <span class="n">use_gpu</span><span class="o">=</span><span class="n">use_gpu</span><span class="p">,</span> <span class="n">calculate_training_loss</span><span class="o">=</span><span class="n">calculate_training_loss</span><span class="p">,</span>
+            <span class="n">num_threads</span><span class="o">=</span><span class="n">num_threads</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span>
+            <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_trees</span> <span class="o">=</span> <span class="n">n_trees</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">search_k</span> <span class="o">=</span> <span class="n">search_k</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">approximate_similar_items</span> <span class="o">=</span> <span class="n">approximate_similar_items</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">approximate_recommend</span> <span class="o">=</span> <span class="n">approximate_recommend</span></div>
+
+    <span class="k">def</span> <span class="nf">_make_estimator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="c1"># Get the number of factors</span>
+        <span class="n">factors</span> <span class="o">=</span> <span class="n">get_n_factors</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">)</span>
+        <span class="n">n_users</span><span class="p">,</span> <span class="n">n_items</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="c1"># Implicit really only likes numpy float32 for some reason</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+        <span class="n">est</span> <span class="o">=</span> <span class="n">aals</span><span class="o">.</span><span class="n">AnnoyAlternatingLeastSquares</span><span class="p">(</span>
+            <span class="n">n_trees</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_trees</span><span class="p">,</span> <span class="n">search_k</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">search_k</span><span class="p">,</span>
+            <span class="n">approximate_similar_items</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">approximate_similar_items</span><span class="p">,</span>
+            <span class="n">approximate_recommend</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">approximate_recommend</span><span class="p">,</span>
+            <span class="n">factors</span><span class="o">=</span><span class="n">factors</span><span class="p">,</span> <span class="n">regularization</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">regularization</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">use_native</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_native</span><span class="p">,</span> <span class="n">use_cg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_cg</span><span class="p">,</span>
+            <span class="n">use_gpu</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_gpu</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">iterations</span><span class="p">,</span>
+            <span class="n">calculate_training_loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calculate_training_loss</span><span class="p">,</span>
+            <span class="n">num_threads</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_threads</span><span class="p">)</span>
+
+        <span class="c1"># initialize the factor matrices</span>
+        <span class="n">random_state</span> <span class="o">=</span> <span class="n">check_random_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_factors</span><span class="p">(</span>
+            <span class="n">estimator</span><span class="o">=</span><span class="n">est</span><span class="p">,</span> <span class="n">n_users</span><span class="o">=</span><span class="n">n_users</span><span class="p">,</span> <span class="n">n_items</span><span class="o">=</span><span class="n">n_items</span><span class="p">,</span> <span class="n">factors</span><span class="o">=</span><span class="n">factors</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_preserialize_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Used by Annoy ALS to get the AnnoyIndex dimension pre-save&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;estimator_&quot;</span><span class="p">):</span>
+            <span class="n">est</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span>
+
+            <span class="c1"># This is used for instantiating the new AnnoyIndex when</span>
+            <span class="c1"># loading from disk</span>
+            <span class="k">if</span> <span class="n">est</span><span class="o">.</span><span class="n">approximate_recommend</span><span class="p">:</span>
+                <span class="c1"># It sucks we have to do this again... expensive, but we need</span>
+                <span class="c1"># the dimension and the index doesn&#39;t store it directly.</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">extra</span> <span class="o">=</span> <span class="n">aals</span><span class="o">.</span><span class="n">augment_inner_product_matrix</span><span class="p">(</span>
+                    <span class="n">est</span><span class="o">.</span><span class="n">item_factors</span><span class="p">)</span>
+                <span class="n">est</span><span class="o">.</span><span class="n">extra_</span> <span class="o">=</span> <span class="n">extra</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+<div class="viewcode-block" id="AnnoyAlternatingLeastSquares.recommend_for_user"><a class="viewcode-back" href="../../../modules/generated/reclab.collab.AnnoyAlternatingLeastSquares.html#reclab.collab.AnnoyAlternatingLeastSquares.recommend_for_user">[docs]</a>    <span class="nd">@inherit_function_doc</span><span class="p">(</span><span class="n">AlternatingLeastSquares</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">recommend_for_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userid</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">filter_previously_rated</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                           <span class="n">filter_items</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_scores</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                           <span class="n">recalculate_user</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="c1"># Make sure we&#39;re fitted</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;estimator_&quot;</span><span class="p">)</span>
+
+        <span class="c1"># If not using approximate recommendations, just delegate to super</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">approximate_recommend</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">recommend</span><span class="p">(</span>
+                <span class="n">userid</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">filter_items</span><span class="o">=</span><span class="n">filter_items</span><span class="p">,</span>
+                <span class="n">recalculate_user</span><span class="o">=</span><span class="n">recalculate_user</span><span class="p">)</span>
+
+        <span class="c1"># Otherwise, do things a bit differently from the implicit package</span>
+        <span class="n">est</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span>
+
+        <span class="c1"># This is the scaling function we use to map the distances from</span>
+        <span class="c1"># Euclidean back to Cosine:</span>
+        <span class="n">scaling_function</span> <span class="o">=</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">dist</span><span class="p">,</span> <span class="n">scaling</span><span class="p">:</span>
+                            <span class="n">scaling</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dist</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">_recommend_aals_annoy</span><span class="p">(</span>
+            <span class="n">est</span><span class="o">=</span><span class="n">est</span><span class="p">,</span> <span class="n">userid</span><span class="o">=</span><span class="n">userid</span><span class="p">,</span> <span class="n">R</span><span class="o">=</span><span class="n">R</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span>
+            <span class="n">filter_items</span><span class="o">=</span><span class="n">filter_items</span><span class="p">,</span> <span class="n">recalculate_user</span><span class="o">=</span><span class="n">recalculate_user</span><span class="p">,</span>
+            <span class="n">filter_previously_rated</span><span class="o">=</span><span class="n">filter_previously_rated</span><span class="p">,</span>
+            <span class="n">return_scores</span><span class="o">=</span><span class="n">return_scores</span><span class="p">,</span>
+            <span class="n">recommend_function</span><span class="o">=</span><span class="n">est</span><span class="o">.</span><span class="n">recommend_index</span><span class="o">.</span><span class="n">get_nns_by_vector</span><span class="p">,</span>
+            <span class="n">scaling_function</span><span class="o">=</span><span class="n">scaling_function</span><span class="p">,</span>
+
+            <span class="c1"># Passed to the recommend function with query, count</span>
+            <span class="n">include_distances</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">search_k</span><span class="o">=</span><span class="n">est</span><span class="o">.</span><span class="n">search_k</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_save_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">whereto</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Where to save the FloatIndex or AnnoyIndex objects.&quot;&quot;&quot;</span>
+        <span class="n">index</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">whereto</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_load_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wherefrom</span><span class="p">,</span> <span class="n">index_key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load an AnnoyIndex from disk&quot;&quot;&quot;</span>
+        <span class="n">est</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span>
+
+        <span class="c1"># I can&#39;t think of anything more clever because I&#39;ve been up for</span>
+        <span class="c1"># hours and hours and hours, so this is the kludgiest solution:</span>
+        <span class="k">if</span> <span class="n">index_key</span> <span class="o">==</span> <span class="s2">&quot;similar_items_index&quot;</span><span class="p">:</span>
+            <span class="n">n_index</span> <span class="o">=</span> <span class="n">est</span><span class="o">.</span><span class="n">item_factors</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># Otherwise, &quot;recommend_index&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># This assumes approximate_recommend, since it&#39;s the only way</span>
+            <span class="c1"># it will ever get to this code</span>
+            <span class="n">n_index</span> <span class="o">=</span> <span class="n">est</span><span class="o">.</span><span class="n">extra_</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">AnnoyIndex</span><span class="p">(</span><span class="n">n_index</span><span class="p">,</span> <span class="s2">&quot;angular&quot;</span><span class="p">)</span>
+        <span class="n">index</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">wherefrom</span><span class="p">,</span> <span class="n">index_key</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">index</span></div>
+
+
+<div class="viewcode-block" id="NMSAlternatingLeastSquares"><a class="viewcode-back" href="../../../modules/generated/reclab.collab.NMSAlternatingLeastSquares.html#reclab.collab.NMSAlternatingLeastSquares">[docs]</a><span class="k">class</span> <span class="nc">NMSAlternatingLeastSquares</span><span class="p">(</span><span class="n">_BaseApproximateALS</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Alternating Least Squares with nearest neighbor indexing.</span>
+
+<span class="sd">    Improves :class:`reclab.collab.AlternatingLeastSquares` by using</span>
+<span class="sd">    `NMSLib &lt;https://github.com/searchivarius/nmslib&gt;`_ to create an</span>
+<span class="sd">    approximate nearest neighbors index of the latent factors. This</span>
+<span class="sd">    dramatically reduces inference time.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    factors : int or float, optional (default=100)</span>
+<span class="sd">        The number of latent factors to compute. Generally, fewer factors will</span>
+<span class="sd">        result in a much faster runtime, but also approximates the</span>
+<span class="sd">        reconstruction matrix less accurately.</span>
+
+<span class="sd">    regularization : float, optional (default=0.01)</span>
+<span class="sd">        The regularization (L2) parameter to use. The higher this value, the</span>
+<span class="sd">        more the algorithm will learn to generalize at the cost of training</span>
+<span class="sd">        reconstruction accuracy.</span>
+
+<span class="sd">    use_native : bool, optional (default=True)</span>
+<span class="sd">        Use native extensions to speed up model fitting.</span>
+
+<span class="sd">    use_cg : bool, optional (default=True)</span>
+<span class="sd">        Use a faster Conjugate Gradient solver to calculate factors. This is</span>
+<span class="sd">        the method proposed in the paper by Takacs, et. al, &quot;Applications</span>
+<span class="sd">        of the Conjugate Gradient Method for Implicit Feedback Collaborative</span>
+<span class="sd">        Filtering&quot;</span>
+
+<span class="sd">    use_gpu : bool, optional</span>
+<span class="sd">        Fit on the GPU if available, default is to run on GPU only if</span>
+<span class="sd">        available.</span>
+
+<span class="sd">    iterations : int, optional (default=15)</span>
+<span class="sd">        The number of ALS iterations to use when fitting data. The default</span>
+<span class="sd">        is 25. More iterations will yield a better fit, but will take longer.</span>
+
+<span class="sd">    calculate_training_loss : bool, optional (default=False)</span>
+<span class="sd">        Whether to log out the training loss at each iteration.</span>
+
+<span class="sd">    num_threads : int, optional (default=0)</span>
+<span class="sd">        The number of threads to use for fitting the model. This only</span>
+<span class="sd">        applies for the native extensions. Specifying 0 means to default</span>
+<span class="sd">        to the number of cores on the machine.</span>
+
+<span class="sd">    method : str, optional (default=&#39;hnsw&#39;)</span>
+<span class="sd">        The NMSLib method to use. Default is &quot;hnsw&quot; (Hierarchical Navigable</span>
+<span class="sd">        Small World). For a list of exhaustive methods, see [2]</span>
+
+<span class="sd">    index_params: dict, optional (default=None)</span>
+<span class="sd">        Optional params to send to the createIndex call in NMSLib</span>
+
+<span class="sd">    query_params: dict, optional (default=None)</span>
+<span class="sd">        Optional query time params for the NMSLib ``setQueryTimeParams`` call</span>
+
+<span class="sd">    approximate_similar_items : bool, optional (default=True)</span>
+<span class="sd">        Whether or not to build an NMSLIB index for computing similar_items.</span>
+<span class="sd">        Default (recommended) is True.</span>
+
+<span class="sd">    approximate_recommend : bool, optional (default=True)</span>
+<span class="sd">        Whether or not to build an NMSLIB index for the recommend call.</span>
+<span class="sd">        Default (recommended) is True.</span>
+
+<span class="sd">    random_state : int, RandomState or None, optional (default=None)</span>
+<span class="sd">        The random state to control random seeding of the item and user</span>
+<span class="sd">        factor matrices.</span>
+
+<span class="sd">    show_progress : bool, optional (default=True)</span>
+<span class="sd">        Whether to show a progress bar while training and indexing.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Fitting an nmslib-index ALS model:</span>
+
+<span class="sd">    &gt;&gt;&gt; from reclab.datasets import load_lastfm</span>
+<span class="sd">    &gt;&gt;&gt; from reclab.model_selection import train_test_split</span>
+<span class="sd">    &gt;&gt;&gt; lastfm = load_lastfm(cache=True, as_sparse=True)</span>
+<span class="sd">    &gt;&gt;&gt; train, test = train_test_split(lastfm.ratings, random_state=42)</span>
+<span class="sd">    &gt;&gt;&gt; model = NMSAlternatingLeastSquares(</span>
+<span class="sd">    ...             random_state=1, show_progress=False)</span>
+<span class="sd">    &gt;&gt;&gt; model.fit(train)</span>
+<span class="sd">    NMSAlternatingLeastSquares(approximate_recommend=True,</span>
+<span class="sd">                  approximate_similar_items=True,</span>
+<span class="sd">                  calculate_training_loss=False, factors=100,</span>
+<span class="sd">                  index_params=None, iterations=15, method=&#39;hnsw&#39;,</span>
+<span class="sd">                  num_threads=0, query_params=None, random_state=1,</span>
+<span class="sd">                  regularization=0.01, show_progress=False, use_cg=True,</span>
+<span class="sd">                  use_gpu=False, use_native=True)</span>
+
+<span class="sd">    Inference for a given user:</span>
+
+<span class="sd">    &gt;&gt;&gt; model.recommend_for_user(0, test, n=5)  # doctest: +SKIP</span>
+<span class="sd">    array([ 149,  153,  221, 1064,  174])</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] https://www.benfrederickson.com/approximate-nearest-neighbours-for-recommender-systems/  # noqa: E501</span>
+<span class="sd">    .. [2] Valid NMSLIB method source code</span>
+<span class="sd">           https://github.com/nmslib/nmslib/tree/master/similarity_search/include/method  # noqa: E501</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="NMSAlternatingLeastSquares.__init__"><a class="viewcode-back" href="../../../modules/generated/reclab.collab.NMSAlternatingLeastSquares.html#reclab.collab.NMSAlternatingLeastSquares.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factors</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">regularization</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+                 <span class="n">use_native</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_cg</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+                 <span class="n">use_gpu</span><span class="o">=</span><span class="n">cuda</span><span class="o">.</span><span class="n">HAS_CUDA</span><span class="p">,</span> <span class="n">calculate_training_loss</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">num_threads</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;hnsw&#39;</span><span class="p">,</span> <span class="n">index_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">query_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">approximate_similar_items</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">approximate_recommend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">NMSAlternatingLeastSquares</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">factors</span><span class="o">=</span><span class="n">factors</span><span class="p">,</span> <span class="n">regularization</span><span class="o">=</span><span class="n">regularization</span><span class="p">,</span>
+            <span class="n">use_native</span><span class="o">=</span><span class="n">use_native</span><span class="p">,</span> <span class="n">use_cg</span><span class="o">=</span><span class="n">use_cg</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="n">iterations</span><span class="p">,</span>
+            <span class="n">use_gpu</span><span class="o">=</span><span class="n">use_gpu</span><span class="p">,</span> <span class="n">calculate_training_loss</span><span class="o">=</span><span class="n">calculate_training_loss</span><span class="p">,</span>
+            <span class="n">num_threads</span><span class="o">=</span><span class="n">num_threads</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span>
+            <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span> <span class="o">=</span> <span class="n">index_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_params</span> <span class="o">=</span> <span class="n">query_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">approximate_similar_items</span> <span class="o">=</span> <span class="n">approximate_similar_items</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">approximate_recommend</span> <span class="o">=</span> <span class="n">approximate_recommend</span></div>
+
+    <span class="k">def</span> <span class="nf">_make_estimator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="c1"># Get the number of factors</span>
+        <span class="n">factors</span> <span class="o">=</span> <span class="n">get_n_factors</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">)</span>
+        <span class="n">n_users</span><span class="p">,</span> <span class="n">n_items</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="c1"># Implicit really only likes numpy float32 for some reason</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+        <span class="n">est</span> <span class="o">=</span> <span class="n">aals</span><span class="o">.</span><span class="n">NMSLibAlternatingLeastSquares</span><span class="p">(</span>
+            <span class="n">method</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">,</span> <span class="n">index_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">,</span>
+            <span class="n">query_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">query_params</span><span class="p">,</span>
+            <span class="n">approximate_similar_items</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">approximate_similar_items</span><span class="p">,</span>
+            <span class="n">approximate_recommend</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">approximate_recommend</span><span class="p">,</span>
+            <span class="n">factors</span><span class="o">=</span><span class="n">factors</span><span class="p">,</span> <span class="n">regularization</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">regularization</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">use_native</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_native</span><span class="p">,</span> <span class="n">use_cg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_cg</span><span class="p">,</span>
+            <span class="n">use_gpu</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_gpu</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">iterations</span><span class="p">,</span>
+            <span class="n">calculate_training_loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calculate_training_loss</span><span class="p">,</span>
+            <span class="n">num_threads</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_threads</span><span class="p">)</span>
+
+        <span class="c1"># initialize the factor matrices</span>
+        <span class="n">random_state</span> <span class="o">=</span> <span class="n">check_random_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_factors</span><span class="p">(</span>
+            <span class="n">estimator</span><span class="o">=</span><span class="n">est</span><span class="p">,</span> <span class="n">n_users</span><span class="o">=</span><span class="n">n_users</span><span class="p">,</span> <span class="n">n_items</span><span class="o">=</span><span class="n">n_items</span><span class="p">,</span> <span class="n">factors</span><span class="o">=</span><span class="n">factors</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NMSAlternatingLeastSquares.recommend_for_user"><a class="viewcode-back" href="../../../modules/generated/reclab.collab.NMSAlternatingLeastSquares.html#reclab.collab.NMSAlternatingLeastSquares.recommend_for_user">[docs]</a>    <span class="nd">@inherit_function_doc</span><span class="p">(</span><span class="n">AlternatingLeastSquares</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">recommend_for_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userid</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">filter_previously_rated</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                           <span class="n">filter_items</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_scores</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                           <span class="n">recalculate_user</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="c1"># Make sure we&#39;re fitted</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;estimator_&quot;</span><span class="p">)</span>
+
+        <span class="c1"># If not using approximate recommendations, just delegate to super</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">approximate_recommend</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">recommend</span><span class="p">(</span>
+                <span class="n">userid</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">filter_items</span><span class="o">=</span><span class="n">filter_items</span><span class="p">,</span>
+                <span class="n">recalculate_user</span><span class="o">=</span><span class="n">recalculate_user</span><span class="p">)</span>
+
+        <span class="c1"># Otherwise, do things a bit differently from the implicit package</span>
+        <span class="n">est</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span>
+
+        <span class="c1"># This is the scaling function we use to map the distances from</span>
+        <span class="c1"># Euclidean back to Cosine:</span>
+        <span class="n">scaling_function</span> <span class="o">=</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">dist</span><span class="p">,</span> <span class="n">scaling</span><span class="p">:</span> <span class="n">scaling</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">dist</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">_recommend_aals_annoy</span><span class="p">(</span>
+            <span class="n">est</span><span class="o">=</span><span class="n">est</span><span class="p">,</span> <span class="n">userid</span><span class="o">=</span><span class="n">userid</span><span class="p">,</span> <span class="n">R</span><span class="o">=</span><span class="n">R</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span>
+            <span class="n">filter_items</span><span class="o">=</span><span class="n">filter_items</span><span class="p">,</span> <span class="n">recalculate_user</span><span class="o">=</span><span class="n">recalculate_user</span><span class="p">,</span>
+            <span class="n">filter_previously_rated</span><span class="o">=</span><span class="n">filter_previously_rated</span><span class="p">,</span>
+            <span class="n">return_scores</span><span class="o">=</span><span class="n">return_scores</span><span class="p">,</span>
+            <span class="n">recommend_function</span><span class="o">=</span><span class="n">est</span><span class="o">.</span><span class="n">recommend_index</span><span class="o">.</span><span class="n">knnQuery</span><span class="p">,</span>
+            <span class="n">scaling_function</span><span class="o">=</span><span class="n">scaling_function</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_save_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">whereto</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Where to save the FloatIndex or AnnoyIndex objects.&quot;&quot;&quot;</span>
+        <span class="n">index</span><span class="o">.</span><span class="n">saveIndex</span><span class="p">(</span><span class="n">whereto</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_load_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wherefrom</span><span class="p">,</span> <span class="n">index_key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load an NMS index from disk&quot;&quot;&quot;</span>
+        <span class="c1"># NMSLib doesn&#39;t let us read this via a staticmethod so we need</span>
+        <span class="c1"># to initialize a new index object (blech)</span>
+        <span class="c1"># https://github.com/nmslib/nmslib/issues/350</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">nmslib</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">,</span> <span class="n">space</span><span class="o">=</span><span class="s1">&#39;cosinesimil&#39;</span><span class="p">)</span>
+        <span class="n">index</span><span class="o">.</span><span class="n">loadIndex</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">wherefrom</span><span class="p">,</span> <span class="n">index_key</span><span class="p">))</span>
+        <span class="n">index</span><span class="o">.</span><span class="n">setQueryTimeParams</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query_params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">index</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Taylor G Smith
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../../../',
+              VERSION:'0.0.5',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

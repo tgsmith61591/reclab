@@ -1,0 +1,481 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>reclab.model_deployment.RecommenderDeployment &mdash; reclab 0.0.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/style.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="reclab.model_selection.train_test_split" href="reclab.model_selection.train_test_split.html" />
+    <link rel="prev" title="reclab.metrics.precision_at" href="reclab.metrics.precision_at.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> reclab
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../classes.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.base"><code class="docutils literal notranslate"><span class="pre">reclab.base</span></code>: Base classes and functions for reclab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.collab"><code class="docutils literal notranslate"><span class="pre">reclab.collab</span></code>: Collaborative filtering in reclab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.datasets"><code class="docutils literal notranslate"><span class="pre">reclab.datasets</span></code>: Benchmarking ratings data for recommenders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.metrics"><code class="docutils literal notranslate"><span class="pre">reclab.metrics</span></code>: Ranking metrics for scoring recommenders</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../classes.html#module-reclab.model_deployment"><code class="docutils literal notranslate"><span class="pre">reclab.model_deployment</span></code>: Model deployment tools for recommenders</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../classes.html#deploy-wrapper">Deploy wrapper</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">reclab.model_deployment</span></code>.RecommenderDeployment</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.model_selection"><code class="docutils literal notranslate"><span class="pre">reclab.model_selection</span></code>: Model selection tools for recommenders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.utils"><code class="docutils literal notranslate"><span class="pre">reclab.utils</span></code>: Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide.html">User Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">reclab</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../classes.html">API Reference</a> &raquo;</li>
+        
+      <li><code class="docutils literal notranslate"><span class="pre">reclab.model_deployment</span></code>.RecommenderDeployment</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/modules/generated/reclab.model_deployment.RecommenderDeployment.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="reclab-model-deployment-recommenderdeployment">
+<h1><a class="reference internal" href="../classes.html#module-reclab.model_deployment" title="reclab.model_deployment"><code class="xref py py-mod docutils literal notranslate"><span class="pre">reclab.model_deployment</span></code></a>.RecommenderDeployment<a class="headerlink" href="#reclab-model-deployment-recommenderdeployment" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="reclab.model_deployment.RecommenderDeployment">
+<em class="property">class </em><code class="descclassname">reclab.model_deployment.</code><code class="descname">RecommenderDeployment</code><span class="sig-paren">(</span><em>estimator</em>, <em>item_encoder=None</em>, <em>user_encoder=None</em>, <em>filter_items=None</em>, <em>user_missing_strategy='warn'</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_deployment/wrapper.py#L20"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/model_deployment/wrapper.html#RecommenderDeployment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_deployment.RecommenderDeployment" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for deployed recommender models.</p>
+<p>Serves as a model wrapper for recommender models as they are deployed.
+Can map recommendations to different encodings (with a pre-fit sklearn
+LabelEncoder) as well as handle users who have not yet been included in
+the model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>estimator</strong> : BaseRecommender</p>
+<blockquote>
+<div><p>The pre-fit recommender model used to serve recommendations to users.</p>
+</div></blockquote>
+<p><strong>item_encoder</strong> : sklearn.preprocessing.LabelEncoder, optional (default=None)</p>
+<blockquote>
+<div><p>A pre-fit encoder to map recommended items produced by the recommender
+back to encodings that they keys may better represent. This is useful
+if products have GUIDs that do not sequentially align with the indexing
+of a matrix (as is probable).</p>
+</div></blockquote>
+<p><strong>user_encoder</strong> : sklearn.preprocessing.LabelEncoder, optional (default=None)</p>
+<blockquote>
+<div><p>A pre-fit encoder used to map user IDs to their positional index in the
+user factors or stored similarity matrices. If provided, the input user
+will be transformed to the indexing space to compute the
+recommendations.</p>
+</div></blockquote>
+<p><strong>filter_items</strong> : array-like or None, optional (default=None)</p>
+<blockquote>
+<div><p>Any items that should be filtered out of the recommend operation. This
+is included in the constructor of the class since it may grow
+arbitrarily large. This allows us to prevent having to send a
+potentially large amount of data over REST repeatedly. If
+<code class="docutils literal notranslate"><span class="pre">filter_items</span></code> differs per user, it may be provided in <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code>
+in the <code class="docutils literal notranslate"><span class="pre">recommend_for_user</span></code> call.</p>
+</div></blockquote>
+<p><strong>user_missing_strategy</strong> : str or unicode, optional (default=’warn’)</p>
+<blockquote class="last">
+<div><p>How to handle a request for recommendation for a user who does not
+exist in the system.</p>
+<dl class="docutils">
+<dt>error <span class="classifier-delimiter">:</span> <span class="classifier">Raises a KeyError with a detailed message. This is not the</span></dt>
+<dd><p class="first last">default behavior, and should be controlled for if this is run from
+an end-point, so as not to raise at the server level.</p>
+</dd>
+<dt>warn <span class="classifier-delimiter">:</span> <span class="classifier">Warns with a detailed message and returns an empty set of</span></dt>
+<dd><p class="first last">recommendations. If this is the strategy you use, you’ll have to
+check for empty recommendations and default to a set of your
+choosing.</p>
+</dd>
+</dl>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>A simple example with no LabelEncoders. First, fit a model and stuff
+it into a model wrapper:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">reclab.datasets</span> <span class="k">import</span> <span class="n">load_lastfm</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">reclab.collab</span> <span class="k">import</span> <span class="n">ItemItemRecommender</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lastfm</span> <span class="o">=</span> <span class="n">load_lastfm</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">as_sparse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">lastfm</span><span class="o">.</span><span class="n">ratings</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clf</span> <span class="o">=</span> <span class="n">ItemItemRecommender</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="s1">&#39;kernel&#39;</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wpr</span> <span class="o">=</span> <span class="n">RecommenderDeployment</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="n">clf</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Score it with a JSON (or dict) of a user’s latest ratings:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">get_user_ratings_dict</span><span class="p">(</span><span class="n">userid</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">rated_idcs</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">userid</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="n">listens</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">userid</span><span class="p">,</span> <span class="n">rated_idcs</span><span class="p">]</span><span class="o">.</span><span class="n">toarray</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">rated_idcs</span><span class="p">,</span> <span class="n">listens</span><span class="p">))</span>
+<span class="gp">...</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wpr</span><span class="o">.</span><span class="n">recommend_for_user</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">userid</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">ratings</span><span class="o">=</span><span class="n">get_user_ratings_dict</span><span class="p">(</span><span class="mi">150</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="go">array([ 492,   66,  894,  418, 1403], dtype=int32)</span>
+</pre></div>
+</div>
+<p>You can also get recommendations with an array of user ratings rather
+than a dictionary (depending on the architecture of your scoring service):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">wpr</span><span class="o">.</span><span class="n">recommend_for_user</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">userid</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">ratings</span><span class="o">=</span><span class="n">X</span><span class="p">[</span><span class="mi">150</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">toarray</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="go">array([ 492,   66,  894,  418, 1403], dtype=int32)</span>
+</pre></div>
+</div>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#reclab.model_deployment.RecommenderDeployment.get_params" title="reclab.model_deployment.RecommenderDeployment.get_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_params</span></code></a>([deep])</td>
+<td>Get parameters for this estimator.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#reclab.model_deployment.RecommenderDeployment.recommend_for_user" title="reclab.model_deployment.RecommenderDeployment.recommend_for_user"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recommend_for_user</span></code></a>(userid,&nbsp;ratings[,&nbsp;n,&nbsp;…])</td>
+<td>Produce a recommendation for a user.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#reclab.model_deployment.RecommenderDeployment.set_params" title="reclab.model_deployment.RecommenderDeployment.set_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code></a>(**params)</td>
+<td>Set the parameters of this estimator.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="reclab.model_deployment.RecommenderDeployment.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>estimator</em>, <em>item_encoder=None</em>, <em>user_encoder=None</em>, <em>filter_items=None</em>, <em>user_missing_strategy='warn'</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_deployment/wrapper.py#L98"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/model_deployment/wrapper.html#RecommenderDeployment.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_deployment.RecommenderDeployment.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reclab.model_deployment.RecommenderDeployment.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/../../sklearn/base.py#L166"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_deployment.RecommenderDeployment.get_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get parameters for this estimator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>deep</strong> : boolean, optional</p>
+<blockquote>
+<div><p>If True, will return the parameters for this estimator and
+contained subobjects that are estimators.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>params</strong> : mapping of string to any</p>
+<blockquote class="last">
+<div><p>Parameter names mapped to their values.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="reclab.model_deployment.RecommenderDeployment.recommend_for_user">
+<code class="descname">recommend_for_user</code><span class="sig-paren">(</span><em>userid</em>, <em>ratings</em>, <em>n=10</em>, <em>filter_previously_rated=True</em>, <em>return_scores=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_deployment/wrapper.py#L130"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/model_deployment/wrapper.html#RecommenderDeployment.recommend_for_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_deployment.RecommenderDeployment.recommend_for_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce a recommendation for a user.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>userid</strong> : int or string</p>
+<blockquote>
+<div><p>The positional index along the row axis of the user in the
+ratings matrix, or the user ID that will be transformed via the
+<code class="docutils literal notranslate"><span class="pre">user_encoder</span></code> (if present).</p>
+</div></blockquote>
+<p><strong>ratings</strong> : dict or array-like</p>
+<blockquote>
+<div><p>The user’s latest collection of rated items used to seed
+recommendations. Can either be a dictionary or array of ratings,
+and is subject to the following constraints:</p>
+<dl class="docutils">
+<dt>dict <span class="classifier-delimiter">:</span> <span class="classifier">If it’s a dictionary and the <code class="docutils literal notranslate"><span class="pre">item_encoder</span></code> is not None,</span></dt>
+<dd><p class="first last">the keys will be encoded via the encoder’s <code class="docutils literal notranslate"><span class="pre">transform</span></code>
+function, and values (ratings) loaded into a numpy array of the
+encoded keys. If the encoder is None, the keys are assumed to
+represent positional indices into which they’ll be placed in a
+numpy array.</p>
+</dd>
+<dt>array-like <span class="classifier-delimiter">:</span> <span class="classifier">If the input of rated elements is array-like (list or</span></dt>
+<dd><p class="first last">numpy array), the dimensions are assumed to match those of the
+item factors or similarity matrix the algorithm uses
+internally. No encoding will be performed, since values in the
+array represent ratings, and indices represent item IDs.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>n</strong> : int, optional (default=10)</p>
+<blockquote>
+<div><p>The number of items to recommend for the given user.</p>
+</div></blockquote>
+<p><strong>filter_previously_rated</strong> : bool, optional (default=True)</p>
+<blockquote>
+<div><p>Whether to filter items that have been previously rated by the
+user. True by default.</p>
+</div></blockquote>
+<p><strong>return_scores</strong> : bool, optional (default=False)</p>
+<blockquote>
+<div><p>Whether to return the scores for each item for the user.</p>
+</div></blockquote>
+<p><strong>**kwargs</strong> : keyword args or dict</p>
+<blockquote>
+<div><p>Arguments specific to subclassed algorithms.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>recs</strong> : np.ndarray</p>
+<blockquote>
+<div><p>The recommended items. If <code class="docutils literal notranslate"><span class="pre">self.item_encoder</span></code> is not None, the
+items will be returned in their inverse-transformed states.</p>
+</div></blockquote>
+<p><strong>scores (optional)</strong> : np.ndarray</p>
+<blockquote class="last">
+<div><p>The scores that correspond the recommendations. Only included if
+<code class="docutils literal notranslate"><span class="pre">return_scores</span></code> is True.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="reclab.model_deployment.RecommenderDeployment.set_params">
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/../../sklearn/base.py#L189"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_deployment.RecommenderDeployment.set_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters of this estimator.</p>
+<p>The method works on simple estimators as well as on nested objects
+(such as pipelines). The latter have parameters of the form
+<code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+component of a nested object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">self</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="examples-using-reclab-model-deployment-recommenderdeployment">
+<h2>Examples using <code class="docutils literal notranslate"><span class="pre">reclab.model_deployment.RecommenderDeployment</span></code><a class="headerlink" href="#examples-using-reclab-model-deployment-recommenderdeployment" title="Permalink to this headline">¶</a></h2>
+<div class="sphx-glr-thumbcontainer" tooltip="Deploying a recommendation models is not always easy. Typically a users and products in a ratin..."><div class="figure" id="id1">
+<img alt="../../_images/sphx_glr_example_model_deployment_thumb.png" src="../../_images/sphx_glr_example_model_deployment_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="../../auto_examples/model_deployment/example_model_deployment.html#sphx-glr-auto-examples-model-deployment-example-model-deployment-py"><span class="std std-ref">Deploying recommender models</span></a></span></p>
+</div>
+</div><div class="clearer"></div></div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="reclab.model_selection.train_test_split.html" class="btn btn-neutral float-right" title="reclab.model_selection.train_test_split" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="reclab.metrics.precision_at.html" class="btn btn-neutral" title="reclab.metrics.precision_at" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Taylor G Smith
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../../',
+              VERSION:'0.0.5',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

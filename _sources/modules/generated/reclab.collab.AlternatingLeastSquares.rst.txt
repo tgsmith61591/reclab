@@ -1,0 +1,16 @@
+:mod:`reclab.collab`.AlternatingLeastSquares
+===================================================
+
+.. currentmodule:: reclab.collab
+
+.. autoclass:: AlternatingLeastSquares
+
+   
+   .. automethod:: __init__
+   
+
+.. include:: reclab.collab.AlternatingLeastSquares.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

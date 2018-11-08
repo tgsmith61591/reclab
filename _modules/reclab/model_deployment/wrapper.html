@@ -1,0 +1,477 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>reclab.model_deployment.wrapper &mdash; reclab 0.0.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/style.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> reclab
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/classes.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">reclab</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>reclab.model_deployment.wrapper</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for reclab.model_deployment.wrapper</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">BaseEstimator</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">LabelEncoder</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">sparse</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numbers</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">from</span> <span class="nn">..base</span> <span class="k">import</span> <span class="n">BaseRecommender</span>
+<span class="kn">from</span> <span class="nn">..utils.validation</span> <span class="k">import</span> <span class="n">is_iterable</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;RecommenderDeployment&#39;</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="RecommenderDeployment"><a class="viewcode-back" href="../../../modules/generated/reclab.model_deployment.RecommenderDeployment.html#reclab.model_deployment.RecommenderDeployment">[docs]</a><span class="k">class</span> <span class="nc">RecommenderDeployment</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A wrapper for deployed recommender models.</span>
+
+<span class="sd">    Serves as a model wrapper for recommender models as they are deployed.</span>
+<span class="sd">    Can map recommendations to different encodings (with a pre-fit sklearn</span>
+<span class="sd">    LabelEncoder) as well as handle users who have not yet been included in</span>
+<span class="sd">    the model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    estimator : BaseRecommender</span>
+<span class="sd">        The pre-fit recommender model used to serve recommendations to users.</span>
+
+<span class="sd">    item_encoder : sklearn.preprocessing.LabelEncoder, optional (default=None)</span>
+<span class="sd">        A pre-fit encoder to map recommended items produced by the recommender</span>
+<span class="sd">        back to encodings that they keys may better represent. This is useful</span>
+<span class="sd">        if products have GUIDs that do not sequentially align with the indexing</span>
+<span class="sd">        of a matrix (as is probable).</span>
+
+<span class="sd">    user_encoder : sklearn.preprocessing.LabelEncoder, optional (default=None)</span>
+<span class="sd">        A pre-fit encoder used to map user IDs to their positional index in the</span>
+<span class="sd">        user factors or stored similarity matrices. If provided, the input user</span>
+<span class="sd">        will be transformed to the indexing space to compute the</span>
+<span class="sd">        recommendations.</span>
+
+<span class="sd">    filter_items : array-like or None, optional (default=None)</span>
+<span class="sd">        Any items that should be filtered out of the recommend operation. This</span>
+<span class="sd">        is included in the constructor of the class since it may grow</span>
+<span class="sd">        arbitrarily large. This allows us to prevent having to send a</span>
+<span class="sd">        potentially large amount of data over REST repeatedly. If</span>
+<span class="sd">        ``filter_items`` differs per user, it may be provided in ``**kwargs``</span>
+<span class="sd">        in the ``recommend_for_user`` call.</span>
+
+<span class="sd">    user_missing_strategy : str or unicode, optional (default=&#39;warn&#39;)</span>
+<span class="sd">        How to handle a request for recommendation for a user who does not</span>
+<span class="sd">        exist in the system.</span>
+
+<span class="sd">        error : Raises a KeyError with a detailed message. This is not the</span>
+<span class="sd">            default behavior, and should be controlled for if this is run from</span>
+<span class="sd">            an end-point, so as not to raise at the server level.</span>
+
+<span class="sd">        warn : Warns with a detailed message and returns an empty set of</span>
+<span class="sd">            recommendations. If this is the strategy you use, you&#39;ll have to</span>
+<span class="sd">            check for empty recommendations and default to a set of your</span>
+<span class="sd">            choosing.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    A simple example with no LabelEncoders. First, fit a model and stuff</span>
+<span class="sd">    it into a model wrapper:</span>
+
+<span class="sd">    &gt;&gt;&gt; from reclab.datasets import load_lastfm</span>
+<span class="sd">    &gt;&gt;&gt; from reclab.collab import ItemItemRecommender</span>
+<span class="sd">    &gt;&gt;&gt; lastfm = load_lastfm(cache=True, as_sparse=True)</span>
+<span class="sd">    &gt;&gt;&gt; X = lastfm.ratings</span>
+<span class="sd">    &gt;&gt;&gt; clf = ItemItemRecommender(metric=&#39;kernel&#39;, k=40, show_progress=False)</span>
+<span class="sd">    &gt;&gt;&gt; clf.fit(X)</span>
+<span class="sd">    &gt;&gt;&gt; wpr = RecommenderDeployment(estimator=clf)</span>
+
+<span class="sd">    Score it with a JSON (or dict) of a user&#39;s latest ratings:</span>
+
+<span class="sd">    &gt;&gt;&gt; def get_user_ratings_dict(userid):</span>
+<span class="sd">    ...     rated_idcs = X[userid, :].nonzero()[1]</span>
+<span class="sd">    ...     listens = X[userid, rated_idcs].toarray()[0]</span>
+<span class="sd">    ...     return dict(zip(rated_idcs, listens))</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; wpr.recommend_for_user(</span>
+<span class="sd">    ...     userid=150, ratings=get_user_ratings_dict(150), n=5)</span>
+<span class="sd">    array([ 492,   66,  894,  418, 1403], dtype=int32)</span>
+
+<span class="sd">    You can also get recommendations with an array of user ratings rather</span>
+<span class="sd">    than a dictionary (depending on the architecture of your scoring service):</span>
+
+<span class="sd">    &gt;&gt;&gt; wpr.recommend_for_user(</span>
+<span class="sd">    ...     userid=150, ratings=X[150, :].toarray()[0], n=5)</span>
+<span class="sd">    array([ 492,   66,  894,  418, 1403], dtype=int32)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="RecommenderDeployment.__init__"><a class="viewcode-back" href="../../../modules/generated/reclab.model_deployment.RecommenderDeployment.html#reclab.model_deployment.RecommenderDeployment.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">item_encoder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">user_encoder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">filter_items</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">user_missing_strategy</span><span class="o">=</span><span class="s2">&quot;warn&quot;</span><span class="p">):</span>
+
+        <span class="c1"># Validate so the user doesn&#39;t deploy this and THEN have it validate...</span>
+        <span class="k">for</span> <span class="n">encoder</span> <span class="ow">in</span> <span class="p">(</span><span class="n">item_encoder</span><span class="p">,</span> <span class="n">user_encoder</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">encoder</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">LabelEncoder</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Encoders must be either None or a scikit-&quot;</span>
+                                <span class="s2">&quot;learn LabelEncoder, but got type=</span><span class="si">%s</span><span class="s2">&quot;</span>
+                                <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">encoder</span><span class="p">))</span>
+
+        <span class="c1"># Validate the filter items</span>
+        <span class="k">if</span> <span class="n">filter_items</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_iterable</span><span class="p">(</span><span class="n">filter_items</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;filter_items must be either None &quot;</span>
+                                <span class="s2">&quot;or an iterable, but got type=</span><span class="si">%s</span><span class="s2">&quot;</span>
+                                <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">filter_items</span><span class="p">))</span>
+            <span class="c1"># otherwise it IS an iterable and we want it to be a set</span>
+            <span class="n">filter_items</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">filter_items</span><span class="p">)</span>
+
+        <span class="c1"># The user strategy has to be defined appropriately. Don&#39;t bother</span>
+        <span class="c1"># creating a set here to check... lookup time might be O(1), but create</span>
+        <span class="c1"># + lookup makes it less efficient. Besides, O(2) ain&#39;t too shabby.</span>
+        <span class="k">if</span> <span class="n">user_missing_strategy</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;warn&quot;</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;user_missing_strategy must be one of &#39;warn&#39; or &quot;</span>
+                             <span class="s2">&quot;&#39;error&#39;, but got </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">user_missing_strategy</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">estimator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_encoder</span> <span class="o">=</span> <span class="n">item_encoder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_encoder</span> <span class="o">=</span> <span class="n">user_encoder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_items</span> <span class="o">=</span> <span class="n">filter_items</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_missing_strategy</span> <span class="o">=</span> <span class="n">user_missing_strategy</span></div>
+
+<div class="viewcode-block" id="RecommenderDeployment.recommend_for_user"><a class="viewcode-back" href="../../../modules/generated/reclab.model_deployment.RecommenderDeployment.html#reclab.model_deployment.RecommenderDeployment.recommend_for_user">[docs]</a>    <span class="k">def</span> <span class="nf">recommend_for_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userid</span><span class="p">,</span> <span class="n">ratings</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                           <span class="n">filter_previously_rated</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_scores</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                           <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Produce a recommendation for a user.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        userid : int or string</span>
+<span class="sd">            The positional index along the row axis of the user in the</span>
+<span class="sd">            ratings matrix, or the user ID that will be transformed via the</span>
+<span class="sd">            ``user_encoder`` (if present).</span>
+
+<span class="sd">        ratings : dict or array-like</span>
+<span class="sd">            The user&#39;s latest collection of rated items used to seed</span>
+<span class="sd">            recommendations. Can either be a dictionary or array of ratings,</span>
+<span class="sd">            and is subject to the following constraints:</span>
+
+<span class="sd">            dict : If it&#39;s a dictionary and the ``item_encoder`` is not None,</span>
+<span class="sd">                the keys will be encoded via the encoder&#39;s ``transform``</span>
+<span class="sd">                function, and values (ratings) loaded into a numpy array of the</span>
+<span class="sd">                encoded keys. If the encoder is None, the keys are assumed to</span>
+<span class="sd">                represent positional indices into which they&#39;ll be placed in a</span>
+<span class="sd">                numpy array.</span>
+
+<span class="sd">            array-like : If the input of rated elements is array-like (list or</span>
+<span class="sd">                numpy array), the dimensions are assumed to match those of the</span>
+<span class="sd">                item factors or similarity matrix the algorithm uses</span>
+<span class="sd">                internally. No encoding will be performed, since values in the</span>
+<span class="sd">                array represent ratings, and indices represent item IDs.</span>
+
+<span class="sd">        n : int, optional (default=10)</span>
+<span class="sd">            The number of items to recommend for the given user.</span>
+
+<span class="sd">        filter_previously_rated : bool, optional (default=True)</span>
+<span class="sd">            Whether to filter items that have been previously rated by the</span>
+<span class="sd">            user. True by default.</span>
+
+<span class="sd">        return_scores : bool, optional (default=False)</span>
+<span class="sd">            Whether to return the scores for each item for the user.</span>
+
+<span class="sd">        **kwargs : keyword args or dict</span>
+<span class="sd">            Arguments specific to subclassed algorithms.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        recs : np.ndarray</span>
+<span class="sd">            The recommended items. If ``self.item_encoder`` is not None, the</span>
+<span class="sd">            items will be returned in their inverse-transformed states.</span>
+
+<span class="sd">        scores (optional) : np.ndarray</span>
+<span class="sd">            The scores that correspond the recommendations. Only included if</span>
+<span class="sd">            ``return_scores`` is True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># We&#39;ll allow filter_items to be sent in kwargs. It will override the</span>
+        <span class="c1"># class filter_items</span>
+        <span class="n">filter_items</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filter_items&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_items</span><span class="p">)</span>
+        <span class="n">estimator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span>  <span class="c1"># type: BaseRecommender</span>
+        <span class="n">n_users</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">n_users</span><span class="p">()</span>
+        <span class="n">n_items</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">n_items</span><span class="p">()</span>
+
+        <span class="c1"># Now encode the user, if needed</span>
+        <span class="n">ue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_encoder</span>
+        <span class="n">original_userid</span> <span class="o">=</span> <span class="n">userid</span>  <span class="c1"># store for error reporting later</span>
+        <span class="k">if</span> <span class="n">ue</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">userid</span> <span class="o">=</span> <span class="n">ue</span><span class="o">.</span><span class="n">transform</span><span class="p">([</span><span class="n">userid</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># Make sure it&#39;s an int</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">userid</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;userid must be an integer if it&#39;s not be &quot;</span>
+                            <span class="s2">&quot;encoded! Got </span><span class="si">%s</span><span class="s2"> (type=</span><span class="si">%s</span><span class="s2">)&quot;</span>
+                            <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">userid</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">userid</span><span class="p">)))</span>
+        <span class="c1"># Cast to int in case it&#39;s a np.int64 or anything</span>
+        <span class="n">userid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">userid</span><span class="p">)</span>
+
+        <span class="c1"># Unpack the ratings into an array, encode if needed</span>
+        <span class="n">ie</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_encoder</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ratings</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">keys</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">ratings</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+
+            <span class="c1"># todo: What if the dict includes keys that aren&#39;t in the model?</span>
+            <span class="k">if</span> <span class="n">ie</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">keys</span> <span class="o">=</span> <span class="n">ie</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+
+        <span class="c1"># Otherwise it&#39;s array-like?</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ratings</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ratings</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ratings</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">n_items</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Dim mismatch! Expected </span><span class="si">%i</span><span class="s2"> items but ratings &quot;</span>
+                                 <span class="s2">&quot;vector contained </span><span class="si">%i</span><span class="s2">&quot;</span>
+                                 <span class="o">%</span> <span class="p">(</span><span class="n">n_items</span><span class="p">,</span> <span class="n">ratings</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+            <span class="c1"># get the keys (no item encoding here)</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">ratings</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">ratings</span><span class="p">[</span><span class="n">keys</span><span class="p">]</span>
+
+        <span class="c1"># Create a sparse CSR matrix with the encoded userid as the index.</span>
+        <span class="c1"># Will raise if the user ID is out of bounds</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">R</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span><span class="n">values</span><span class="p">,</span> <span class="p">([</span><span class="n">userid</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">),</span> <span class="n">keys</span><span class="p">)),</span>
+                                  <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">n_users</span><span class="p">,</span> <span class="n">n_items</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="c1"># report the error</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;User </span><span class="si">%s</span><span class="s2"> could not be found. Were they included in the &quot;</span> \
+                  <span class="s2">&quot;model fit?&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">original_userid</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_missing_strategy</span> <span class="o">==</span> <span class="s2">&quot;error&quot;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">ex</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># Make sure the exception detail makes it into the warning</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span> <span class="o">+</span> <span class="s2">&quot; (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="p">))</span>
+                <span class="n">recs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">return_scores</span><span class="p">:</span>
+                    <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">recs</span><span class="p">,</span> <span class="n">scores</span>
+                <span class="k">return</span> <span class="n">recs</span>
+
+        <span class="c1"># Should be safe to get recommendations now</span>
+        <span class="n">recs</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">recommend_for_user</span><span class="p">(</span>
+            <span class="n">userid</span><span class="o">=</span><span class="n">userid</span><span class="p">,</span> <span class="n">R</span><span class="o">=</span><span class="n">R</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">filter_items</span><span class="o">=</span><span class="n">filter_items</span><span class="p">,</span>
+            <span class="n">filter_previously_rated</span><span class="o">=</span><span class="n">filter_previously_rated</span><span class="p">,</span>
+            <span class="n">return_scores</span><span class="o">=</span><span class="n">return_scores</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># Unpack if needed</span>
+        <span class="k">if</span> <span class="n">return_scores</span><span class="p">:</span>
+            <span class="n">recs</span><span class="p">,</span> <span class="n">scores</span> <span class="o">=</span> <span class="n">recs</span>  <span class="c1"># would be a tuple</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Just so it&#39;s in the namespace... this is never used but it keeps</span>
+            <span class="c1"># the IDE from complaining that &#39;scores&#39; may not have been assigned</span>
+            <span class="c1"># yet when returning.</span>
+            <span class="n">scores</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Inverse transform the recommended items</span>
+        <span class="k">if</span> <span class="n">ie</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">recs</span> <span class="o">=</span> <span class="n">ie</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">recs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">return_scores</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">recs</span><span class="p">,</span> <span class="n">scores</span>
+        <span class="k">return</span> <span class="n">recs</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Taylor G Smith
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../../../',
+              VERSION:'0.0.5',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+:mod:`reclab.utils`.is_iterable
+============================================
+
+.. currentmodule:: reclab.utils
+
+.. autofunction:: is_iterable
+
+.. include:: reclab.utils.is_iterable.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

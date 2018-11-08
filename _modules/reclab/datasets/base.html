@@ -1,0 +1,382 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>reclab.datasets.base &mdash; reclab 0.0.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/style.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> reclab
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/classes.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">reclab</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>reclab.datasets.base</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for reclab.datasets.base</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span><span class="p">,</span> <span class="n">dirname</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.datasets.base</span> <span class="k">import</span> <span class="n">Bunch</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">LabelEncoder</span>
+
+<span class="kn">from</span> <span class="nn">..utils.validation</span> <span class="k">import</span> <span class="n">to_sparse_csr</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;load_lastfm&#39;</span>
+<span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">__BunchCache</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A cache singleton to hold large datasets.</span>
+
+<span class="sd">    Datasets that are expensive to read from disk (i.e., lastfm) might</span>
+<span class="sd">    want to be cached, especially for unit tests that would otherwise</span>
+<span class="sd">    require multiple reads.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+<span class="n">_cache</span> <span class="o">=</span> <span class="n">__BunchCache</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">_get_or_create_cache_subdict</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+    <span class="n">sub</span> <span class="o">=</span> <span class="n">_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sub</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sub</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">sub</span>
+    <span class="k">return</span> <span class="n">sub</span>
+
+
+<span class="k">def</span> <span class="nf">_cache_data</span><span class="p">(</span><span class="n">bunch</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">sparse</span><span class="p">):</span>
+    <span class="n">sub_dict</span> <span class="o">=</span> <span class="n">_get_or_create_cache_subdict</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+    <span class="n">sub_dict</span><span class="p">[</span><span class="n">sparse</span><span class="p">]</span> <span class="o">=</span> <span class="n">bunch</span>
+
+
+<span class="k">def</span> <span class="nf">_get_cached_data</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">sparse</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">sub_dict</span> <span class="o">=</span> <span class="n">_get_or_create_cache_subdict</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sub_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sparse</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="load_lastfm"><a class="viewcode-back" href="../../../modules/generated/reclab.datasets.load_lastfm.html#reclab.datasets.load_lastfm">[docs]</a><span class="k">def</span> <span class="nf">load_lastfm</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">as_sparse</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load and return the lastFM dataset.</span>
+
+<span class="sd">    Load up the last.fm dataset. The entire dataset can be found here:</span>
+<span class="sd">    http://www.dtic.upf.edu/~ocelma/MusicRecommendationDataset/lastfm-360K.html</span>
+
+<span class="sd">    This returns a bunch of the users, artists (items) and listen count</span>
+<span class="sd">    (ratings). There is also an array mapping artist index to artist name</span>
+<span class="sd">    (in ``artists``).</span>
+
+<span class="sd">    ================     =========================</span>
+<span class="sd">    Samples total        92834</span>
+<span class="sd">    Distinct users       1892</span>
+<span class="sd">    Distinct artists     17632</span>
+<span class="sd">    Num. Listens         integer, 1 &lt;= x &lt;= 352698</span>
+<span class="sd">    ================     =========================</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cache : bool, optional (default=True)</span>
+<span class="sd">        Whether to cache the bunch result locally to avoid multiple re-reads</span>
+<span class="sd">        from disk in the event of calling ``load_lastfm`` again. Default is</span>
+<span class="sd">        True.</span>
+
+<span class="sd">    as_sparse : bool, optional (default=False)</span>
+<span class="sd">        Whether to return a sparse CSR array with users along the row axis,</span>
+<span class="sd">        and items along the column axis.</span>
+
+<span class="sd">    dtype : type, optional (default=np.float32)</span>
+<span class="sd">        The dtype to use for ratings. Default is np.float32, which the</span>
+<span class="sd">        Implicit library favors.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Example of loading the LastFM dataset as a sparse matrix and splitting it:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from reclab.datasets import load_lastfm</span>
+<span class="sd">    &gt;&gt;&gt; from reclab.model_selection import train_test_split</span>
+<span class="sd">    &gt;&gt;&gt; lastfm = load_lastfm(as_sparse=True, cache=True)</span>
+<span class="sd">    &gt;&gt;&gt; train, test = train_test_split(lastfm.ratings, train_size=0.75,</span>
+<span class="sd">    ...                                random_state=1)</span>
+<span class="sd">    &gt;&gt;&gt; train.astype(np.float32)</span>
+<span class="sd">    &lt;1892x17632 sparse matrix of type &#39;&lt;class &#39;numpy.float32&#39;&gt;&#39;</span>
+<span class="sd">            with 69626 stored elements in Compressed Sparse Row format&gt;</span>
+<span class="sd">    &gt;&gt;&gt; test.astype(np.float32)</span>
+<span class="sd">    &lt;1892x17632 sparse matrix of type &#39;&lt;class &#39;numpy.float32&#39;&gt;&#39;</span>
+<span class="sd">            with 23208 stored elements in Compressed Sparse Row format&gt;</span>
+
+<span class="sd">    Example of loading the LastFM dataset as individual vectors:</span>
+
+<span class="sd">    &gt;&gt;&gt; lfm_bunch = load_lastfm(cache=True, as_sparse=False)</span>
+<span class="sd">    &gt;&gt;&gt; lfm_bunch.users</span>
+<span class="sd">    array([   0,    0,    0, ..., 1891, 1891, 1891])</span>
+<span class="sd">    &gt;&gt;&gt; lfm_bunch.products</span>
+<span class="sd">    array([   45,    46,    47, ..., 17617, 17618, 17619])</span>
+<span class="sd">    &gt;&gt;&gt; lfm_bunch.ratings.astype(np.float32)</span>
+<span class="sd">    array([13883., 11690., 11351., ...,   281.,   280.,   263.], dtype=float32)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    data : Bunch or sparse CSR array</span>
+<span class="sd">        The loaded data or a sparse CSR array, if ``as_sparse``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># if we&#39;ve already saved it, just return that result and</span>
+    <span class="c1"># avoid the IO overhead</span>
+    <span class="n">cache_key</span> <span class="o">=</span> <span class="s2">&quot;lastfm&quot;</span>
+
+    <span class="c1"># Get cached data (maybe)</span>
+    <span class="n">cached_res</span> <span class="o">=</span> <span class="n">_get_cached_data</span><span class="p">(</span><span class="n">cache_key</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="n">as_sparse</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cached_res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">cached_res</span>
+
+    <span class="c1"># Otherwise unpack it for the first time</span>
+    <span class="n">module_path</span> <span class="o">=</span> <span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+    <span class="n">base_dir</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">module_path</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">)</span>
+    <span class="n">data_filename</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s2">&quot;lastfm_user_artists_playcount.csv.gz&quot;</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">data_filename</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+    <span class="n">metadata_filename</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s2">&quot;lastfm_artists.tsv.gz&quot;</span><span class="p">)</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">metadata_filename</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+
+    <span class="c1"># need to make the join key in the metadata an int...</span>
+    <span class="n">users</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">ratings</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">artists</span> <span class="o">=</span> <span class="p">{</span><span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">}</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">Bunch</span><span class="p">(</span><span class="n">users</span><span class="o">=</span><span class="n">users</span><span class="p">,</span>
+                 <span class="n">products</span><span class="o">=</span><span class="n">items</span><span class="p">,</span>
+                 <span class="n">ratings</span><span class="o">=</span><span class="n">ratings</span><span class="p">,</span>
+                 <span class="n">artists</span><span class="o">=</span><span class="n">artists</span><span class="p">)</span>
+
+    <span class="c1"># Cache if necessary. If the first time and as_sparse, we actually end</span>
+    <span class="c1"># up caching two things</span>
+    <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
+        <span class="n">_cache_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">cache_key</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># we can also cache the sparse</span>
+    <span class="k">if</span> <span class="n">as_sparse</span><span class="p">:</span>
+        <span class="c1"># we need to label encode the users and artists in order to prevent</span>
+        <span class="c1"># any index errors in the train/test splits, etc.</span>
+        <span class="n">user_le</span> <span class="o">=</span> <span class="n">LabelEncoder</span><span class="p">()</span>
+        <span class="n">item_le</span> <span class="o">=</span> <span class="n">LabelEncoder</span><span class="p">()</span>
+        <span class="n">users</span> <span class="o">=</span> <span class="n">user_le</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">users</span><span class="p">)</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="n">item_le</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
+
+        <span class="c1"># Also get the artists into an encoded state</span>
+        <span class="n">keys</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">artists</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="n">transformed_keys</span> <span class="o">=</span> <span class="n">item_le</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+        <span class="n">artists</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="n">transformed_keys</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">Bunch</span><span class="p">(</span>
+            <span class="n">ratings</span><span class="o">=</span><span class="n">to_sparse_csr</span><span class="p">(</span>
+                <span class="n">u</span><span class="o">=</span><span class="n">users</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="n">items</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">ratings</span><span class="p">,</span>
+                <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span>
+            <span class="n">artists</span><span class="o">=</span><span class="n">artists</span><span class="p">,</span>
+            <span class="n">user_label_encoder</span><span class="o">=</span><span class="n">user_le</span><span class="p">,</span>
+            <span class="n">item_label_encoder</span><span class="o">=</span><span class="n">item_le</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
+            <span class="n">_cache_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">cache_key</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">data</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Taylor G Smith
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../../../',
+              VERSION:'0.0.5',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

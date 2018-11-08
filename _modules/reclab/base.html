@@ -1,0 +1,425 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>reclab.base &mdash; reclab 0.0.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/style.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> reclab
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/classes.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide.html">User Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">reclab</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>reclab.base</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for reclab.base</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Base class for recommenders and other functions used package-wide.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="k">import</span> <span class="n">base</span>
+<span class="kn">from</span> <span class="nn">sklearn.externals</span> <span class="k">import</span> <span class="n">six</span>
+
+<span class="kn">from</span> <span class="nn">abc</span> <span class="k">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;clone&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;BaseRecommender&#39;</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="_recommend_items_and_maybe_scores"><a class="viewcode-back" href="../../modules/generated/reclab.base._recommend_items_and_maybe_scores.html#reclab.base._recommend_items_and_maybe_scores">[docs]</a><span class="k">def</span> <span class="nf">_recommend_items_and_maybe_scores</span><span class="p">(</span><span class="n">best</span><span class="p">,</span> <span class="n">return_scores</span><span class="p">,</span> <span class="n">filter_items</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Internal method for recommender inference.</span>
+
+<span class="sd">    Returns recommendations for items as well as maybe their corresponding</span>
+<span class="sd">    scores if a user actually wants them.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    best : iterable</span>
+<span class="sd">        Iterable of tuples, where first index is the item and the second</span>
+<span class="sd">        is the score.</span>
+
+<span class="sd">    return_scores : bool</span>
+<span class="sd">        Whether to get the scores back.</span>
+
+<span class="sd">    filter_items : set</span>
+<span class="sd">        Items to filter out</span>
+
+<span class="sd">    n : int</span>
+<span class="sd">        The number to return</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    If return_scores is False, we just get the filtered down item IDs back:</span>
+
+<span class="sd">    &gt;&gt;&gt; best = [(4, 0.98), (2, 0.91), (3, 0.76), (0, 0.52)]</span>
+<span class="sd">    &gt;&gt;&gt; _recommend_items_and_maybe_scores(best=best, return_scores=False,</span>
+<span class="sd">    ...     filter_items={2}, n=5)</span>
+<span class="sd">    array([4, 3, 0])</span>
+
+<span class="sd">    If return_scores is true, we get a tuple back:</span>
+
+<span class="sd">    &gt;&gt;&gt; _recommend_items_and_maybe_scores(best=best, return_scores=True,</span>
+<span class="sd">    ...     filter_items={2}, n=5)</span>
+<span class="sd">    (array([4, 3, 0]), array([0.98, 0.76, 0.52]))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">return_scores</span><span class="p">:</span>
+        <span class="n">recs</span><span class="p">,</span> <span class="n">scores</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">itertools</span><span class="o">.</span><span class="n">islice</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">rec</span> <span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">best</span>
+                 <span class="k">if</span> <span class="n">rec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filter_items</span><span class="p">),</span> <span class="n">n</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">recs</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+
+    <span class="c1"># Otherwise no need to unpack expression prior to returning</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span>
+        <span class="n">itertools</span><span class="o">.</span><span class="n">islice</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">best</span>
+             <span class="k">if</span> <span class="n">rec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filter_items</span><span class="p">),</span> <span class="n">n</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="clone"><a class="viewcode-back" href="../../modules/generated/reclab.base.clone.html#reclab.base.clone">[docs]</a><span class="k">def</span> <span class="nf">clone</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">clone_model_key</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Constructs a new estimator with the same parameters.</span>
+
+<span class="sd">    Clone does a deep copy of the model in an estimator</span>
+<span class="sd">    without actually copying attached data. It yields a new estimator</span>
+<span class="sd">    with the same parameters that has not been fit on any data.</span>
+
+<span class="sd">    This is a wrapper of the scikit-learn ``clone`` method, but will</span>
+<span class="sd">    also clone the ``_model_key`` attribute of the base recommenders.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    estimator : BaseRecommender</span>
+<span class="sd">        The estimator or group of estimators to be cloned</span>
+
+<span class="sd">    safe : bool, optional (default=True)</span>
+<span class="sd">        If safe is false, clone will fall back to a deep copy on objects</span>
+<span class="sd">        that are not estimators.</span>
+
+<span class="sd">    clone_model_key : bool, optional (default=True)</span>
+<span class="sd">        Whether to clone the same model key.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">est</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="n">safe</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="s2">&quot;_model_key&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">clone_model_key</span><span class="p">:</span>
+        <span class="n">est</span><span class="o">.</span><span class="n">_model_key</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">_model_key</span>
+    <span class="k">return</span> <span class="n">est</span></div>
+
+
+<div class="viewcode-block" id="BaseRecommender"><a class="viewcode-back" href="../../modules/generated/reclab.base.BaseRecommender.html#reclab.base.BaseRecommender">[docs]</a><span class="k">class</span> <span class="nc">BaseRecommender</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">with_metaclass</span><span class="p">(</span><span class="n">ABCMeta</span><span class="p">,</span> <span class="n">base</span><span class="o">.</span><span class="n">BaseEstimator</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for all recommenders.</span>
+
+<span class="sd">    All recommenders must implement a ``fit`` method as well as the following</span>
+<span class="sd">    inference methods:</span>
+
+<span class="sd">        * ``recommend_for_user``</span>
+<span class="sd">        * ``recommend_for_all_users``</span>
+
+<span class="sd">    The BaseRecommender behaves similarly to the BaseEstimator in scikit-learn:</span>
+<span class="sd">    all ``__init__`` args must be defined with defaults and without keyword</span>
+<span class="sd">    arguments.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Some implicit estimators don&#39;t play nicely with serialization, but</span>
+<span class="sd">    subclasses of BaseRecommender should. That means some subclasses will have</span>
+<span class="sd">    ``__getstate__`` and ``__setstate__`` hacks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="BaseRecommender.__init__"><a class="viewcode-back" href="../../modules/generated/reclab.base.BaseRecommender.html#reclab.base.BaseRecommender.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Assign a model key. This is used to load the model index from disk</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model_key</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">-</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                                     <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()))</span></div>
+
+<div class="viewcode-block" id="BaseRecommender.fit"><a class="viewcode-back" href="../../modules/generated/reclab.base.BaseRecommender.html#reclab.base.BaseRecommender.fit">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fit the recommender.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : scipy.sparse.csr_matrix</span>
+<span class="sd">            A sparse matrix of ratings or content.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="BaseRecommender.n_users"><a class="viewcode-back" href="../../modules/generated/reclab.base.BaseRecommender.html#reclab.base.BaseRecommender.n_users">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">n_users</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the number of users in the recommender system&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="BaseRecommender.n_items"><a class="viewcode-back" href="../../modules/generated/reclab.base.BaseRecommender.html#reclab.base.BaseRecommender.n_items">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">n_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the number of items in the recommender system&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="BaseRecommender.recommend_for_user"><a class="viewcode-back" href="../../modules/generated/reclab.base.BaseRecommender.html#reclab.base.BaseRecommender.recommend_for_user">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">recommend_for_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userid</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">filter_previously_rated</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                           <span class="n">filter_items</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_scores</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Produce a recommendation for a user given his/her ratings history.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        userid : int</span>
+<span class="sd">            The positional index along the row axis of the user in the</span>
+<span class="sd">            ratings matrix.</span>
+
+<span class="sd">        R : scipy.sparse.csr_matrix</span>
+<span class="sd">            The sparse ratings matrix of users (along the row axis) and items</span>
+<span class="sd">            (along the column axis)</span>
+
+<span class="sd">        n : int, optional (default=10)</span>
+<span class="sd">            The number of items to recommend for the given user.</span>
+
+<span class="sd">        filter_previously_rated : bool, optional (default=True)</span>
+<span class="sd">            Whether to filter items that have been previously rated by the</span>
+<span class="sd">            user. True by default.</span>
+
+<span class="sd">        filter_items : array-like or None, optional (default=None)</span>
+<span class="sd">            Any items that should be filtered out of the recommend operation.</span>
+
+<span class="sd">        return_scores : bool, optional (default=False)</span>
+<span class="sd">            Whether to return the scores for each item for the user.</span>
+
+<span class="sd">        **kwargs : keyword args or dict</span>
+<span class="sd">            Arguments specific to subclassed algorithms.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="BaseRecommender.recommend_for_all_users"><a class="viewcode-back" href="../../modules/generated/reclab.base.BaseRecommender.html#reclab.base.BaseRecommender.recommend_for_all_users">[docs]</a>    <span class="k">def</span> <span class="nf">recommend_for_all_users</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">filter_previously_rated</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                <span class="n">filter_items</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_scores</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Produce recommendations for all users.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        R : scipy.sparse.csr_matrix</span>
+<span class="sd">            The sparse ratings matrix of users (along the row axis) and items</span>
+<span class="sd">            (along the column axis)</span>
+
+<span class="sd">        n : int, optional (default=10)</span>
+<span class="sd">            The number of items to recommend for the given user.</span>
+
+<span class="sd">        filter_previously_rated : bool, optional (default=True)</span>
+<span class="sd">            Whether to filter items that have been previously rated by the</span>
+<span class="sd">            user. True by default.</span>
+
+<span class="sd">        filter_items : array-like or None, optional (default=None)</span>
+<span class="sd">            Any items that should be filtered out of the recommend operation.</span>
+
+<span class="sd">        return_scores : bool, optional (default=False)</span>
+<span class="sd">            Whether to return the scores for each item for the user.</span>
+
+<span class="sd">        **kwargs : keyword args or dict</span>
+<span class="sd">            Arguments specific to subclassed algorithms.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        For some recommendation algorithms, there may be faster ways to compute</span>
+<span class="sd">        this. This naively loops each user, calling the</span>
+<span class="sd">        :func:`recommend_for_user` function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">recommend_for_user</span><span class="p">(</span>
+                <span class="n">userid</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">R</span><span class="o">=</span><span class="n">R</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">filter_items</span><span class="o">=</span><span class="n">filter_items</span><span class="p">,</span>
+                <span class="n">filter_previously_rated</span><span class="o">=</span><span class="n">filter_previously_rated</span><span class="p">,</span>
+                <span class="n">return_scores</span><span class="o">=</span><span class="n">return_scores</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Taylor G Smith
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../../',
+              VERSION:'0.0.5',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

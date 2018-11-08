@@ -1,0 +1,12 @@
+:mod:`reclab.metrics`.ndcg_at
+==========================================
+
+.. currentmodule:: reclab.metrics
+
+.. autofunction:: ndcg_at
+
+.. include:: reclab.metrics.ndcg_at.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

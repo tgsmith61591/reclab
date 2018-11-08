@@ -1,0 +1,12 @@
+:mod:`reclab.utils`.to_sparse_csr
+==============================================
+
+.. currentmodule:: reclab.utils
+
+.. autofunction:: to_sparse_csr
+
+.. include:: reclab.utils.to_sparse_csr.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

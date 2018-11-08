@@ -1,0 +1,16 @@
+:mod:`reclab.model_selection`.RecommenderGridSearchCV
+============================================================
+
+.. currentmodule:: reclab.model_selection
+
+.. autoclass:: RecommenderGridSearchCV
+
+   
+   .. automethod:: __init__
+   
+
+.. include:: reclab.model_selection.RecommenderGridSearchCV.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

@@ -1,0 +1,12 @@
+:mod:`reclab.utils`.safe_mkdirs
+============================================
+
+.. currentmodule:: reclab.utils
+
+.. autofunction:: safe_mkdirs
+
+.. include:: reclab.utils.safe_mkdirs.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

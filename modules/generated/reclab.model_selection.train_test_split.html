@@ -1,0 +1,353 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>reclab.model_selection.train_test_split &mdash; reclab 0.0.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/style.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="reclab.model_selection.KFold" href="reclab.model_selection.KFold.html" />
+    <link rel="prev" title="reclab.model_deployment.RecommenderDeployment" href="reclab.model_deployment.RecommenderDeployment.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> reclab
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../classes.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.base"><code class="docutils literal notranslate"><span class="pre">reclab.base</span></code>: Base classes and functions for reclab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.collab"><code class="docutils literal notranslate"><span class="pre">reclab.collab</span></code>: Collaborative filtering in reclab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.datasets"><code class="docutils literal notranslate"><span class="pre">reclab.datasets</span></code>: Benchmarking ratings data for recommenders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.metrics"><code class="docutils literal notranslate"><span class="pre">reclab.metrics</span></code>: Ranking metrics for scoring recommenders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.model_deployment"><code class="docutils literal notranslate"><span class="pre">reclab.model_deployment</span></code>: Model deployment tools for recommenders</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../classes.html#module-reclab.model_selection"><code class="docutils literal notranslate"><span class="pre">reclab.model_selection</span></code>: Model selection tools for recommenders</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../classes.html#data-splitting">Data splitting</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">reclab.model_selection</span></code>.train_test_split</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../classes.html#cross-validation">Cross validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../classes.html#grid-searches">Grid searches</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.utils"><code class="docutils literal notranslate"><span class="pre">reclab.utils</span></code>: Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide.html">User Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">reclab</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../classes.html">API Reference</a> &raquo;</li>
+        
+      <li><code class="docutils literal notranslate"><span class="pre">reclab.model_selection</span></code>.train_test_split</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/modules/generated/reclab.model_selection.train_test_split.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="reclab-model-selection-train-test-split">
+<h1><a class="reference internal" href="../classes.html#module-reclab.model_selection" title="reclab.model_selection"><code class="xref py py-mod docutils literal notranslate"><span class="pre">reclab.model_selection</span></code></a>.train_test_split<a class="headerlink" href="#reclab-model-selection-train-test-split" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="reclab.model_selection.train_test_split">
+<code class="descclassname">reclab.model_selection.</code><code class="descname">train_test_split</code><span class="sig-paren">(</span><em>X</em>, <em>train_size=0.75</em>, <em>random_state=None</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_selection/_split.py#L121"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/model_selection/_split.html#train_test_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.train_test_split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a train/test split for sparse ratings matrices.</p>
+<p>Given vectors of users, items, and ratings, create a train/test split
+that masks users’ ratings to the prescribed ratio of training samples.
+This only works on sparse matrices.</p>
+<p>See <a class="reference internal" href="../../train_test.html#train-test"><span class="std std-ref">Train/test splits</span></a> for more information.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X</strong> : scipy.sparse.csr_matrix</p>
+<blockquote>
+<div><p>The sparse ratings matrix with users along the row axis and items
+along the column axis. Entries represent ratings or other implicit
+ranking events (i.e., number of listens, etc.).</p>
+</div></blockquote>
+<p><strong>train_size</strong> : float, optional (default=0.75)</p>
+<blockquote>
+<div><p>The ratio of the train set size. Should be a float between 0 and 1.</p>
+</div></blockquote>
+<p><strong>random_state</strong> : RandomState, int or None, optional (default=None)</p>
+<blockquote>
+<div><p>The random state used to seed the train and test masks.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>r_train</strong> : scipy.sparse.csr_matrix</p>
+<blockquote>
+<div><p>The train set.</p>
+</div></blockquote>
+<p><strong>r_test</strong> : scipy.sparse.csr_matrix</p>
+<blockquote class="last">
+<div><p>The test set.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Users (rows) and items (column) must be encoded (i.e., via LabelEncoder)
+prior to creating a sparse matrix of the elements. Since this is required
+prior to train/test splitting, it’s recommended that you store the item
+and user encoders for later decoding.</p>
+<p class="rubric">Examples</p>
+<p>An example of a sparse matrix split that masks some ratings from the train
+set, and leaves them out for the test set.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">reclab.model_selection</span> <span class="k">import</span> <span class="n">train_test_split</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">sparse</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">i</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span><span class="n">r</span><span class="p">,</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">i</span><span class="p">)),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output of the train/test split is two sparse matrices:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">train</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="go">&lt;4x4 sparse matrix of type &#39;&lt;class &#39;numpy.float32&#39;&gt;&#39;</span>
+<span class="go">        with 3 stored elements in Compressed Sparse Row format&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="go">&lt;4x4 sparse matrix of type &#39;&lt;class &#39;numpy.float32&#39;&gt;&#39;</span>
+<span class="go">        with 1 stored elements in Compressed Sparse Row format&gt;</span>
+</pre></div>
+</div>
+<p>When expanded, it’s more clear what was stored and what was masked:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">train</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="go">array([[0. , 0.5, 0. , 0. ],</span>
+<span class="go">       [0. , 0. , 0. , 0. ],</span>
+<span class="go">       [1. , 0. , 0. , 0. ],</span>
+<span class="go">       [0. , 0. , 1. , 0. ]], dtype=float32)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="go">array([[0., 0., 0., 0.],</span>
+<span class="go">       [0., 0., 1., 0.],</span>
+<span class="go">       [0., 0., 0., 0.],</span>
+<span class="go">       [0., 0., 0., 0.]], dtype=float32)</span>
+</pre></div>
+</div>
+<p>A more elaborate example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">reclab.datasets</span> <span class="k">import</span> <span class="n">load_lastfm</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lastfm</span> <span class="o">=</span> <span class="n">load_lastfm</span><span class="p">(</span><span class="n">as_sparse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">lastfm</span><span class="o">.</span><span class="n">ratings</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span>
+<span class="gp">... </span>                               <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">train</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="go">&lt;1892x17632 sparse matrix of type &#39;&lt;class &#39;numpy.float32&#39;&gt;&#39;</span>
+<span class="go">        with 69655 stored elements in Compressed Sparse Row format&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="go">&lt;1892x17632 sparse matrix of type &#39;&lt;class &#39;numpy.float32&#39;&gt;&#39;</span>
+<span class="go">        with 23179 stored elements in Compressed Sparse Row format&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<div class="section" id="examples-using-reclab-model-selection-train-test-split">
+<h2>Examples using <code class="docutils literal notranslate"><span class="pre">reclab.model_selection.train_test_split</span></code><a class="headerlink" href="#examples-using-reclab-model-selection-train-test-split" title="Permalink to this headline">¶</a></h2>
+<div class="sphx-glr-thumbcontainer" tooltip="Demonstrates how to fit a vanilla Alternating Least Squares model on the reclab-native LastFM d..."><div class="figure" id="id1">
+<img alt="../../_images/sphx_glr_example_lastfm_als_thumb.png" src="../../_images/sphx_glr_example_lastfm_als_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="../../auto_examples/collab/example_lastfm_als.html#sphx-glr-auto-examples-collab-example-lastfm-als-py"><span class="std std-ref">Fitting ALS on LastFM</span></a></span></p>
+</div>
+</div><div class="sphx-glr-thumbcontainer" tooltip="Deploying a recommendation models is not always easy. Typically a users and products in a ratin..."><div class="figure" id="id2">
+<img alt="../../_images/sphx_glr_example_model_deployment_thumb.png" src="../../_images/sphx_glr_example_model_deployment_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="../../auto_examples/model_deployment/example_model_deployment.html#sphx-glr-auto-examples-model-deployment-example-model-deployment-py"><span class="std std-ref">Deploying recommender models</span></a></span></p>
+</div>
+</div><div class="clearer"></div></div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="reclab.model_selection.KFold.html" class="btn btn-neutral float-right" title="reclab.model_selection.KFold" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="reclab.model_deployment.RecommenderDeployment.html" class="btn btn-neutral" title="reclab.model_deployment.RecommenderDeployment" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Taylor G Smith
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../../',
+              VERSION:'0.0.5',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

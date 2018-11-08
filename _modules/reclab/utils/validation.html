@@ -1,0 +1,450 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>reclab.utils.validation &mdash; reclab 0.0.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/style.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> reclab
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/classes.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">reclab</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>reclab.utils.validation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for reclab.utils.validation</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.utils</span> <span class="k">import</span> <span class="n">validation</span> <span class="k">as</span> <span class="n">skval</span>
+<span class="kn">from</span> <span class="nn">sklearn.externals</span> <span class="k">import</span> <span class="n">six</span>
+
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">sparse</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;check_consistent_length&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;check_permitted_value&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;check_sparse_array&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;get_n_factors&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;is_iterable&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;to_sparse_csr&#39;</span>
+<span class="p">]</span>
+
+<span class="n">ITYPE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span>
+
+
+<div class="viewcode-block" id="check_consistent_length"><a class="viewcode-back" href="../../../modules/generated/reclab.utils.check_consistent_length.html#reclab.utils.check_consistent_length">[docs]</a><span class="k">def</span> <span class="nf">check_consistent_length</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Ensure users, items, and ratings are all of the same dimension.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    u : array-like, shape=(n_samples,)</span>
+<span class="sd">        A numpy array of the users.</span>
+
+<span class="sd">    i : array-like, shape=(n_samples,)</span>
+<span class="sd">        A numpy array of the items.</span>
+
+<span class="sd">    r : array-like, shape=(n_samples,)</span>
+<span class="sd">        A numpy array of the ratings.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">skval</span><span class="o">.</span><span class="n">check_consistent_length</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">r</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_make_sparse_csr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">):</span>
+    <span class="c1"># check lengths</span>
+    <span class="n">check_consistent_length</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">)</span>
+    <span class="n">data</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">))</span>
+
+    <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">)),</span>
+                             <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="check_permitted_value"><a class="viewcode-back" href="../../../modules/generated/reclab.utils.check_permitted_value.html#reclab.utils.check_permitted_value">[docs]</a><span class="k">def</span> <span class="nf">check_permitted_value</span><span class="p">(</span><span class="n">permitted_dict</span><span class="p">,</span> <span class="n">provided_key</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get a key/value mapping from a dict of permitted value.</span>
+
+<span class="sd">    If the key is not found in the dictionary, raise a KeyError with a more</span>
+<span class="sd">    descriptive message of the error.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    permitted_dict : dict</span>
+<span class="sd">        A dictionary of valid key/value mappings</span>
+
+<span class="sd">    provided_key : str, int</span>
+<span class="sd">        The key provided by the user</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">permitted_dict</span><span class="p">[</span><span class="n">provided_key</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> is not a valid key. Must be one of </span><span class="si">%s</span><span class="s2">&quot;</span>
+                       <span class="o">%</span> <span class="p">(</span><span class="n">provided_key</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">permitted_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))))</span></div>
+
+
+<div class="viewcode-block" id="check_sparse_array"><a class="viewcode-back" href="../../../modules/generated/reclab.utils.check_sparse_array.html#reclab.utils.check_sparse_array">[docs]</a><span class="k">def</span> <span class="nf">check_sparse_array</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;numeric&quot;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                       <span class="n">force_all_finite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ensure_2d</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">allow_nd</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                       <span class="n">ensure_min_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ensure_min_features</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                       <span class="n">warn_on_dtype</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">estimator</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Input validation on a sparse matrix.</span>
+
+<span class="sd">    By default, the input is converted to an at least 2D numpy array.</span>
+<span class="sd">    If the dtype of the array is object, attempt converting to float,</span>
+<span class="sd">    raising on failure.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    array : object</span>
+<span class="sd">        Input object to check / convert.</span>
+
+<span class="sd">    dtype : string, type, list of types or None (default=&quot;numeric&quot;)</span>
+<span class="sd">        Data type of result. If None, the dtype of the input is preserved.</span>
+<span class="sd">        If &quot;numeric&quot;, dtype is preserved unless array.dtype is object.</span>
+<span class="sd">        If dtype is a list of types, conversion on the first type is only</span>
+<span class="sd">        performed if the dtype of the input is not in the list.</span>
+
+<span class="sd">    order : &#39;F&#39;, &#39;C&#39; or None (default=None)</span>
+<span class="sd">        Whether an array will be forced to be fortran or c-style.</span>
+<span class="sd">        When order is None (default), then if copy=False, nothing is ensured</span>
+<span class="sd">        about the memory layout of the output array; otherwise (copy=True)</span>
+<span class="sd">        the memory layout of the returned array is kept as close as possible</span>
+<span class="sd">        to the original array.</span>
+
+<span class="sd">    copy : boolean (default=False)</span>
+<span class="sd">        Whether a forced copy will be triggered. If copy=False, a copy might</span>
+<span class="sd">        be triggered by a conversion.</span>
+
+<span class="sd">    force_all_finite : boolean (default=True)</span>
+<span class="sd">        Whether to raise an error on np.inf and np.nan in X.</span>
+
+<span class="sd">    ensure_2d : boolean (default=True)</span>
+<span class="sd">        Whether to make X at least 2d.</span>
+
+<span class="sd">    allow_nd : boolean (default=False)</span>
+<span class="sd">        Whether to allow X.ndim &gt; 2.</span>
+
+<span class="sd">    ensure_min_samples : int (default=1)</span>
+<span class="sd">        Make sure that the array has a minimum number of samples in its first</span>
+<span class="sd">        axis (rows for a 2D array). Setting to 0 disables this check.</span>
+
+<span class="sd">    ensure_min_features : int (default=1)</span>
+<span class="sd">        Make sure that the 2D array has some minimum number of features</span>
+<span class="sd">        (columns). The default value of 1 rejects empty datasets.</span>
+<span class="sd">        This check is only enforced when the input data has effectively 2</span>
+<span class="sd">        dimensions or is originally 1D and ``ensure_2d`` is True. Setting to 0</span>
+<span class="sd">        disables this check.</span>
+
+<span class="sd">    warn_on_dtype : boolean (default=False)</span>
+<span class="sd">        Raise DataConversionWarning if the dtype of the input data structure</span>
+<span class="sd">        does not match the requested dtype, causing a memory copy.</span>
+
+<span class="sd">    estimator : str or estimator instance (default=None)</span>
+<span class="sd">        If passed, include the name of the estimator in warning messages.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Expected sparse CSR, but got </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">skval</span><span class="o">.</span><span class="n">check_array</span><span class="p">(</span>
+        <span class="n">array</span><span class="o">=</span><span class="n">array</span><span class="p">,</span> <span class="n">accept_sparse</span><span class="o">=</span><span class="s1">&#39;csr&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">,</span>
+        <span class="n">force_all_finite</span><span class="o">=</span><span class="n">force_all_finite</span><span class="p">,</span> <span class="n">ensure_2d</span><span class="o">=</span><span class="n">ensure_2d</span><span class="p">,</span>
+        <span class="n">allow_nd</span><span class="o">=</span><span class="n">allow_nd</span><span class="p">,</span> <span class="n">ensure_min_samples</span><span class="o">=</span><span class="n">ensure_min_samples</span><span class="p">,</span>
+        <span class="n">ensure_min_features</span><span class="o">=</span><span class="n">ensure_min_features</span><span class="p">,</span> <span class="n">warn_on_dtype</span><span class="o">=</span><span class="n">warn_on_dtype</span><span class="p">,</span>
+        <span class="n">estimator</span><span class="o">=</span><span class="n">estimator</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_n_factors"><a class="viewcode-back" href="../../../modules/generated/reclab.utils.get_n_factors.html#reclab.utils.get_n_factors">[docs]</a><span class="k">def</span> <span class="nf">get_n_factors</span><span class="p">(</span><span class="n">n_dim</span><span class="p">,</span> <span class="n">n_factors</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get the number of factors to compute.</span>
+
+<span class="sd">    Lots of recommendation algorithms compute a number of latent factors.</span>
+<span class="sd">    This method computes the number of factors as either a ratio or returns</span>
+<span class="sd">    the given integer.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_dim : int</span>
+<span class="sd">        The dimensions in the input space. This is typically the number of</span>
+<span class="sd">        items or products in a system&#39;s catalog.</span>
+
+<span class="sd">    n_factors : int or float</span>
+<span class="sd">        The number of factors or the ratio of factors to compute. If a float,</span>
+<span class="sd">        must be &gt; 0. Note that this value *can* exceed the number of products</span>
+<span class="sd">        (``n_dim``).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    A float will return the ratio of the dimensions:</span>
+<span class="sd">    &gt;&gt;&gt; get_n_factors(100, 0.25)</span>
+<span class="sd">    25</span>
+
+<span class="sd">    An integer will simply be returned on its own:</span>
+<span class="sd">    &gt;&gt;&gt; get_n_factors(100, 20)</span>
+<span class="sd">    20</span>
+
+<span class="sd">    A non-rational float will round up to the nearest integer:</span>
+<span class="sd">    &gt;&gt;&gt; get_n_factors(100, 0.333333)</span>
+<span class="sd">    34</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_factors</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="c1"># If it&#39;s &lt;= 0, raise</span>
+        <span class="k">if</span> <span class="n">n_factors</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;n_factors must be &gt; 0&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_factors</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">n_factors</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_factors</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_dim</span> <span class="o">*</span> <span class="n">n_factors</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;n_factors must be a float or an int, but got type=</span><span class="si">%s</span><span class="s2">&quot;</span>
+                    <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">n_factors</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="is_iterable"><a class="viewcode-back" href="../../../modules/generated/reclab.utils.is_iterable.html#reclab.utils.is_iterable">[docs]</a><span class="k">def</span> <span class="nf">is_iterable</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Determine whether an element is iterable.</span>
+
+<span class="sd">    This function determines whether an element is iterable by checking</span>
+<span class="sd">    for the ``__iter__`` attribute. Since Python 3.x adds the ``__iter__``</span>
+<span class="sd">    attribute to strings, we also have to make sure the input is not a</span>
+<span class="sd">    string or unicode type.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : object</span>
+<span class="sd">        The object or primitive to test whether</span>
+<span class="sd">        or not is an iterable.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;__iter__&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="to_sparse_csr"><a class="viewcode-back" href="../../../modules/generated/reclab.utils.to_sparse_csr.html#reclab.utils.to_sparse_csr">[docs]</a><span class="k">def</span> <span class="nf">to_sparse_csr</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a sparse ratings matrix.</span>
+
+<span class="sd">    Create a sparse ratings matrix with users and items as rows and columns,</span>
+<span class="sd">    and ratings as the values.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    u : array-like, shape=(n_samples,)</span>
+<span class="sd">        The user vector. Positioned along the row axis if ``axis=0``,</span>
+<span class="sd">        otherwise positioned along the column axis.</span>
+
+<span class="sd">    i : array-like, shape=(n_samples,)</span>
+<span class="sd">        The item vector. Positioned along the column axis if ``axis=0``,</span>
+<span class="sd">        otherwise positioned along the row axis.</span>
+
+<span class="sd">    r : array-like, shape=(n_samples,)</span>
+<span class="sd">        The ratings vector.</span>
+
+<span class="sd">    axis : int, optional (default=0)</span>
+<span class="sd">        The axis along which to position the users. If 0, the users are</span>
+<span class="sd">        along the rows (with items as columns). If 1, the users are columns</span>
+<span class="sd">        with items as rows.</span>
+
+<span class="sd">    dtype : type, optional (default=np.float32)</span>
+<span class="sd">        The type of the values in the ratings matrix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;axis must be an int in (0, 1)&quot;</span><span class="p">)</span>
+
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">u</span> <span class="k">if</span> <span class="n">axis</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">i</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="n">i</span> <span class="k">if</span> <span class="n">axis</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">u</span>
+    <span class="k">return</span> <span class="n">_make_sparse_csr</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">r</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">cols</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Taylor G Smith
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../../../',
+              VERSION:'0.0.5',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

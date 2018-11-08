@@ -1,0 +1,327 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>reclab.utils.check_sparse_array &mdash; reclab 0.0.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/style.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="reclab.utils.get_n_factors" href="reclab.utils.get_n_factors.html" />
+    <link rel="prev" title="reclab.utils.check_permitted_value" href="reclab.utils.check_permitted_value.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> reclab
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../classes.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.base"><code class="docutils literal notranslate"><span class="pre">reclab.base</span></code>: Base classes and functions for reclab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.collab"><code class="docutils literal notranslate"><span class="pre">reclab.collab</span></code>: Collaborative filtering in reclab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.datasets"><code class="docutils literal notranslate"><span class="pre">reclab.datasets</span></code>: Benchmarking ratings data for recommenders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.metrics"><code class="docutils literal notranslate"><span class="pre">reclab.metrics</span></code>: Ranking metrics for scoring recommenders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.model_deployment"><code class="docutils literal notranslate"><span class="pre">reclab.model_deployment</span></code>: Model deployment tools for recommenders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.model_selection"><code class="docutils literal notranslate"><span class="pre">reclab.model_selection</span></code>: Model selection tools for recommenders</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../classes.html#module-reclab.utils"><code class="docutils literal notranslate"><span class="pre">reclab.utils</span></code>: Utilities</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../classes.html#validation-array-checking-functions">Validation &amp; array-checking functions</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="reclab.utils.check_consistent_length.html"><code class="docutils literal notranslate"><span class="pre">reclab.utils</span></code>.check_consistent_length</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reclab.utils.check_permitted_value.html"><code class="docutils literal notranslate"><span class="pre">reclab.utils</span></code>.check_permitted_value</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">reclab.utils</span></code>.check_sparse_array</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reclab.utils.get_n_factors.html"><code class="docutils literal notranslate"><span class="pre">reclab.utils</span></code>.get_n_factors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reclab.utils.inherit_function_doc.html"><code class="docutils literal notranslate"><span class="pre">reclab.utils</span></code>.inherit_function_doc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reclab.utils.is_iterable.html"><code class="docutils literal notranslate"><span class="pre">reclab.utils</span></code>.is_iterable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reclab.utils.safe_mkdirs.html"><code class="docutils literal notranslate"><span class="pre">reclab.utils</span></code>.safe_mkdirs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reclab.utils.to_sparse_csr.html"><code class="docutils literal notranslate"><span class="pre">reclab.utils</span></code>.to_sparse_csr</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide.html">User Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">reclab</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../classes.html">API Reference</a> &raquo;</li>
+        
+      <li><code class="docutils literal notranslate"><span class="pre">reclab.utils</span></code>.check_sparse_array</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/modules/generated/reclab.utils.check_sparse_array.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="reclab-utils-check-sparse-array">
+<h1><a class="reference internal" href="../classes.html#module-reclab.utils" title="reclab.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">reclab.utils</span></code></a>.check_sparse_array<a class="headerlink" href="#reclab-utils-check-sparse-array" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="reclab.utils.check_sparse_array">
+<code class="descclassname">reclab.utils.</code><code class="descname">check_sparse_array</code><span class="sig-paren">(</span><em>array</em>, <em>dtype='numeric'</em>, <em>order=None</em>, <em>copy=False</em>, <em>force_all_finite=True</em>, <em>ensure_2d=True</em>, <em>allow_nd=False</em>, <em>ensure_min_samples=1</em>, <em>ensure_min_features=1</em>, <em>warn_on_dtype=False</em>, <em>estimator=None</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/utils/validation.py#L72"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/utils/validation.html#check_sparse_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.utils.check_sparse_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Input validation on a sparse matrix.</p>
+<p>By default, the input is converted to an at least 2D numpy array.
+If the dtype of the array is object, attempt converting to float,
+raising on failure.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>array</strong> : object</p>
+<blockquote>
+<div><p>Input object to check / convert.</p>
+</div></blockquote>
+<p><strong>dtype</strong> : string, type, list of types or None (default=”numeric”)</p>
+<blockquote>
+<div><p>Data type of result. If None, the dtype of the input is preserved.
+If “numeric”, dtype is preserved unless array.dtype is object.
+If dtype is a list of types, conversion on the first type is only
+performed if the dtype of the input is not in the list.</p>
+</div></blockquote>
+<p><strong>order</strong> : ‘F’, ‘C’ or None (default=None)</p>
+<blockquote>
+<div><p>Whether an array will be forced to be fortran or c-style.
+When order is None (default), then if copy=False, nothing is ensured
+about the memory layout of the output array; otherwise (copy=True)
+the memory layout of the returned array is kept as close as possible
+to the original array.</p>
+</div></blockquote>
+<p><strong>copy</strong> : boolean (default=False)</p>
+<blockquote>
+<div><p>Whether a forced copy will be triggered. If copy=False, a copy might
+be triggered by a conversion.</p>
+</div></blockquote>
+<p><strong>force_all_finite</strong> : boolean (default=True)</p>
+<blockquote>
+<div><p>Whether to raise an error on np.inf and np.nan in X.</p>
+</div></blockquote>
+<p><strong>ensure_2d</strong> : boolean (default=True)</p>
+<blockquote>
+<div><p>Whether to make X at least 2d.</p>
+</div></blockquote>
+<p><strong>allow_nd</strong> : boolean (default=False)</p>
+<blockquote>
+<div><p>Whether to allow X.ndim &gt; 2.</p>
+</div></blockquote>
+<p><strong>ensure_min_samples</strong> : int (default=1)</p>
+<blockquote>
+<div><p>Make sure that the array has a minimum number of samples in its first
+axis (rows for a 2D array). Setting to 0 disables this check.</p>
+</div></blockquote>
+<p><strong>ensure_min_features</strong> : int (default=1)</p>
+<blockquote>
+<div><p>Make sure that the 2D array has some minimum number of features
+(columns). The default value of 1 rejects empty datasets.
+This check is only enforced when the input data has effectively 2
+dimensions or is originally 1D and <code class="docutils literal notranslate"><span class="pre">ensure_2d</span></code> is True. Setting to 0
+disables this check.</p>
+</div></blockquote>
+<p><strong>warn_on_dtype</strong> : boolean (default=False)</p>
+<blockquote>
+<div><p>Raise DataConversionWarning if the dtype of the input data structure
+does not match the requested dtype, causing a memory copy.</p>
+</div></blockquote>
+<p><strong>estimator</strong> : str or estimator instance (default=None)</p>
+<blockquote class="last">
+<div><p>If passed, include the name of the estimator in warning messages.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="clearer"></div></div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="reclab.utils.get_n_factors.html" class="btn btn-neutral float-right" title="reclab.utils.get_n_factors" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="reclab.utils.check_permitted_value.html" class="btn btn-neutral" title="reclab.utils.check_permitted_value" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Taylor G Smith
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../../',
+              VERSION:'0.0.5',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

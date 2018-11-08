@@ -1,0 +1,96 @@
+version: 2
+
+jobs:
+  # For testing conventional CPython dists
+  python36:
+    docker:
+      # Use the python 3.6 image for simplicity, since version is managed by
+      # the miniconda dist anyways.
+      - image: circleci/python:3.6.1
+    environment:
+      - MINICONDA_PATH: ~/miniconda
+      - CONDA_ENV_NAME: testenv
+      - PYTHON_VERSION: 3
+      - NUMPY_VERSION: 1.15.2
+      - IMPLICIT_VERSION: 0.3.7
+    steps:
+      - checkout
+      - run: ./build_tools/circle/checkout_merge_commit.sh
+      - restore_cache:
+          key: v1-datasets-{{ .Branch }}
+      - run: ./build_tools/circle/build_test_cpython.sh
+      - save_cache:
+          key: v1-datasets-{{ .Branch }}
+          # The path to lastfm data we've unpacked now
+          paths:
+            - ~/.reclab-cache
+            - ~/.ccache
+            # Because building the nmslib wheel is SUCH a pain!!!!!
+            - ~/.cache/pip
+      # Show whether the cache worked as hoped...
+      - run: ls ~/.cache/pip
+
+  # For testing PyPy rather than CPython
+  pypy36:
+    docker:
+      - image: pypy:3-6.0.0
+    steps:
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - pypy3-ccache-{{ .Branch }}
+          # fallback to using the latest cache if no exact match is found
+          - pypy3-ccache
+
+      - checkout
+      - run: ./build_tools/circle/before_install.sh
+      - run: ./build_tools/circle/build_test_pypy.sh
+      - save_cache:
+          key: pypy3-ccache-{{ .Branch }}-{{ .BuildNum }}
+          paths:
+            - ~/.ccache
+            - ~/.cache/pip
+
+  # For testing lint
+  test-linting:
+    docker:
+      - image: python:3.6
+    working_directory: ~/reclab
+    steps:
+    - checkout
+    - run: make test-lint
+
+  # For documentation deployment. You'll need the following environment vars
+  # in your Circle CI settings, otherwise this will not work.
+  #
+  # GH_NAME (your git username)
+  # GH_EMAIL (your git email)
+  # GH_TOKEN (the personal Git token with pushes enabled)
+  deploy-doc:
+    docker:
+    - image: python:3.6
+    environment:
+      - BUILD_EXAMPLES: "true"
+    working_directory: ~/reclab
+    steps:
+    - checkout
+    - run: ./build_tools/circle/before_install.sh
+    - run: make doc-requirements
+    - run: make install
+    - run: ./build_tools/circle/build_push_doc.sh
+
+
+workflows:
+  version: 2
+
+  # All testing jobs:
+  testing:
+    jobs:
+      - python36
+      - pypy36
+      - test-linting
+
+  # All deployment
+  deploy:
+    jobs:
+      - deploy-doc

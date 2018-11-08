@@ -1,0 +1,476 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>reclab.collab.neighbors &mdash; reclab 0.0.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/style.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> reclab
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/classes.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">reclab</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>reclab.collab.neighbors</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for reclab.collab.neighbors</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">BaseCollaborativeFiltering</span>
+<span class="kn">from</span> <span class="nn">..base</span> <span class="k">import</span> <span class="n">_recommend_items_and_maybe_scores</span><span class="p">,</span> <span class="n">clone</span>
+<span class="kn">from</span> <span class="nn">..utils.decorators</span> <span class="k">import</span> <span class="n">inherit_function_doc</span>
+<span class="kn">from</span> <span class="nn">..utils.system</span> <span class="k">import</span> <span class="n">safe_mkdirs</span>
+<span class="kn">from</span> <span class="nn">..utils.validation</span> <span class="k">import</span> <span class="n">check_sparse_array</span><span class="p">,</span> <span class="n">check_permitted_value</span>
+<span class="kn">from</span> <span class="nn">.._config</span> <span class="k">import</span> <span class="n">RECLAB_CACHE</span>
+
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span><span class="p">,</span> <span class="n">exists</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">sparse</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="k">import</span> <span class="n">check_is_fitted</span>
+<span class="kn">from</span> <span class="nn">implicit</span> <span class="k">import</span> <span class="n">nearest_neighbours</span> <span class="k">as</span> <span class="n">nn</span>
+<span class="kn">from</span> <span class="nn">implicit._nearest_neighbours</span> <span class="k">import</span> <span class="n">NearestNeighboursScorer</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;ItemItemRecommender&#39;</span>
+<span class="p">]</span>
+
+<span class="n">_estimators</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;kernel&#39;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">ItemItemRecommender</span><span class="p">,</span>
+    <span class="s1">&#39;cosine&#39;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">CosineRecommender</span><span class="p">,</span>
+    <span class="s1">&#39;tfidf&#39;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">TFIDFRecommender</span><span class="p">,</span>
+    <span class="s1">&#39;bm25&#39;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">BM25Recommender</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="ItemItemRecommender"><a class="viewcode-back" href="../../../modules/generated/reclab.collab.ItemItemRecommender.html#reclab.collab.ItemItemRecommender">[docs]</a><span class="k">class</span> <span class="nc">ItemItemRecommender</span><span class="p">(</span><span class="n">BaseCollaborativeFiltering</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Item-item collaborative filtering.</span>
+
+<span class="sd">    Computes &amp; recommends the nearest neighbors between items.</span>
+<span class="sd">    Recommendations are produced by multiplying a user&#39;s likes (rated</span>
+<span class="sd">    items) by the precomputed item similarity matrix.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    metric : str or unicode, optional (default=&#39;kernel&#39;)</span>
+<span class="sd">        kernel :</span>
+<span class="sd">            Computes the item-pair similarities via the ratings matrix&#39;s</span>
+<span class="sd">            self product: :math:`X^{T}X`</span>
+<span class="sd">        cosine :</span>
+<span class="sd">            Item-pair similarities are calculated via cosine similarity</span>
+<span class="sd">            (equivalent to &#39;kernel&#39; method on a normalized matrix).</span>
+<span class="sd">        tfidf :</span>
+<span class="sd">            Identical to the &#39;kernel&#39; method applied to a normalized,</span>
+<span class="sd">            TFIDF-weighted matrix.</span>
+<span class="sd">        bm25 :</span>
+<span class="sd">            Okapi BM25 (BM for &quot;best matching&quot;) is a ranking function for</span>
+<span class="sd">            search engines that ranks by relevancy, and is related to the</span>
+<span class="sd">            &quot;tfidf&quot; method. See [1] and [2] for more information.</span>
+
+<span class="sd">    k : int, optional (default=20)</span>
+<span class="sd">        The number of nearest neighbors to store for each item. A higher &#39;k&#39;</span>
+<span class="sd">        value will cause the method to store a more dense similarity matrix,</span>
+<span class="sd">        and will yield a higher bias-afflicted system, while a lower value of</span>
+<span class="sd">        &#39;k&#39; will store a more sparse similarity matrix, but trends towards</span>
+<span class="sd">        a higher variance system.</span>
+
+<span class="sd">    k1 : float, optional (default=1.2)</span>
+<span class="sd">        A free parameter used for BM25 similarity computation. K1 is typically</span>
+<span class="sd">        chosen, in the absence of advanced optimization, as</span>
+<span class="sd">        :math:`k_{i} \in [1.2, 2.0]`. If ``metric`` is not &#39;bm25&#39;, ``k1`` is</span>
+<span class="sd">        ignored.</span>
+
+<span class="sd">    b : float, optional (default=0.75)</span>
+<span class="sd">        A free parameter used for BM25 similarity computation. B is commonly</span>
+<span class="sd">        defaulted to 0.75. If ``metric`` is not &#39;bm25&#39;, ``B`` is ignored.</span>
+
+<span class="sd">    show_progress : bool, optional (default=True)</span>
+<span class="sd">        Whether to show a progress bar while training.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Fitting a item-item recommender with cosine similarity:</span>
+
+<span class="sd">    &gt;&gt;&gt; from reclab.datasets import load_lastfm</span>
+<span class="sd">    &gt;&gt;&gt; from reclab.model_selection import train_test_split</span>
+<span class="sd">    &gt;&gt;&gt; lastfm = load_lastfm(cache=True, as_sparse=True)</span>
+<span class="sd">    &gt;&gt;&gt; train, test = train_test_split(lastfm.ratings, random_state=42)</span>
+<span class="sd">    &gt;&gt;&gt; model = ItemItemRecommender(k=5, metric=&#39;cosine&#39;, show_progress=False)</span>
+<span class="sd">    &gt;&gt;&gt; model.fit(train)  # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">    ItemItemRecommender(b=0.75, k=5, k1=1.2, metric=&#39;cosine&#39;,</span>
+<span class="sd">                  show_progress=False)</span>
+
+<span class="sd">    Inference for a given user:</span>
+
+<span class="sd">    &gt;&gt;&gt; model.recommend_for_user(0, test, n=5)  # doctest: +SKIP</span>
+<span class="sd">    array([12673,  4229,  8762,  2536, 14711], dtype=int32)</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] https://en.wikipedia.org/wiki/Okapi_BM25</span>
+<span class="sd">    .. [2] https://xapian.org/docs/bm25.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="ItemItemRecommender.__init__"><a class="viewcode-back" href="../../../modules/generated/reclab.collab.ItemItemRecommender.html#reclab.collab.ItemItemRecommender.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s1">&#39;kernel&#39;</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">k1</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span>
+                 <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+        <span class="c1"># Call to super constructor</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ItemItemRecommender</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">metric</span> <span class="o">=</span> <span class="n">metric</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">k</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k1</span> <span class="o">=</span> <span class="n">k1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">b</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_progress</span> <span class="o">=</span> <span class="n">show_progress</span></div>
+
+    <span class="k">def</span> <span class="nf">_make_estimator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Validate the metric</span>
+        <span class="n">metric</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metric</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="n">check_permitted_value</span><span class="p">(</span><span class="n">permitted_dict</span><span class="o">=</span><span class="n">_estimators</span><span class="p">,</span>
+                                    <span class="n">provided_key</span><span class="o">=</span><span class="n">metric</span><span class="p">)</span>
+
+        <span class="c1"># If it&#39;s BM25, we have several other options we pass</span>
+        <span class="k">if</span> <span class="n">metric</span> <span class="o">==</span> <span class="s1">&#39;bm25&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">K</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">K1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">k1</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">)</span>
+        <span class="c1"># Otherwise, they all have the same signature</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">K</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ItemItemRecommender.fit"><a class="viewcode-back" href="../../../modules/generated/reclab.collab.ItemItemRecommender.html#reclab.collab.ItemItemRecommender.fit">[docs]</a>    <span class="nd">@inherit_function_doc</span><span class="p">(</span><span class="n">BaseCollaborativeFiltering</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="c1"># Validate that X is a sparse array. Implicit forces float32 for ALS,</span>
+        <span class="c1"># but forces 64 for nearest neighbors (how annoying, right?)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">check_sparse_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                               <span class="n">force_all_finite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Now fit it</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span> <span class="o">=</span> <span class="n">est</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_estimator</span><span class="p">()</span>
+        <span class="n">est</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">show_progress</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="ItemItemRecommender.n_items"><a class="viewcode-back" href="../../../modules/generated/reclab.collab.ItemItemRecommender.html#reclab.collab.ItemItemRecommender.n_items">[docs]</a>    <span class="k">def</span> <span class="nf">n_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The number of items in the recommender.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        n_items : int</span>
+<span class="sd">            The number of items in the recommender system, which is equal</span>
+<span class="sd">            to the row/col dimensions of the item similarity matrix.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;estimator_&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">similarity</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ItemItemRecommender.n_users"><a class="viewcode-back" href="../../../modules/generated/reclab.collab.ItemItemRecommender.html#reclab.collab.ItemItemRecommender.n_users">[docs]</a>    <span class="k">def</span> <span class="nf">n_users</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The number of users in the recommender.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        n_users : int</span>
+<span class="sd">            The number of users in the fit recommender system.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;estimator_&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">similarity</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ItemItemRecommender.recommend_for_user"><a class="viewcode-back" href="../../../modules/generated/reclab.collab.ItemItemRecommender.html#reclab.collab.ItemItemRecommender.recommend_for_user">[docs]</a>    <span class="nd">@inherit_function_doc</span><span class="p">(</span><span class="n">BaseCollaborativeFiltering</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">recommend_for_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userid</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">filter_previously_rated</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                           <span class="n">filter_items</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_scores</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Make sure we&#39;re fitted...</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;estimator_&quot;</span><span class="p">)</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">check_sparse_array</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                               <span class="n">force_all_finite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># If n is None, make it n_items</span>
+        <span class="n">est</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span>  <span class="c1"># type: nn.ItemItemRecommender</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">est</span><span class="o">.</span><span class="n">similarity</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># If we&#39;re filtering previously rated, we need to add this length to N</span>
+        <span class="c1"># otherwise the implicit code will come in low...</span>
+        <span class="n">rated</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">R</span><span class="p">[</span><span class="n">userid</span><span class="p">]</span><span class="o">.</span><span class="n">indices</span><span class="p">)</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">n</span>  <span class="c1"># Keep the original N so we don&#39;t amend it for later filtering</span>
+        <span class="k">if</span> <span class="n">filter_previously_rated</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rated</span><span class="p">)</span>
+
+        <span class="c1"># Get list of tuples:</span>
+        <span class="n">best</span> <span class="o">=</span> <span class="n">est</span><span class="o">.</span><span class="n">recommend</span><span class="p">(</span>
+            <span class="n">userid</span><span class="o">=</span><span class="n">userid</span><span class="p">,</span> <span class="n">user_items</span><span class="o">=</span><span class="n">R</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">N</span><span class="p">,</span>
+            <span class="n">filter_already_liked_items</span><span class="o">=</span><span class="n">filter_previously_rated</span><span class="p">,</span>
+            <span class="n">filter_items</span><span class="o">=</span><span class="n">filter_items</span><span class="p">)</span>
+
+        <span class="c1"># There is a bug in the implicit code that will cause previously</span>
+        <span class="c1"># rated items to still be returned, but with a rating of zero. We need</span>
+        <span class="c1"># to remove these... fortunately, the filter_items (should) have</span>
+        <span class="c1"># already been removed by the implicit code.</span>
+        <span class="n">filter_out</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">filter_previously_rated</span> <span class="k">else</span> <span class="n">rated</span>
+        <span class="k">return</span> <span class="n">_recommend_items_and_maybe_scores</span><span class="p">(</span>
+            <span class="n">best</span><span class="p">,</span> <span class="n">return_scores</span><span class="o">=</span><span class="n">return_scores</span><span class="p">,</span> <span class="n">filter_items</span><span class="o">=</span><span class="n">filter_out</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pickle sub-hook&quot;&quot;&quot;</span>
+        <span class="c1"># If it&#39;s not fit, we just return this dictionary</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;estimator_&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span>
+
+        <span class="c1"># Otherwise we have to separately save the similarity matrix</span>
+        <span class="n">est</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span>
+
+        <span class="c1"># Remove the estimator object to clone</span>
+        <span class="n">sim</span> <span class="o">=</span> <span class="n">est</span><span class="o">.</span><span class="n">similarity</span>
+        <span class="n">scorer</span> <span class="o">=</span> <span class="n">est</span><span class="o">.</span><span class="n">scorer</span>
+        <span class="n">est</span><span class="o">.</span><span class="n">similarity</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">est</span><span class="o">.</span><span class="n">scorer</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Since the signatures of the __init__ functions should play nice with</span>
+        <span class="c1"># sklearn, and since we&#39;ve removed the un-picklables, we should be able</span>
+        <span class="c1"># to copy this now.</span>
+        <span class="n">obj_dict</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clone_model_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="vm">__dict__</span>
+
+        <span class="c1"># Make sure to bind the estimator to the object dictionary so it gets</span>
+        <span class="c1"># pickled out.</span>
+        <span class="n">obj_dict</span><span class="p">[</span><span class="s1">&#39;estimator_&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">est</span><span class="p">)</span>
+
+        <span class="c1"># Re-bind the scorer and re-attach the similarity to the estimator</span>
+        <span class="c1"># for calling the save function later</span>
+        <span class="n">est</span><span class="o">.</span><span class="n">similarity</span> <span class="o">=</span> <span class="n">sim</span>
+        <span class="n">est</span><span class="o">.</span><span class="n">scorer</span> <span class="o">=</span> <span class="n">scorer</span>
+
+        <span class="c1"># If the model key already exists in the cache, remove it now</span>
+        <span class="n">model_index_dir</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">RECLAB_CACHE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">exists</span><span class="p">(</span><span class="n">model_index_dir</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">model_index_dir</span><span class="p">)</span>
+        <span class="n">safe_mkdirs</span><span class="p">(</span><span class="n">model_index_dir</span><span class="p">)</span>
+
+        <span class="c1"># Save the indices to Disk. wrap this in try/finally so if something</span>
+        <span class="c1"># breaks halfway through we don&#39;t blow up the disk space over time...</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">loc</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">model_index_dir</span><span class="p">,</span> <span class="s2">&quot;similarity&quot;</span><span class="p">)</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">sim</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">indptr</span><span class="o">=</span><span class="n">sim</span><span class="o">.</span><span class="n">indptr</span><span class="p">,</span>
+                     <span class="n">indices</span><span class="o">=</span><span class="n">sim</span><span class="o">.</span><span class="n">indices</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">sim</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="c1"># If we break down, remove the model index directory so as not to</span>
+        <span class="c1"># blow up the filesystem!</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">model_index_dir</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+        <span class="k">return</span> <span class="n">obj_dict</span>
+
+    <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Unpickle sub-hook&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span> <span class="o">=</span> <span class="n">state</span>
+
+        <span class="c1"># If the estimator_ attribute exists, we know we need to re-bind the</span>
+        <span class="c1"># similarity attribute, otherwise the estimator was not previously fit.</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;estimator_&quot;</span><span class="p">):</span>
+            <span class="n">est</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span>
+            <span class="c1"># Numpy forces .npz suffix</span>
+            <span class="n">location</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">RECLAB_CACHE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_key</span><span class="p">,</span> <span class="s2">&quot;similarity.npz&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Load the similarity matrix</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">location</span><span class="p">)</span>
+            <span class="n">est</span><span class="o">.</span><span class="n">similarity</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="s1">&#39;indices&#39;</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="s1">&#39;indptr&#39;</span><span class="p">]),</span>
+                <span class="n">shape</span><span class="o">=</span><span class="n">arr</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">])</span>
+            <span class="n">est</span><span class="o">.</span><span class="n">scorer</span> <span class="o">=</span> <span class="n">NearestNeighboursScorer</span><span class="p">(</span><span class="n">est</span><span class="o">.</span><span class="n">similarity</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Taylor G Smith
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../../../',
+              VERSION:'0.0.5',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

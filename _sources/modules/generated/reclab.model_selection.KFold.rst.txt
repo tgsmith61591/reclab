@@ -1,0 +1,16 @@
+:mod:`reclab.model_selection`.KFold
+==========================================
+
+.. currentmodule:: reclab.model_selection
+
+.. autoclass:: KFold
+
+   
+   .. automethod:: __init__
+   
+
+.. include:: reclab.model_selection.KFold.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

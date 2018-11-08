@@ -1,0 +1,16 @@
+:mod:`reclab.collab`.ItemItemRecommender
+===============================================
+
+.. currentmodule:: reclab.collab
+
+.. autoclass:: ItemItemRecommender
+
+   
+   .. automethod:: __init__
+   
+
+.. include:: reclab.collab.ItemItemRecommender.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

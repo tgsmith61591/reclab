@@ -1,0 +1,16 @@
+:mod:`reclab.model_deployment`.RecommenderDeployment
+===========================================================
+
+.. currentmodule:: reclab.model_deployment
+
+.. autoclass:: RecommenderDeployment
+
+   
+   .. automethod:: __init__
+   
+
+.. include:: reclab.model_deployment.RecommenderDeployment.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

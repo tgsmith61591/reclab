@@ -1,0 +1,12 @@
+:mod:`reclab.base`._recommend_items_and_maybe_scores
+=================================================================
+
+.. currentmodule:: reclab.base
+
+.. autofunction:: _recommend_items_and_maybe_scores
+
+.. include:: reclab.base._recommend_items_and_maybe_scores.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

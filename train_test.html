@@ -1,0 +1,349 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>3. Train/test splits &mdash; reclab 0.0.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/style.css" type="text/css" />
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="4. Contributing to reclab" href="contributing.html" />
+    <link rel="prev" title="2. Setup" href="setup.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> reclab
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="modules/classes.html">API Reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="user_guide.html">User Guide</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="user_guide.html#getting-started">Getting started</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="about.html">1. About reclab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="setup.html">2. Setup</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">3. Train/test splits</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#conventional-splitting">3.1. Conventional splitting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#splitting-for-collaborative-filtering">3.2. Splitting for collaborative filtering</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#other-nuances">3.3. Other nuances</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#exceptions">3.4. Exceptions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html">4. Contributing to reclab</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#examples-of-use">Examples of use</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#api-reference">API reference</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">reclab</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="user_guide.html">User Guide</a> &raquo;</li>
+        
+      <li>3. Train/test splits</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/train_test.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="train-test-splits">
+<span id="train-test"></span><h1>3. Train/test splits<a class="headerlink" href="#train-test-splits" title="Permalink to this headline">¶</a></h1>
+<p>As with all machine learning techniques, data splitting is recommended (pun!)
+when fitting recommender systems. However, unlike most other machine learning
+domains, the train/test split for collaborative filtering does not simply sample
+rows for training.</p>
+<p>Since most collaborative filtering techniques estimate factors or neighbors for
+both users <em>as well as</em> items, the number of samples in the matrix is as
+important a consideration as that of the matrix rank. Therefore, both the number
+of samples as well as the dimensionality of the training and test data must
+match that of the input data.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<div class="section" id="conventional-splitting">
+<h2>3.1. Conventional splitting<a class="headerlink" href="#conventional-splitting" title="Permalink to this headline">¶</a></h2>
+<p>Most data can be randomly split, or split with stratification. A typical
+train/test split resembles the following:</p>
+<a class="reference internal image-reference" href="_images/train_test.png"><img alt="Conventional train/test split" class="align-center" src="_images/train_test.png" style="width: 342.0px; height: 134.0px;" /></a>
+<p>Here’s how we’d do that in Python:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_iris</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">load_iris</span><span class="p">(</span><span class="n">return_X_y</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> \
+    <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is due to the fact that most machine learning algorithms only depend on
+consistency of matrix rank, and operate invariant to the number of samples in the
+matrix.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p><strong>Collaborative filtering is not quite the same</strong></p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="splitting-for-collaborative-filtering">
+<h2>3.2. Splitting for collaborative filtering<a class="headerlink" href="#splitting-for-collaborative-filtering" title="Permalink to this headline">¶</a></h2>
+<p>In (most) collaborative filtering, we have to ensure that the train set contains
+ratings events for all items and users present in the data. This is because matrix
+factorization techniques are going to decompose factors for both users (rows), as well as
+items (columns). Therefore, a collaborative split can be considered more like data masking,
+where the training set represents a system’s collection of item ratings at a point in time,
+and the test set represents the next items the user rated.</p>
+<br/><p>As an (obviously contrived) example, given the following input data of users’ listens
+to various metal artists (each of which is worth checking out!):</p>
+<a class="reference internal image-reference" href="_images/input.png"><img alt="Collaborative filtering ratings matrix" class="align-center" src="_images/input.png" style="width: 706.0px; height: 216.5px;" /></a>
+<br/><p>We may split the data into a train/test set that resembles the following:</p>
+<a class="reference internal image-reference" href="_images/collab_split.png"><img alt="Collaborative filtering train/test split" class="align-center" src="_images/collab_split.png" style="width: 818.5px; height: 404.0px;" /></a>
+<br/><p>Obviously, we’d hope the input data had more than 11 ratings events!</p>
+<br/><p>Here’s how we can achieve such a split in reclab:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">reclab.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">reclab.datasets</span> <span class="kn">import</span> <span class="n">load_lastfm</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="n">lastfm</span> <span class="o">=</span> <span class="n">load_lastfm</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">as_sparse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">lastfm</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+                               <span class="n">train_size</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+
+<span class="c1"># We can assert that the shape remains the same, even though the number of</span>
+<span class="c1"># non-zero elements in the sparse matrix is different</span>
+<span class="n">n_users</span><span class="p">,</span> <span class="n">n_artists</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># 1892, 17632</span>
+<span class="k">assert</span> <span class="n">n_users</span> <span class="o">==</span> <span class="n">lastfm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">assert</span> <span class="n">n_artists</span> <span class="o">==</span> <span class="n">lastfm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="c1"># Show the nnz is different:</span>
+<span class="k">assert</span> <span class="n">train</span><span class="o">.</span><span class="n">nnz</span> <span class="o">!=</span> <span class="n">test</span><span class="o">.</span><span class="n">nnz</span> <span class="ow">and</span> \
+    <span class="n">train</span><span class="o">.</span><span class="n">nnz</span> <span class="o">!=</span> <span class="n">lastfm</span><span class="o">.</span><span class="n">nnz</span> <span class="ow">and</span> \
+    <span class="n">test</span><span class="o">.</span><span class="n">nnz</span> <span class="o">!=</span> <span class="n">lastfm</span><span class="o">.</span><span class="n">nnz</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="other-nuances">
+<h2>3.3. Other nuances<a class="headerlink" href="#other-nuances" title="Permalink to this headline">¶</a></h2>
+<p>One of the first things you’ll notice after splitting your data with reclab is that
+the test set is not smaller than the training set. In fact, the test set contains <em>all</em> of
+the data! This is due to the fact that recommender systems are not truly supervised learning
+techniques; they are information retrieval methods.</p>
+<p>The purpose of the test set during scoring is often to determine whether the recommendations
+produced by the algorithm actually ended up being consumed/rated positively by the user. Therefore,
+the test set can be considered a <em>future</em> state of the users’ ratings, while the training set can be
+thought of as a <em>past state</em>. As a result, the scoring techniques we use for recommenders fall more
+into the family of information retrieval and relevancy (think search engine metrics) than conventional
+“accuracy” measures.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="exceptions">
+<h2>3.4. Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
+<p>There are situations where a conventional train/test split could work for you:</p>
+<ul class="simple">
+<li>You don’t care about user factors (in which case, you could use the <code class="docutils literal notranslate"><span class="pre">recalculate_user</span></code>
+option when producing recommendations for users who didn’t exist at the time of model fit,
+and a new test matrix that contains the new user(s))</li>
+<li>You are not using a matrix factorization or user-based method (i.e., cosine similarity
+between items)</li>
+</ul>
+<p>However, since reclab uses sparse matrices, you’ll likely have to perform your own
+train/test split on a dense matrix and make it sparse prior to fitting any of the algorithms.</p>
+<br/></div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="contributing.html" class="btn btn-neutral float-right" title="4. Contributing to reclab" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="setup.html" class="btn btn-neutral" title="2. Setup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Taylor G Smith
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'./',
+              VERSION:'0.0.5',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

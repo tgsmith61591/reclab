@@ -1,0 +1,12 @@
+:mod:`reclab.utils`.check_sparse_array
+===================================================
+
+.. currentmodule:: reclab.utils
+
+.. autofunction:: check_sparse_array
+
+.. include:: reclab.utils.check_sparse_array.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

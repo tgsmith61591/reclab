@@ -1,0 +1,701 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>reclab.model_selection._search &mdash; reclab 0.0.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/style.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> reclab
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/classes.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">reclab</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>reclab.model_selection._search</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for reclab.model_selection._search</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Author: Taylor Smith &lt;taylor.smith@alkaline-ml.com&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># Provides an interface for selecting the optimal hyper-parameters for</span>
+<span class="c1"># a recommender model. Then fit the parameters on the entire train set.</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">clone</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection._search</span> <span class="k">import</span> <span class="n">ParameterSampler</span><span class="p">,</span> <span class="n">ParameterGrid</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="k">import</span> <span class="n">check_is_fitted</span><span class="p">,</span> <span class="n">check_random_state</span>
+<span class="kn">from</span> <span class="nn">sklearn.externals.joblib</span> <span class="k">import</span> <span class="n">delayed</span><span class="p">,</span> <span class="n">Parallel</span>
+<span class="kn">from</span> <span class="nn">sklearn.externals</span> <span class="k">import</span> <span class="n">six</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">abc</span> <span class="k">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">product</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">..base</span> <span class="k">import</span> <span class="n">BaseRecommender</span>
+<span class="kn">from</span> <span class="nn">..metrics.ranking</span> <span class="k">import</span> <span class="n">ndcg_at</span><span class="p">,</span> <span class="n">mean_average_precision</span><span class="p">,</span> <span class="n">precision_at</span>
+<span class="kn">from</span> <span class="nn">..utils.validation</span> <span class="k">import</span> <span class="n">check_permitted_value</span>
+<span class="kn">from</span> <span class="nn">..utils.decorators</span> <span class="k">import</span> <span class="n">inherit_function_doc</span>
+<span class="kn">from</span> <span class="nn">._split</span> <span class="k">import</span> <span class="n">check_cv</span>
+<span class="c1"># from .._config import set_blas_singlethread</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;RandomizedRecommenderSearchCV&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;RecommenderGridSearchCV&#39;</span><span class="p">]</span>
+
+<span class="n">_valid_metrics</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;mean_average_precision&#39;</span><span class="p">:</span> <span class="n">mean_average_precision</span><span class="p">,</span>
+                  <span class="s1">&#39;precision_at_k&#39;</span><span class="p">:</span> <span class="n">precision_at</span><span class="p">,</span>
+                  <span class="s1">&#39;ndcg&#39;</span><span class="p">:</span> <span class="n">ndcg_at</span><span class="p">}</span>
+
+
+<span class="k">class</span> <span class="nc">_CVResults</span><span class="p">(</span><span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;_ScoreResults&#39;</span><span class="p">,</span>
+                            <span class="p">(</span><span class="s1">&#39;params&#39;</span><span class="p">,</span> <span class="s1">&#39;test_scores&#39;</span><span class="p">,</span> <span class="s1">&#39;fit_times&#39;</span><span class="p">))):</span>
+    <span class="c1"># This named tuple is lighter to pickle than a full class. This is</span>
+    <span class="c1"># how scikit-learn handles their CV results as well</span>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;Params: </span><span class="si">{0}</span><span class="s2">, Test scores: </span><span class="si">{1}</span><span class="s2">, Fit times (secs): </span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_scores</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_times</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_compute_score</span><span class="p">(</span><span class="n">scorer</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">recommendations</span><span class="p">,</span> <span class="o">**</span><span class="n">scoring_kwargs</span><span class="p">):</span>
+    <span class="n">rated_items</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">indices</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">indptr</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># produce the score and return it</span>
+    <span class="k">return</span> <span class="n">scorer</span><span class="p">(</span><span class="n">predictions</span><span class="o">=</span><span class="n">recommendations</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">rated_items</span><span class="p">,</span>
+                  <span class="o">**</span><span class="n">scoring_kwargs</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_fit_and_score</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">train</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">verbose</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span>
+                   <span class="n">param_num</span><span class="p">,</span> <span class="n">recommend_kwargs</span><span class="p">,</span> <span class="n">scoring_kwargs</span><span class="p">):</span>
+
+    <span class="c1"># set the parameters</span>
+    <span class="n">estimator</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+
+    <span class="c1"># fit a model and get the score on the validation set</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">)</span>
+    <span class="n">fit_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+
+    <span class="c1"># The recommendations are a predicted FUTURE state of a user&#39;s ratings.</span>
+    <span class="c1"># Therefore, we need to make sure to create FUTURE recommendations based</span>
+    <span class="c1"># on the PAST state, which in this case is TRAIN. PREDICT from TRAIN, but</span>
+    <span class="c1"># filter previously-rated (i.e., training ratings) such that we evaluate</span>
+    <span class="c1"># only the VAL ratings (truth) against the recommendations.</span>
+    <span class="n">recs</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">recommend_for_all_users</span><span class="p">(</span>
+        <span class="n">train</span><span class="p">,</span> <span class="n">filter_previously_rated</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># to eval test vs. new preds</span>
+        <span class="n">return_scores</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">recommend_kwargs</span><span class="p">)</span>  <span class="c1"># this is a generator</span>
+
+    <span class="n">score_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="n">_compute_score</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">recs</span><span class="p">,</span> <span class="o">**</span><span class="n">scoring_kwargs</span><span class="p">)</span>
+    <span class="n">score_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">score_start</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[</span><span class="si">%i</span><span class="s2">] - Fit fold for parameter set </span><span class="si">%i</span><span class="s2"> in </span><span class="si">%.4f</span><span class="s2"> seconds &quot;</span>
+              <span class="s2">&quot;(</span><span class="si">%s</span><span class="s2">=</span><span class="si">%.5f</span><span class="s2">, predict &amp; score time=</span><span class="si">%.5f</span><span class="s2">)&quot;</span>
+              <span class="o">%</span> <span class="p">(</span><span class="n">param_num</span><span class="p">,</span> <span class="n">param_num</span><span class="p">,</span> <span class="n">fit_time</span><span class="p">,</span> <span class="n">metric</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                 <span class="n">score</span><span class="p">,</span> <span class="n">score_time</span><span class="p">))</span>
+
+    <span class="c1"># namedtuple is a lightweight way to ship this back</span>
+    <span class="k">return</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">score</span><span class="p">,</span> <span class="n">fit_time</span>
+
+
+<span class="k">class</span> <span class="nc">_CVWrapper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper class for either CV or train/validation evaluation.</span>
+
+<span class="sd">    This is just a hacky wrapper that allows us to treat train/val splits in</span>
+<span class="sd">    the same exact fashion as we&#39;d treat cross-val splits. Train/val splits can</span>
+<span class="sd">    be considered single splits that will be returned in a list with a single</span>
+<span class="sd">    tuple.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The ``split`` function behaves like the cross validation API would. For</span>
+<span class="sd">    either case, it returns a list of tuples, where for a true CV split, the</span>
+<span class="sd">    list will be longer than 1 element, with tuples of length 2 (train &amp; val</span>
+<span class="sd">    matrices respectively)::</span>
+
+<span class="sd">        [(train_1, val_1), (train_2, val_2), ..., (train_n, val_n)]</span>
+
+<span class="sd">    For a train/validation split, will also return a  list but with only one</span>
+<span class="sd">    tuple::</span>
+
+<span class="sd">        [(train, val)]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cv</span><span class="p">,</span> <span class="n">validation</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv</span> <span class="o">=</span> <span class="n">check_cv</span><span class="p">(</span><span class="n">cv</span><span class="p">)</span> <span class="k">if</span> <span class="n">validation</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validation</span> <span class="o">=</span> <span class="n">validation</span>
+
+    <span class="k">def</span> <span class="nf">get_n_splits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the number of splits for the CV class&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv</span><span class="o">.</span><span class="n">get_n_splits</span><span class="p">()</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="c1"># Otherwise it&#39;s just single-fold splitting basically</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation</span><span class="p">)]</span>
+
+
+<span class="k">class</span> <span class="nc">_BaseRecommenderSearchCV</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">with_metaclass</span><span class="p">(</span><span class="n">ABCMeta</span><span class="p">,</span> <span class="n">BaseRecommender</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;Abstract base class for all recommender grid searches with or without</span>
+<span class="sd">    cross-validation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">scoring</span><span class="p">,</span> <span class="n">cv</span><span class="p">,</span> <span class="n">recommend_params</span><span class="p">,</span>
+                 <span class="n">scoring_params</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">,</span> <span class="n">verbose</span><span class="p">):</span>
+
+        <span class="c1"># Call to super to get the model key for the search, though this is</span>
+        <span class="c1"># pretty unnecessary...</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_BaseRecommenderSearchCV</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">estimator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scoring</span> <span class="o">=</span> <span class="n">scoring</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv</span> <span class="o">=</span> <span class="n">cv</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recommend_params</span> <span class="o">=</span> <span class="n">recommend_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scoring_params</span> <span class="o">=</span> <span class="n">scoring_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">=</span> <span class="n">n_jobs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_get_param_iterator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the parameter grid or sampler</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        grid : iterable</span>
+<span class="sd">            The parameter space that will be searched.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">validation_set</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Fit a grid search.</span>
+
+<span class="sd">        Fit the search instance against the sparse ratings matrix, and select</span>
+<span class="sd">        the optimal hyper parameters that maximize the scoring metric. Finally,</span>
+<span class="sd">        refit the optimal parameters against the entire training set.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : scipy.sparse.csr_matrix, shape=(n_samples, n_products)</span>
+<span class="sd">            The sparse ratings matrix.</span>
+
+<span class="sd">        validation_set : scipy.sparse.csr_matrix, optional (default=None)</span>
+<span class="sd">            Recommender fits can take a long time. You don&#39;t *have* to use</span>
+<span class="sd">            cross-validation, though it&#39;s highly recommended. If a validation</span>
+<span class="sd">            set is provided, the score procedure will only evaluate each model</span>
+<span class="sd">            against the validation set. The optimal hyper parameters will also</span>
+<span class="sd">            *not* be refit, since we can simply return the best-fit model at</span>
+<span class="sd">            the time.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        * If ``validation_set`` is provided, CV will not be used</span>
+<span class="sd">        * If &quot;filter_previously_rated&quot; is present in ``recommend_params``, it</span>
+<span class="sd">          will be popped and a warning will be issued, as previously-rated</span>
+<span class="sd">          items are required to be present in for most scoring metrics to show</span>
+<span class="sd">          any lift.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># validate the CV</span>
+        <span class="n">cv</span> <span class="o">=</span> <span class="n">_CVWrapper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cv</span><span class="p">,</span> <span class="n">validation_set</span><span class="p">)</span>
+        <span class="n">n_jobs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span>
+        <span class="n">n_splits</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">get_n_splits</span><span class="p">()</span>
+
+        <span class="c1"># get the estimator, make a clone</span>
+        <span class="n">est</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">est</span><span class="p">,</span> <span class="s2">&quot;num_threads&quot;</span><span class="p">)</span> <span class="ow">and</span> \
+                <span class="n">est</span><span class="o">.</span><span class="n">num_threads</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">and</span> \
+                <span class="n">n_jobs</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Parallelism set in both grid search as well as &quot;</span>
+                          <span class="s2">&quot;estimator model (</span><span class="si">%s</span><span class="s2">). Setting grid search &quot;</span>
+                          <span class="s2">&quot;parallelism to 1 in favor of keeping algorithm &quot;</span>
+                          <span class="s2">&quot;parallelized&quot;</span> <span class="o">%</span> <span class="n">est</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+            <span class="n">n_jobs</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># if n_jobs is still parallel, set the MKL var</span>
+        <span class="c1"># TODO: should we do this?...</span>
+        <span class="c1"># if n_jobs != 1:</span>
+        <span class="c1">#     # Set single threaded if we&#39;re using parallel</span>
+        <span class="c1">#     set_blas_singlethread()</span>
+
+        <span class="c1"># get the scoring metric</span>
+        <span class="n">scorer</span> <span class="o">=</span> <span class="n">check_permitted_value</span><span class="p">(</span><span class="n">_valid_metrics</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scoring</span><span class="p">)</span>
+
+        <span class="c1"># iterate each set of hyper parameters, fit a model and score the model</span>
+        <span class="c1"># then sort it by the prescribed scoring metric (desc) with the shorter</span>
+        <span class="c1"># time for fit being the tie-breaker</span>
+        <span class="n">candidate_params</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_param_iterator</span><span class="p">())</span>
+
+        <span class="c1"># Get args for scoring and recommending</span>
+        <span class="n">rec_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">recommend_params</span>
+        <span class="n">score_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scoring_params</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rec_kwargs</span><span class="p">:</span>
+            <span class="n">rec_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="n">filter_keys</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;filter_previously_rated&quot;</span><span class="p">,</span> <span class="s2">&quot;return_scores&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">filter_key</span> <span class="ow">in</span> <span class="n">filter_keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">filter_key</span> <span class="ow">in</span> <span class="n">rec_kwargs</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> cannot be set in grid search recommend &quot;</span>
+                              <span class="s2">&quot;kwargs, as the scoring behavior is very &quot;</span>
+                              <span class="s2">&quot;specific to the search process.&quot;</span> <span class="o">%</span> <span class="n">filter_key</span><span class="p">)</span>
+                <span class="n">rec_kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">filter_key</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">score_kwargs</span><span class="p">:</span>
+            <span class="n">score_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="n">verbose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span>
+        <span class="n">n_iter</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidate_params</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fitting </span><span class="si">{0}</span><span class="s2"> iterations with </span><span class="si">{1}</span><span class="s2"> CV fold(s), totalling </span><span class="si">{2}</span><span class="s2"> &quot;</span>
+                  <span class="s2">&quot;fits (plus one refit at the end)&quot;</span>
+                  <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_iter</span><span class="p">,</span> <span class="n">n_splits</span><span class="p">,</span> <span class="n">n_iter</span> <span class="o">*</span> <span class="n">n_splits</span><span class="p">))</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)(</span>
+            <span class="n">delayed</span><span class="p">(</span><span class="n">_fit_and_score</span><span class="p">)(</span>
+                <span class="n">clone</span><span class="p">(</span><span class="n">est</span><span class="p">),</span> <span class="n">train</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                <span class="n">metric</span><span class="o">=</span><span class="n">scorer</span><span class="p">,</span> <span class="n">param_num</span><span class="o">=</span><span class="n">i</span> <span class="o">//</span> <span class="n">n_splits</span><span class="p">,</span>
+                <span class="n">recommend_kwargs</span><span class="o">=</span><span class="n">rec_kwargs</span><span class="p">,</span>
+                <span class="n">scoring_kwargs</span><span class="o">=</span><span class="n">score_kwargs</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">test</span><span class="p">))</span> <span class="ow">in</span>
+            <span class="nb">enumerate</span><span class="p">(</span><span class="n">product</span><span class="p">(</span><span class="n">candidate_params</span><span class="p">,</span> <span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">))))</span>
+
+        <span class="c1"># consolidate the results</span>
+        <span class="k">def</span> <span class="nf">unpack_results</span><span class="p">(</span><span class="n">res</span><span class="p">):</span>
+            <span class="n">params</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">times</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">res</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">_CVResults</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">test_scores</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">scores</span><span class="p">),</span>
+                              <span class="n">fit_times</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">times</span><span class="p">))</span>
+
+        <span class="c1"># TODO: fix???</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">unpack_results</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">n_splits</span><span class="p">])</span>
+                   <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">out</span><span class="p">),</span> <span class="n">n_splits</span><span class="p">)]</span>
+
+        <span class="c1"># sort based on the score descending (time is the tie-breaker)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">results</span><span class="p">,</span>
+                         <span class="n">key</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">test_scores</span><span class="p">),</span>
+                                         <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">fit_times</span><span class="p">))),</span>
+                         <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># refit on the entire train set</span>
+        <span class="n">best_results</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">best_params</span> <span class="o">=</span> <span class="n">best_results</span><span class="o">.</span><span class="n">params</span>
+
+        <span class="c1"># We could eventually avoid a re-fit for instances using a</span>
+        <span class="c1"># validation_set, but for now I don&#39;t want to deal with the overhead</span>
+        <span class="c1"># of passing around a bunch of model objects, so just refit...</span>
+        <span class="n">est</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">est</span><span class="p">)</span>  <span class="c1"># re-clone</span>
+        <span class="n">est</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="o">**</span><span class="n">best_params</span><span class="p">)</span>
+        <span class="n">est</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>  <span class="c1"># fit on the entire train set</span>
+
+        <span class="c1"># now we have our best model, params, etc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">search_results_</span> <span class="o">=</span> <span class="n">results</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_estimator_</span> <span class="o">=</span> <span class="n">est</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_params_</span> <span class="o">=</span> <span class="n">best_params</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="nd">@inherit_function_doc</span><span class="p">(</span><span class="n">BaseRecommender</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">n_users</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;best_estimator_&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_estimator_</span><span class="o">.</span><span class="n">n_users</span><span class="p">()</span>
+
+    <span class="nd">@inherit_function_doc</span><span class="p">(</span><span class="n">BaseRecommender</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">n_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;best_estimator_&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_estimator_</span><span class="o">.</span><span class="n">n_items</span><span class="p">()</span>
+
+    <span class="nd">@inherit_function_doc</span><span class="p">(</span><span class="n">BaseRecommender</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">recommend_for_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userid</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">filter_previously_rated</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                           <span class="n">filter_items</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_scores</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;best_estimator_&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_estimator_</span><span class="o">.</span><span class="n">recommend_for_user</span><span class="p">(</span>
+            <span class="n">userid</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">filter_previously_rated</span><span class="o">=</span><span class="n">filter_previously_rated</span><span class="p">,</span>
+            <span class="n">filter_items</span><span class="o">=</span><span class="n">filter_items</span><span class="p">,</span> <span class="n">return_scores</span><span class="o">=</span><span class="n">return_scores</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">recommend_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">score_kwargs</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute the score on the test set.</span>
+
+<span class="sd">        Generate recommendatinos for all users and compute the score for the</span>
+<span class="sd">        estimator using the provided ``scoring`` metric.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : scipy.sparse.csr_matrix, shape=(n_samples, n_products)</span>
+<span class="sd">            The sparse ratings matrix.</span>
+
+<span class="sd">        recommend_kwargs : dict or None</span>
+<span class="sd">            Any keyword args to pass to the ``recommend_for_all_users``</span>
+<span class="sd">            function.</span>
+
+<span class="sd">        **score_kwargs : dict or None, optional (default=None)</span>
+<span class="sd">            Any keyword args to pass to the scoring function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;best_estimator_&quot;</span><span class="p">)</span>
+        <span class="n">scorer</span> <span class="o">=</span> <span class="n">check_permitted_value</span><span class="p">(</span><span class="n">_valid_metrics</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scoring</span><span class="p">)</span>
+
+        <span class="c1"># We have to make sure we pass this as a dict and not None!</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">recommend_kwargs</span><span class="p">:</span>
+            <span class="n">recommend_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="c1"># This is a generator of all the users&#39; recommendations. Expensive to</span>
+        <span class="c1"># iterate...</span>
+        <span class="n">recs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">recommend_for_all_users</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">return_scores</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">recommend_kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_compute_score</span><span class="p">(</span><span class="n">scorer</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">recs</span><span class="p">,</span> <span class="o">**</span><span class="n">score_kwargs</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="RecommenderGridSearchCV"><a class="viewcode-back" href="../../../modules/generated/reclab.model_selection.RecommenderGridSearchCV.html#reclab.model_selection.RecommenderGridSearchCV">[docs]</a><span class="k">class</span> <span class="nc">RecommenderGridSearchCV</span><span class="p">(</span><span class="n">_BaseRecommenderSearchCV</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exhaustive search on hyper parameters.</span>
+
+<span class="sd">    Discover the best hyper parameters for a recommender model fit by searching</span>
+<span class="sd">    exhaustively over the given parameter space. The parameters of the</span>
+<span class="sd">    estimator are optimized by cross-validated search over parameter settings,</span>
+<span class="sd">    with the parameters selected being those that maximize the mean score of</span>
+<span class="sd">    the held-out cross validation folds, according to the ``scoring`` method.</span>
+
+<span class="sd">    See notes for exceptions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    estimator : BaseEstimator</span>
+<span class="sd">        The estimator we want to fit</span>
+
+<span class="sd">    param_grid : dict</span>
+<span class="sd">        Dictionary with parameters names (string) as keys and lists of</span>
+<span class="sd">        parameter settings to try as values. This enables searching over</span>
+<span class="sd">        any sequence of parameter settings.</span>
+
+<span class="sd">    scoring : str or unicode, optional (default=&#39;mean_average_precision&#39;)</span>
+<span class="sd">        The scoring metric used to select the optimal hyper</span>
+<span class="sd">        parameters. Default is &#39;map&#39;, but can be also one of</span>
+<span class="sd">        (&#39;precision_at_k&#39;, &#39;ndcg&#39;)</span>
+
+<span class="sd">    cv : BaseCrossValidator, int, or None, optional (default=3)</span>
+<span class="sd">        The cross validation class instance. If None or an integer, KFold</span>
+<span class="sd">        cross validation will be used by default (unless fit with a</span>
+<span class="sd">        ``validation_set``)</span>
+
+<span class="sd">    recommend_params : dict or None, optional (default=None)</span>
+<span class="sd">        Any keyword args to pass to the ``recommend_for_all_users`` function.</span>
+
+<span class="sd">    scoring_params : dict or None, optional (default=None)</span>
+<span class="sd">        Any keyword args to pass to the scoring function.</span>
+
+<span class="sd">    n_jobs : int, optional (default=1)</span>
+<span class="sd">        The parallelism of the fit. Default is 1 (all in one thread).</span>
+<span class="sd">        If n_jobs is not equal to 1, the MKL_BLAS environment variable will</span>
+<span class="sd">        be set to 1 to avoid internal multi-threading.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    * If a ``validation_set`` is provided to the ``fit`` method, the validation</span>
+<span class="sd">      set will be used as the held-out fold for each fit, and CV will not be</span>
+<span class="sd">      performed. This is not always recommended, but for extremely large data</span>
+<span class="sd">      may be necessary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="RecommenderGridSearchCV.__init__"><a class="viewcode-back" href="../../../modules/generated/reclab.model_selection.RecommenderGridSearchCV.html#reclab.model_selection.RecommenderGridSearchCV.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">param_grid</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;mean_average_precision&#39;</span><span class="p">,</span>
+                 <span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">recommend_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scoring_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">RecommenderGridSearchCV</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">estimator</span><span class="o">=</span><span class="n">estimator</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scoring</span><span class="p">,</span>
+            <span class="n">recommend_params</span><span class="o">=</span><span class="n">recommend_params</span><span class="p">,</span>
+            <span class="n">scoring_params</span><span class="o">=</span><span class="n">scoring_params</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">param_grid</span> <span class="o">=</span> <span class="n">param_grid</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_param_iterator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return ParameterGrid instance for the given distributions&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ParameterGrid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_grid</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RandomizedRecommenderSearchCV"><a class="viewcode-back" href="../../../modules/generated/reclab.model_selection.RandomizedRecommenderSearchCV.html#reclab.model_selection.RandomizedRecommenderSearchCV">[docs]</a><span class="k">class</span> <span class="nc">RandomizedRecommenderSearchCV</span><span class="p">(</span><span class="n">_BaseRecommenderSearchCV</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Randomized search on hyper parameters.</span>
+
+<span class="sd">    Discover the best hyper parameters for a recommender model fit by randomly</span>
+<span class="sd">    searching over the given parameter space. The parameters of the estimator</span>
+<span class="sd">    are optimized by cross-validated search over parameter settings, with the</span>
+<span class="sd">    parameters selected being those that maximize the mean score of the held-</span>
+<span class="sd">    out cross validation folds, according to the ``scoring`` method.</span>
+
+<span class="sd">    In contrast to :class:`RecommenderGridSearchCV`, not all parameter values</span>
+<span class="sd">    are tried out, but rather a fixed number of parameter settings is sampled</span>
+<span class="sd">    from the specified distributions. The number of parameter settings that are</span>
+<span class="sd">    tried is given by ``n_iter``.</span>
+
+<span class="sd">    See notes for exceptions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    estimator : BaseEstimator</span>
+<span class="sd">        The estimator we want to fit</span>
+
+<span class="sd">    param_distributions : dict</span>
+<span class="sd">        Dictionary where the keys are parameters and values</span>
+<span class="sd">        are distributions from which a parameter is to be sampled.</span>
+<span class="sd">        Distributions either have to provide a ``rvs`` function</span>
+<span class="sd">        to sample from them, or can be given as a list of values,</span>
+<span class="sd">        where a uniform distribution is assumed.</span>
+
+<span class="sd">    n_iter : int, optional (default=10)</span>
+<span class="sd">        The number of models to fit. This is not to be confused with</span>
+<span class="sd">        the ``n_iter`` parameter also used in the ALS ``fit``, which</span>
+<span class="sd">        corresponds to the number alternating least squares iterations</span>
+<span class="sd">        to perform.</span>
+
+<span class="sd">    scoring : str or unicode, optional (default=&#39;mean_average_precision&#39;)</span>
+<span class="sd">        The scoring metric used to select the optimal hyper</span>
+<span class="sd">        parameters. Default is &#39;map&#39;, but can be also one of</span>
+<span class="sd">        (&#39;precision_at_k&#39;, &#39;ndcg&#39;)</span>
+
+<span class="sd">    cv : BaseCrossValidator, int, or None, optional (default=3)</span>
+<span class="sd">        The cross validation class instance. If None or an integer, KFold</span>
+<span class="sd">        cross validation will be used by default (unless fit with a</span>
+<span class="sd">        ``validation_set``)</span>
+
+<span class="sd">    recommend_params : dict or None, optional (default=None)</span>
+<span class="sd">        Any keyword args to pass to the ``recommend_for_all_users`` function.</span>
+
+<span class="sd">    scoring_params : dict or None, optional (default=None)</span>
+<span class="sd">        Any keyword args to pass to the scoring function.</span>
+
+<span class="sd">    random_state : int or None (default=None)</span>
+<span class="sd">        The random state seed to control initial parameter selection</span>
+<span class="sd">        and the X, Y matrix initialization in ALS.</span>
+
+<span class="sd">    n_jobs : int, optional (default=1)</span>
+<span class="sd">        The parallelism of the fit. Default is 1 (all in one thread).</span>
+<span class="sd">        If n_jobs is not equal to 1, the MKL_BLAS environment variable will</span>
+<span class="sd">        be set to 1 to avoid internal multi-threading.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    * If a ``validation_set`` is provided to the ``fit`` method, the validation</span>
+<span class="sd">      set will be used as the held-out fold for each fit, and CV will not be</span>
+<span class="sd">      performed. This is not always recommended, but for extremely large data</span>
+<span class="sd">      may be necessary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="RandomizedRecommenderSearchCV.__init__"><a class="viewcode-back" href="../../../modules/generated/reclab.model_selection.RandomizedRecommenderSearchCV.html#reclab.model_selection.RandomizedRecommenderSearchCV.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">param_distributions</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                 <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;mean_average_precision&#39;</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">recommend_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">scoring_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">RandomizedRecommenderSearchCV</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">estimator</span><span class="o">=</span><span class="n">estimator</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scoring</span><span class="p">,</span>
+            <span class="n">recommend_params</span><span class="o">=</span><span class="n">recommend_params</span><span class="p">,</span>
+            <span class="n">scoring_params</span><span class="o">=</span><span class="n">scoring_params</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">param_distributions</span> <span class="o">=</span> <span class="n">param_distributions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span> <span class="o">=</span> <span class="n">n_iter</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_param_iterator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return ParameterSampler instance for the given distributions&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ParameterSampler</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">param_distributions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span><span class="p">,</span>
+            <span class="n">random_state</span><span class="o">=</span><span class="n">check_random_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">))</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Taylor G Smith
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../../../',
+              VERSION:'0.0.5',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

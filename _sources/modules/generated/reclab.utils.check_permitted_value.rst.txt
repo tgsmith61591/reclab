@@ -1,0 +1,12 @@
+:mod:`reclab.utils`.check_permitted_value
+======================================================
+
+.. currentmodule:: reclab.utils
+
+.. autofunction:: check_permitted_value
+
+.. include:: reclab.utils.check_permitted_value.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

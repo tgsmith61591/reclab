@@ -1,0 +1,12 @@
+:mod:`reclab.utils`.inherit_function_doc
+=====================================================
+
+.. currentmodule:: reclab.utils
+
+.. autofunction:: inherit_function_doc
+
+.. include:: reclab.utils.inherit_function_doc.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

@@ -1,0 +1,12 @@
+:mod:`reclab.metrics`.mean_average_precision
+=========================================================
+
+.. currentmodule:: reclab.metrics
+
+.. autofunction:: mean_average_precision
+
+.. include:: reclab.metrics.mean_average_precision.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

@@ -1,0 +1,299 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>reclab.metrics.precision_at &mdash; reclab 0.0.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/style.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="reclab.model_deployment.RecommenderDeployment" href="reclab.model_deployment.RecommenderDeployment.html" />
+    <link rel="prev" title="reclab.metrics.ndcg_at" href="reclab.metrics.ndcg_at.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> reclab
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../classes.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.base"><code class="docutils literal notranslate"><span class="pre">reclab.base</span></code>: Base classes and functions for reclab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.collab"><code class="docutils literal notranslate"><span class="pre">reclab.collab</span></code>: Collaborative filtering in reclab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.datasets"><code class="docutils literal notranslate"><span class="pre">reclab.datasets</span></code>: Benchmarking ratings data for recommenders</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../classes.html#module-reclab.metrics"><code class="docutils literal notranslate"><span class="pre">reclab.metrics</span></code>: Ranking metrics for scoring recommenders</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../classes.html#ranking-metrics">Ranking metrics</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="reclab.metrics.mean_average_precision.html"><code class="docutils literal notranslate"><span class="pre">reclab.metrics</span></code>.mean_average_precision</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reclab.metrics.ndcg_at.html"><code class="docutils literal notranslate"><span class="pre">reclab.metrics</span></code>.ndcg_at</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">reclab.metrics</span></code>.precision_at</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.model_deployment"><code class="docutils literal notranslate"><span class="pre">reclab.model_deployment</span></code>: Model deployment tools for recommenders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.model_selection"><code class="docutils literal notranslate"><span class="pre">reclab.model_selection</span></code>: Model selection tools for recommenders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.utils"><code class="docutils literal notranslate"><span class="pre">reclab.utils</span></code>: Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide.html">User Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">reclab</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../classes.html">API Reference</a> &raquo;</li>
+        
+      <li><code class="docutils literal notranslate"><span class="pre">reclab.metrics</span></code>.precision_at</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/modules/generated/reclab.metrics.precision_at.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="reclab-metrics-precision-at">
+<h1><a class="reference internal" href="../classes.html#module-reclab.metrics" title="reclab.metrics"><code class="xref py py-mod docutils literal notranslate"><span class="pre">reclab.metrics</span></code></a>.precision_at<a class="headerlink" href="#reclab-metrics-precision-at" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="reclab.metrics.precision_at">
+<code class="descclassname">reclab.metrics.</code><code class="descname">precision_at</code><span class="sig-paren">(</span><em>predictions</em>, <em>labels</em>, <em>k=10</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/metrics/ranking.py#L39"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/metrics/ranking.html#precision_at"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.metrics.precision_at" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the precision at K.</p>
+<p>Compute the average precision of all the queries, truncated at
+ranking position k. If for a query, the ranking algorithm returns
+n (n is less than k) results, the precision value will be computed
+as #(relevant items retrieved) / k. This formula also applies when
+the size of the ground truth set is less than k.</p>
+<p>If a query has an empty ground truth set, zero will be used as
+precision together with a warning.</p>
+<blockquote>
+<div><span class="math notranslate">\(p(k)=\frac{1}{M}\sum_{i=0}^{M-1}{\frac{1}{k}
+\sum_{j=0}^{\text{min}(\left|D\right|,k)-1}rel_{D_i}(R_i(j))}\)</span></div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>predictions</strong> : array-like, shape=(n_predictions,)</p>
+<blockquote>
+<div><p>The prediction array. The items that were predicted, in descending
+order of relevance.</p>
+</div></blockquote>
+<p><strong>labels</strong> : array-like, shape=(n_ratings,)</p>
+<blockquote>
+<div><p>The labels (positively-rated items).</p>
+</div></blockquote>
+<p><strong>k</strong> : int, optional (default=10)</p>
+<blockquote class="last">
+<div><p>The rank at which to measure the precision.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># predictions for 3 users</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">preds</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+<span class="gp">... </span>         <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+<span class="gp">... </span>         <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># labels for the 3 users</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">precision_at</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  
+<span class="go">0.33333333333333331</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">precision_at</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>  
+<span class="go">0.26666666666666666</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">precision_at</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>  
+<span class="go">0.17777777777777778</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<div class="clearer"></div></div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="reclab.model_deployment.RecommenderDeployment.html" class="btn btn-neutral float-right" title="reclab.model_deployment.RecommenderDeployment" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="reclab.metrics.ndcg_at.html" class="btn btn-neutral" title="reclab.metrics.ndcg_at" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Taylor G Smith
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../../',
+              VERSION:'0.0.5',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

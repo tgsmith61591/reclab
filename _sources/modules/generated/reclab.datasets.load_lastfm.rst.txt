@@ -1,0 +1,12 @@
+:mod:`reclab.datasets`.load_lastfm
+===============================================
+
+.. currentmodule:: reclab.datasets
+
+.. autofunction:: load_lastfm
+
+.. include:: reclab.datasets.load_lastfm.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

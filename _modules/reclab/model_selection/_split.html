@@ -1,0 +1,569 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>reclab.model_selection._split &mdash; reclab 0.0.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/style.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> reclab
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/classes.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">reclab</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>reclab.model_selection._split</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for reclab.model_selection._split</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">division</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="k">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.externals</span> <span class="k">import</span> <span class="n">six</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="k">import</span> <span class="n">check_random_state</span>
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">BaseEstimator</span>
+
+<span class="kn">from</span> <span class="nn">..utils.validation</span> <span class="k">import</span> <span class="n">check_sparse_array</span>
+
+<span class="kn">import</span> <span class="nn">numbers</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;check_cv&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;train_test_split&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;KFold&#39;</span>
+<span class="p">]</span>
+
+<span class="n">MAX_SEED</span> <span class="o">=</span> <span class="mf">1e6</span>
+
+
+<span class="k">def</span> <span class="nf">check_cv</span><span class="p">(</span><span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Validate the CV input.</span>
+
+<span class="sd">    Input validation for cross-validation classes. Takes a CV value of either</span>
+<span class="sd">    an integer, None or BaseCrossValidator and returns an appropriate CV</span>
+<span class="sd">    method. For integers or None, default is KFold.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cv : int, None or BaseCrossValidator</span>
+<span class="sd">        The CV class or number of folds.</span>
+
+<span class="sd">        - None will default to 3-fold KFold</span>
+<span class="sd">        - integer will default to ``integer``-fold KFold</span>
+<span class="sd">        - BaseCrossValidator will pass through untouched</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    checked_cv : BaseCrossValidator</span>
+<span class="sd">        The validated CV class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">cv</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cv</span> <span class="o">=</span> <span class="mi">3</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cv</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">cv</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cv</span><span class="p">,</span> <span class="s2">&quot;split&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cv</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Expected integer or CV class, but got </span><span class="si">%r</span><span class="s2"> (type=</span><span class="si">%s</span><span class="s2">)&quot;</span>
+                         <span class="o">%</span> <span class="p">(</span><span class="n">cv</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">cv</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">cv</span>
+
+
+<span class="k">def</span> <span class="nf">_validate_train_size</span><span class="p">(</span><span class="n">train_size</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Train size should be a float between 0 and 1.&quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">train_size</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="mf">0.</span> <span class="o">&lt;</span> <span class="n">train_size</span> <span class="o">&lt;</span> <span class="mf">1.</span><span class="p">),</span> \
+        <span class="s2">&quot;train_size should be a float between 0 and 1&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">_sparsify_from_mask</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Make a sparse array even sparser.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : scipy.sparse.csr_matrix</span>
+<span class="sd">        Sparse matrix</span>
+
+<span class="sd">    mask : scipy.sparse.csr_matrix, bool</span>
+<span class="sd">        Boolean mask expression</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">S</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="n">S</span><span class="o">.</span><span class="n">eliminate_zeros</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">S</span>
+
+
+<span class="k">def</span> <span class="nf">_split_between_values</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">permuted</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Mask a matrix between a low and a high value.</span>
+
+<span class="sd">    Split a matrix around a mask such that values between low and high</span>
+<span class="sd">    (high &gt; values &gt; low) are split into their own mask.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : scipy.sparse.csr_matrix</span>
+<span class="sd">        The sparse matrix to split</span>
+
+<span class="sd">    permuted : np.ndarray</span>
+<span class="sd">        Permuted linspace of values between 0 and 1</span>
+
+<span class="sd">    low : float</span>
+<span class="sd">        Low value &gt;= 0., &lt; high</span>
+
+<span class="sd">    high : float</span>
+<span class="sd">        High value &lt;= 1., &gt; low</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">gt_low</span> <span class="o">=</span> <span class="n">permuted</span> <span class="o">&gt;=</span> <span class="n">low</span>
+    <span class="n">lt_high</span> <span class="o">=</span> <span class="n">permuted</span> <span class="o">&lt;</span> <span class="n">high</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">gt_low</span> <span class="o">&amp;</span> <span class="n">lt_high</span>
+
+    <span class="c1"># Get the sparsified matrices (mask gets zeroed, so use inverse)</span>
+    <span class="n">in_range</span> <span class="o">=</span> <span class="n">_sparsify_from_mask</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="o">~</span><span class="n">mask</span><span class="p">)</span>
+    <span class="n">outside_range</span> <span class="o">=</span> <span class="n">_sparsify_from_mask</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">in_range</span><span class="p">,</span> <span class="n">outside_range</span>
+
+
+<span class="k">def</span> <span class="nf">_get_train_mask_linspace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">random_state</span><span class="p">,</span> <span class="n">shuffle</span><span class="p">):</span>
+    <span class="c1"># This is the train mask that we&#39;ll update over the course of this method.</span>
+    <span class="c1"># Use a linspace so we&#39;re guaranteed an (almost) perfect number of samples,</span>
+    <span class="c1"># whereas with random.rand, we can only approximate. +1 for linspace N</span>
+    <span class="c1"># since it goes to 1 inclusive, and trim off the last one.</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">shuffle</span><span class="p">:</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">random_state</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">values</span>
+
+
+<div class="viewcode-block" id="train_test_split"><a class="viewcode-back" href="../../../modules/generated/reclab.model_selection.train_test_split.html#reclab.model_selection.train_test_split">[docs]</a><span class="k">def</span> <span class="nf">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a train/test split for sparse ratings matrices.</span>
+
+<span class="sd">    Given vectors of users, items, and ratings, create a train/test split</span>
+<span class="sd">    that masks users&#39; ratings to the prescribed ratio of training samples.</span>
+<span class="sd">    This only works on sparse matrices.</span>
+
+<span class="sd">    See :ref:`train_test` for more information.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : scipy.sparse.csr_matrix</span>
+<span class="sd">        The sparse ratings matrix with users along the row axis and items</span>
+<span class="sd">        along the column axis. Entries represent ratings or other implicit</span>
+<span class="sd">        ranking events (i.e., number of listens, etc.).</span>
+
+<span class="sd">    train_size : float, optional (default=0.75)</span>
+<span class="sd">        The ratio of the train set size. Should be a float between 0 and 1.</span>
+
+<span class="sd">    random_state : RandomState, int or None, optional (default=None)</span>
+<span class="sd">        The random state used to seed the train and test masks.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    An example of a sparse matrix split that masks some ratings from the train</span>
+<span class="sd">    set, and leaves them out for the test set.</span>
+
+<span class="sd">    &gt;&gt;&gt; from reclab.model_selection import train_test_split</span>
+<span class="sd">    &gt;&gt;&gt; from scipy import sparse</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; u = [0, 1, 0, 2, 1, 3]</span>
+<span class="sd">    &gt;&gt;&gt; i = [1, 2, 2, 0, 3, 2]</span>
+<span class="sd">    &gt;&gt;&gt; r = [0.5, 1.0, 0.0, 1.0, 0.0, 1.]</span>
+<span class="sd">    &gt;&gt;&gt; X = sparse.csr_matrix((r, (u, i)), shape=(4, 4))</span>
+<span class="sd">    &gt;&gt;&gt; train, test = train_test_split(X, train_size=0.7, random_state=42)</span>
+
+<span class="sd">    The output of the train/test split is two sparse matrices:</span>
+
+<span class="sd">    &gt;&gt;&gt; train.astype(np.float32)</span>
+<span class="sd">    &lt;4x4 sparse matrix of type &#39;&lt;class &#39;numpy.float32&#39;&gt;&#39;</span>
+<span class="sd">            with 3 stored elements in Compressed Sparse Row format&gt;</span>
+<span class="sd">    &gt;&gt;&gt; test.astype(np.float32)</span>
+<span class="sd">    &lt;4x4 sparse matrix of type &#39;&lt;class &#39;numpy.float32&#39;&gt;&#39;</span>
+<span class="sd">            with 1 stored elements in Compressed Sparse Row format&gt;</span>
+
+<span class="sd">    When expanded, it&#39;s more clear what was stored and what was masked:</span>
+
+<span class="sd">    &gt;&gt;&gt; train.toarray().astype(np.float32)</span>
+<span class="sd">    array([[0. , 0.5, 0. , 0. ],</span>
+<span class="sd">           [0. , 0. , 0. , 0. ],</span>
+<span class="sd">           [1. , 0. , 0. , 0. ],</span>
+<span class="sd">           [0. , 0. , 1. , 0. ]], dtype=float32)</span>
+<span class="sd">    &gt;&gt;&gt; test.toarray().astype(np.float32)</span>
+<span class="sd">    array([[0., 0., 0., 0.],</span>
+<span class="sd">           [0., 0., 1., 0.],</span>
+<span class="sd">           [0., 0., 0., 0.],</span>
+<span class="sd">           [0., 0., 0., 0.]], dtype=float32)</span>
+
+<span class="sd">    A more elaborate example:</span>
+
+<span class="sd">    &gt;&gt;&gt; from reclab.datasets import load_lastfm</span>
+<span class="sd">    &gt;&gt;&gt; lastfm = load_lastfm(as_sparse=True, cache=True)</span>
+<span class="sd">    &gt;&gt;&gt; train, test = train_test_split(lastfm.ratings, train_size=0.75,</span>
+<span class="sd">    ...                                random_state=1)</span>
+<span class="sd">    &gt;&gt;&gt; train.astype(np.float32)</span>
+<span class="sd">    &lt;1892x17632 sparse matrix of type &#39;&lt;class &#39;numpy.float32&#39;&gt;&#39;</span>
+<span class="sd">            with 69655 stored elements in Compressed Sparse Row format&gt;</span>
+<span class="sd">    &gt;&gt;&gt; test.astype(np.float32)</span>
+<span class="sd">    &lt;1892x17632 sparse matrix of type &#39;&lt;class &#39;numpy.float32&#39;&gt;&#39;</span>
+<span class="sd">            with 23179 stored elements in Compressed Sparse Row format&gt;</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Users (rows) and items (column) must be encoded (i.e., via LabelEncoder)</span>
+<span class="sd">    prior to creating a sparse matrix of the elements. Since this is required</span>
+<span class="sd">    prior to train/test splitting, it&#39;s recommended that you store the item</span>
+<span class="sd">    and user encoders for later decoding.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    r_train : scipy.sparse.csr_matrix</span>
+<span class="sd">        The train set.</span>
+
+<span class="sd">    r_test : scipy.sparse.csr_matrix</span>
+<span class="sd">        The test set.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">check_sparse_array</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">_validate_train_size</span><span class="p">(</span><span class="n">train_size</span><span class="p">)</span>  <span class="c1"># validate it&#39;s a float</span>
+    <span class="n">random_state</span> <span class="o">=</span> <span class="n">check_random_state</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>  <span class="c1"># get the random state</span>
+
+    <span class="c1"># Create a mask of random values in the shape of the sparse array that we</span>
+    <span class="c1"># can use for easy masking</span>
+    <span class="n">nnz</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">nnz</span>
+    <span class="n">rand_vals</span> <span class="o">=</span> <span class="n">_get_train_mask_linspace</span><span class="p">(</span><span class="n">nnz</span><span class="p">,</span> <span class="n">random_state</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Get the mask from the random training values. For train/test split, we</span>
+    <span class="c1"># can just use train_size as low</span>
+    <span class="n">test</span><span class="p">,</span> <span class="n">train</span> <span class="o">=</span> <span class="n">_split_between_values</span><span class="p">(</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">rand_vals</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="n">train_size</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mf">1.</span><span class="p">)</span>
+
+    <span class="c1"># Anything over 0 constitutes our mask</span>
+    <span class="k">return</span> <span class="n">train</span><span class="p">,</span> <span class="n">test</span></div>
+
+
+<span class="c1"># avoid pb w nose</span>
+<span class="n">train_test_split</span><span class="o">.</span><span class="n">__test__</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="k">class</span> <span class="nc">BaseCrossValidator</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">with_metaclass</span><span class="p">(</span><span class="n">ABCMeta</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for all CV</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_splits : int, optional (default=3)</span>
+<span class="sd">        The number of splits for the cross-validation procedure. Default</span>
+<span class="sd">        is 3.</span>
+
+<span class="sd">    random_state : RandomState, int or None, optional (default=None)</span>
+<span class="sd">        The random state used to seed the train and test masks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_splits</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_splits</span> <span class="o">=</span> <span class="n">n_splits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+
+        <span class="c1"># Fail out for an illegal n_splits</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_splits</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;n_splits must be at least 2.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_n_splits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_splits</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Split a dataset into ``n_splits`` folds.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : scipy.sparse.csr_matrix</span>
+<span class="sd">            A sparse ratings matrix with users along the rows, and products</span>
+<span class="sd">            or items along the column axis.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        train : scipy.sparse.csr_matrix</span>
+<span class="sd">            The training set</span>
+
+<span class="sd">        test : scipy.sparse.csr_matrix</span>
+<span class="sd">            The validation fold</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="KFold"><a class="viewcode-back" href="../../../modules/generated/reclab.model_selection.KFold.html#reclab.model_selection.KFold">[docs]</a><span class="k">class</span> <span class="nc">KFold</span><span class="p">(</span><span class="n">BaseCrossValidator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;K-fold cross validation.</span>
+
+<span class="sd">    Applies K-fold cross validation with no stratification to mask a subset</span>
+<span class="sd">    of ratings events from a sparse ratings matrix.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_splits : int, optional (default=3)</span>
+<span class="sd">        The number of splits for the cross-validation procedure. Default</span>
+<span class="sd">        is 3.</span>
+
+<span class="sd">    random_state : RandomState, int or None, optional (default=None)</span>
+<span class="sd">        The random state used to seed the train and test masks.</span>
+<span class="sd">    </span>
+<span class="sd">    shuffle : bool, optional (default=True)</span>
+<span class="sd">        Whether to shuffle the train/test ratings events. Default is True.</span>
+<span class="sd">        Using False is discouraged, as it is more likely to completely mask out</span>
+<span class="sd">        users.</span>
+<span class="sd">        </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from reclab.datasets import load_lastfm</span>
+<span class="sd">    &gt;&gt;&gt; lfm = load_lastfm(as_sparse=True, cache=True)</span>
+<span class="sd">    &gt;&gt;&gt; cv = KFold(n_splits=3, random_state=42, shuffle=True)</span>
+<span class="sd">    &gt;&gt;&gt; splits = list(cv.split(lfm.ratings))</span>
+<span class="sd">    &gt;&gt;&gt; splits  # doctest: +SKIP</span>
+<span class="sd">    [(&lt;1892x17632 sparse matrix of type &#39;&lt;class &#39;numpy.float32&#39;&gt;&#39;</span>
+<span class="sd">            with 61889 stored elements in Compressed Sparse Row format&gt;,</span>
+<span class="sd">      &lt;1892x17632 sparse matrix of type &#39;&lt;class &#39;numpy.float32&#39;&gt;&#39;</span>
+<span class="sd">            with 30945 stored elements in Compressed Sparse Row format&gt;),</span>
+<span class="sd">     (&lt;1892x17632 sparse matrix of type &#39;&lt;class &#39;numpy.float32&#39;&gt;&#39;</span>
+<span class="sd">            with 61889 stored elements in Compressed Sparse Row format&gt;,</span>
+<span class="sd">      &lt;1892x17632 sparse matrix of type &#39;&lt;class &#39;numpy.float32&#39;&gt;&#39;</span>
+<span class="sd">            with 30945 stored elements in Compressed Sparse Row format&gt;),</span>
+<span class="sd">     (&lt;1892x17632 sparse matrix of type &#39;&lt;class &#39;numpy.float32&#39;&gt;&#39;</span>
+<span class="sd">            with 61890 stored elements in Compressed Sparse Row format&gt;,</span>
+<span class="sd">      &lt;1892x17632 sparse matrix of type &#39;&lt;class &#39;numpy.float32&#39;&gt;&#39;</span>
+<span class="sd">            with 30944 stored elements in Compressed Sparse Row format&gt;)]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="KFold.__init__"><a class="viewcode-back" href="../../../modules/generated/reclab.model_selection.KFold.html#reclab.model_selection.KFold.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_splits</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">KFold</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">n_splits</span><span class="o">=</span><span class="n">n_splits</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span> <span class="o">=</span> <span class="n">shuffle</span></div>
+
+<div class="viewcode-block" id="KFold.split"><a class="viewcode-back" href="../../../modules/generated/reclab.model_selection.KFold.html#reclab.model_selection.KFold.split">[docs]</a>    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Split a dataset into ``n_splits`` folds.</span>
+
+<span class="sd">        Splits a ratings matrix using K-fold cross validation with no</span>
+<span class="sd">        stratification. Train and val folds each share the same dimensions</span>
+<span class="sd">        (rows x cols) but mask elements out of the train set for collaborative</span>
+<span class="sd">        filtering.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : scipy.sparse.csr_matrix</span>
+<span class="sd">            A sparse ratings matrix with users along the rows, and products</span>
+<span class="sd">            or items along the column axis.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        train : scipy.sparse.csr_matrix</span>
+<span class="sd">            The training set</span>
+
+<span class="sd">        test : scipy.sparse.csr_matrix</span>
+<span class="sd">            The validation fold</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Make sure it&#39;s a sparse array...</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">check_sparse_array</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="c1"># Use np.linspace to evenly partition the space between 0 and 1 into</span>
+        <span class="c1"># k + 1 pieces so we can use them as &quot;training_sizes&quot;</span>
+        <span class="n">train_sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_splits</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># We use a series of &quot;permuted values&quot; to mask out the training/testing</span>
+        <span class="c1"># folds.</span>
+        <span class="n">random_state</span> <span class="o">=</span> <span class="n">check_random_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">_get_train_mask_linspace</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">nnz</span><span class="p">,</span> <span class="n">random_state</span><span class="p">,</span>
+                                          <span class="n">shuffle</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span><span class="p">)</span>
+
+        <span class="c1"># Iterate the fold space bounds in a generator, returning train/test</span>
+        <span class="k">for</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">train_sizes</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">train_sizes</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+            <span class="n">test</span><span class="p">,</span> <span class="n">train</span> <span class="o">=</span> <span class="n">_split_between_values</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">train</span><span class="p">,</span> <span class="n">test</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Taylor G Smith
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../../../',
+              VERSION:'0.0.5',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+:mod:`reclab.metrics`.precision_at
+===============================================
+
+.. currentmodule:: reclab.metrics
+
+.. autofunction:: precision_at
+
+.. include:: reclab.metrics.precision_at.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

@@ -1,0 +1,16 @@
+:mod:`reclab.model_selection`.RandomizedRecommenderSearchCV
+==================================================================
+
+.. currentmodule:: reclab.model_selection
+
+.. autoclass:: RandomizedRecommenderSearchCV
+
+   
+   .. automethod:: __init__
+   
+
+.. include:: reclab.model_selection.RandomizedRecommenderSearchCV.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

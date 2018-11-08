@@ -1,0 +1,12 @@
+:mod:`reclab.utils`.get_n_factors
+==============================================
+
+.. currentmodule:: reclab.utils
+
+.. autofunction:: get_n_factors
+
+.. include:: reclab.utils.get_n_factors.examples
+
+.. raw:: html
+
+    <div class="clearer"></div>

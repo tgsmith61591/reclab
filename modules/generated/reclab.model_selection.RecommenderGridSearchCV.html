@@ -1,0 +1,561 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>reclab.model_selection.RecommenderGridSearchCV &mdash; reclab 0.0.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/style.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="reclab.utils.check_consistent_length" href="reclab.utils.check_consistent_length.html" />
+    <link rel="prev" title="reclab.model_selection.RandomizedRecommenderSearchCV" href="reclab.model_selection.RandomizedRecommenderSearchCV.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> reclab
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../classes.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.base"><code class="docutils literal notranslate"><span class="pre">reclab.base</span></code>: Base classes and functions for reclab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.collab"><code class="docutils literal notranslate"><span class="pre">reclab.collab</span></code>: Collaborative filtering in reclab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.datasets"><code class="docutils literal notranslate"><span class="pre">reclab.datasets</span></code>: Benchmarking ratings data for recommenders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.metrics"><code class="docutils literal notranslate"><span class="pre">reclab.metrics</span></code>: Ranking metrics for scoring recommenders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.model_deployment"><code class="docutils literal notranslate"><span class="pre">reclab.model_deployment</span></code>: Model deployment tools for recommenders</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../classes.html#module-reclab.model_selection"><code class="docutils literal notranslate"><span class="pre">reclab.model_selection</span></code>: Model selection tools for recommenders</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../classes.html#data-splitting">Data splitting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../classes.html#cross-validation">Cross validation</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../classes.html#grid-searches">Grid searches</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="reclab.model_selection.RandomizedRecommenderSearchCV.html"><code class="docutils literal notranslate"><span class="pre">reclab.model_selection</span></code>.RandomizedRecommenderSearchCV</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">reclab.model_selection</span></code>.RecommenderGridSearchCV</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../classes.html#module-reclab.utils"><code class="docutils literal notranslate"><span class="pre">reclab.utils</span></code>: Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide.html">User Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">reclab</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../classes.html">API Reference</a> &raquo;</li>
+        
+      <li><code class="docutils literal notranslate"><span class="pre">reclab.model_selection</span></code>.RecommenderGridSearchCV</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/modules/generated/reclab.model_selection.RecommenderGridSearchCV.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="reclab-model-selection-recommendergridsearchcv">
+<h1><a class="reference internal" href="../classes.html#module-reclab.model_selection" title="reclab.model_selection"><code class="xref py py-mod docutils literal notranslate"><span class="pre">reclab.model_selection</span></code></a>.RecommenderGridSearchCV<a class="headerlink" href="#reclab-model-selection-recommendergridsearchcv" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="reclab.model_selection.RecommenderGridSearchCV">
+<em class="property">class </em><code class="descclassname">reclab.model_selection.</code><code class="descname">RecommenderGridSearchCV</code><span class="sig-paren">(</span><em>estimator</em>, <em>param_grid</em>, <em>scoring='mean_average_precision'</em>, <em>cv=3</em>, <em>recommend_params=None</em>, <em>scoring_params=None</em>, <em>n_jobs=1</em>, <em>verbose=0</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_selection/_search.py#L338"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/model_selection/_search.html#RecommenderGridSearchCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exhaustive search on hyper parameters.</p>
+<p>Discover the best hyper parameters for a recommender model fit by searching
+exhaustively over the given parameter space. The parameters of the
+estimator are optimized by cross-validated search over parameter settings,
+with the parameters selected being those that maximize the mean score of
+the held-out cross validation folds, according to the <code class="docutils literal notranslate"><span class="pre">scoring</span></code> method.</p>
+<p>See notes for exceptions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>estimator</strong> : BaseEstimator</p>
+<blockquote>
+<div><p>The estimator we want to fit</p>
+</div></blockquote>
+<p><strong>param_grid</strong> : dict</p>
+<blockquote>
+<div><p>Dictionary with parameters names (string) as keys and lists of
+parameter settings to try as values. This enables searching over
+any sequence of parameter settings.</p>
+</div></blockquote>
+<p><strong>scoring</strong> : str or unicode, optional (default=’mean_average_precision’)</p>
+<blockquote>
+<div><p>The scoring metric used to select the optimal hyper
+parameters. Default is ‘map’, but can be also one of
+(‘precision_at_k’, ‘ndcg’)</p>
+</div></blockquote>
+<p><strong>cv</strong> : BaseCrossValidator, int, or None, optional (default=3)</p>
+<blockquote>
+<div><p>The cross validation class instance. If None or an integer, KFold
+cross validation will be used by default (unless fit with a
+<code class="docutils literal notranslate"><span class="pre">validation_set</span></code>)</p>
+</div></blockquote>
+<p><strong>recommend_params</strong> : dict or None, optional (default=None)</p>
+<blockquote>
+<div><p>Any keyword args to pass to the <code class="docutils literal notranslate"><span class="pre">recommend_for_all_users</span></code> function.</p>
+</div></blockquote>
+<p><strong>scoring_params</strong> : dict or None, optional (default=None)</p>
+<blockquote>
+<div><p>Any keyword args to pass to the scoring function.</p>
+</div></blockquote>
+<p><strong>n_jobs</strong> : int, optional (default=1)</p>
+<blockquote class="last">
+<div><p>The parallelism of the fit. Default is 1 (all in one thread).
+If n_jobs is not equal to 1, the MKL_BLAS environment variable will
+be set to 1 to avoid internal multi-threading.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li>If a <code class="docutils literal notranslate"><span class="pre">validation_set</span></code> is provided to the <code class="docutils literal notranslate"><span class="pre">fit</span></code> method, the validation
+set will be used as the held-out fold for each fit, and CV will not be
+performed. This is not always recommended, but for extremely large data
+may be necessary.</li>
+</ul>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#reclab.model_selection.RecommenderGridSearchCV.fit" title="reclab.model_selection.RecommenderGridSearchCV.fit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code></a>(X[,&nbsp;validation_set])</td>
+<td>Fit a grid search.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#reclab.model_selection.RecommenderGridSearchCV.get_params" title="reclab.model_selection.RecommenderGridSearchCV.get_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_params</span></code></a>([deep])</td>
+<td>Get parameters for this estimator.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#reclab.model_selection.RecommenderGridSearchCV.n_items" title="reclab.model_selection.RecommenderGridSearchCV.n_items"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_items</span></code></a>()</td>
+<td>Get the number of items in the recommender system</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#reclab.model_selection.RecommenderGridSearchCV.n_users" title="reclab.model_selection.RecommenderGridSearchCV.n_users"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_users</span></code></a>()</td>
+<td>Get the number of users in the recommender system</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#reclab.model_selection.RecommenderGridSearchCV.recommend_for_all_users" title="reclab.model_selection.RecommenderGridSearchCV.recommend_for_all_users"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recommend_for_all_users</span></code></a>(R[,&nbsp;n,&nbsp;…])</td>
+<td>Produce recommendations for all users.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#reclab.model_selection.RecommenderGridSearchCV.recommend_for_user" title="reclab.model_selection.RecommenderGridSearchCV.recommend_for_user"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recommend_for_user</span></code></a>(userid,&nbsp;R[,&nbsp;n,&nbsp;…])</td>
+<td>Produce a recommendation for a user given his/her ratings history.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#reclab.model_selection.RecommenderGridSearchCV.score" title="reclab.model_selection.RecommenderGridSearchCV.score"><code class="xref py py-obj docutils literal notranslate"><span class="pre">score</span></code></a>(X[,&nbsp;recommend_kwargs])</td>
+<td>Compute the score on the test set.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#reclab.model_selection.RecommenderGridSearchCV.set_params" title="reclab.model_selection.RecommenderGridSearchCV.set_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code></a>(**params)</td>
+<td>Set the parameters of this estimator.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="reclab.model_selection.RecommenderGridSearchCV.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>estimator</em>, <em>param_grid</em>, <em>scoring='mean_average_precision'</em>, <em>cv=3</em>, <em>recommend_params=None</em>, <em>scoring_params=None</em>, <em>n_jobs=1</em>, <em>verbose=0</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_selection/_search.py#L387"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/model_selection/_search.html#RecommenderGridSearchCV.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reclab.model_selection.RecommenderGridSearchCV.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>validation_set=None</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_selection/_search.py#L161"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit a grid search.</p>
+<p>Fit the search instance against the sparse ratings matrix, and select
+the optimal hyper parameters that maximize the scoring metric. Finally,
+refit the optimal parameters against the entire training set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X</strong> : scipy.sparse.csr_matrix, shape=(n_samples, n_products)</p>
+<blockquote>
+<div><p>The sparse ratings matrix.</p>
+</div></blockquote>
+<p><strong>validation_set</strong> : scipy.sparse.csr_matrix, optional (default=None)</p>
+<blockquote class="last">
+<div><p>Recommender fits can take a long time. You don’t <em>have</em> to use
+cross-validation, though it’s highly recommended. If a validation
+set is provided, the score procedure will only evaluate each model
+against the validation set. The optimal hyper parameters will also
+<em>not</em> be refit, since we can simply return the best-fit model at
+the time.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li>If <code class="docutils literal notranslate"><span class="pre">validation_set</span></code> is provided, CV will not be used</li>
+<li>If “filter_previously_rated” is present in <code class="docutils literal notranslate"><span class="pre">recommend_params</span></code>, it
+will be popped and a warning will be issued, as previously-rated
+items are required to be present in for most scoring metrics to show
+any lift.</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="reclab.model_selection.RecommenderGridSearchCV.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/../../sklearn/base.py#L166"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.get_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get parameters for this estimator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>deep</strong> : boolean, optional</p>
+<blockquote>
+<div><p>If True, will return the parameters for this estimator and
+contained subobjects that are estimators.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>params</strong> : mapping of string to any</p>
+<blockquote class="last">
+<div><p>Parameter names mapped to their values.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="reclab.model_selection.RecommenderGridSearchCV.n_items">
+<code class="descname">n_items</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_selection/_search.py#L292"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.n_items" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of items in the recommender system</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reclab.model_selection.RecommenderGridSearchCV.n_users">
+<code class="descname">n_users</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_selection/_search.py#L287"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.n_users" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of users in the recommender system</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reclab.model_selection.RecommenderGridSearchCV.recommend_for_all_users">
+<code class="descname">recommend_for_all_users</code><span class="sig-paren">(</span><em>R</em>, <em>n=10</em>, <em>filter_previously_rated=True</em>, <em>filter_items=None</em>, <em>return_scores=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/base.py#L174"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.recommend_for_all_users" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce recommendations for all users.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>R</strong> : scipy.sparse.csr_matrix</p>
+<blockquote>
+<div><p>The sparse ratings matrix of users (along the row axis) and items
+(along the column axis)</p>
+</div></blockquote>
+<p><strong>n</strong> : int, optional (default=10)</p>
+<blockquote>
+<div><p>The number of items to recommend for the given user.</p>
+</div></blockquote>
+<p><strong>filter_previously_rated</strong> : bool, optional (default=True)</p>
+<blockquote>
+<div><p>Whether to filter items that have been previously rated by the
+user. True by default.</p>
+</div></blockquote>
+<p><strong>filter_items</strong> : array-like or None, optional (default=None)</p>
+<blockquote>
+<div><p>Any items that should be filtered out of the recommend operation.</p>
+</div></blockquote>
+<p><strong>return_scores</strong> : bool, optional (default=False)</p>
+<blockquote>
+<div><p>Whether to return the scores for each item for the user.</p>
+</div></blockquote>
+<p><strong>**kwargs</strong> : keyword args or dict</p>
+<blockquote class="last">
+<div><p>Arguments specific to subclassed algorithms.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>For some recommendation algorithms, there may be faster ways to compute
+this. This naively loops each user, calling the
+<a class="reference internal" href="#reclab.model_selection.RecommenderGridSearchCV.recommend_for_user" title="reclab.model_selection.RecommenderGridSearchCV.recommend_for_user"><code class="xref py py-func docutils literal notranslate"><span class="pre">recommend_for_user</span></code></a> function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reclab.model_selection.RecommenderGridSearchCV.recommend_for_user">
+<code class="descname">recommend_for_user</code><span class="sig-paren">(</span><em>userid</em>, <em>R</em>, <em>n=10</em>, <em>filter_previously_rated=True</em>, <em>filter_items=None</em>, <em>return_scores=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_selection/_search.py#L297"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.recommend_for_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce a recommendation for a user given his/her ratings history.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>userid</strong> : int</p>
+<blockquote>
+<div><p>The positional index along the row axis of the user in the
+ratings matrix.</p>
+</div></blockquote>
+<p><strong>R</strong> : scipy.sparse.csr_matrix</p>
+<blockquote>
+<div><p>The sparse ratings matrix of users (along the row axis) and items
+(along the column axis)</p>
+</div></blockquote>
+<p><strong>n</strong> : int, optional (default=10)</p>
+<blockquote>
+<div><p>The number of items to recommend for the given user.</p>
+</div></blockquote>
+<p><strong>filter_previously_rated</strong> : bool, optional (default=True)</p>
+<blockquote>
+<div><p>Whether to filter items that have been previously rated by the
+user. True by default.</p>
+</div></blockquote>
+<p><strong>filter_items</strong> : array-like or None, optional (default=None)</p>
+<blockquote>
+<div><p>Any items that should be filtered out of the recommend operation.</p>
+</div></blockquote>
+<p><strong>return_scores</strong> : bool, optional (default=False)</p>
+<blockquote>
+<div><p>Whether to return the scores for each item for the user.</p>
+</div></blockquote>
+<p><strong>**kwargs</strong> : keyword args or dict</p>
+<blockquote class="last">
+<div><p>Arguments specific to subclassed algorithms.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="reclab.model_selection.RecommenderGridSearchCV.score">
+<code class="descname">score</code><span class="sig-paren">(</span><em>X</em>, <em>recommend_kwargs=None</em>, <em>**score_kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_selection/_search.py#L305"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the score on the test set.</p>
+<p>Generate recommendatinos for all users and compute the score for the
+estimator using the provided <code class="docutils literal notranslate"><span class="pre">scoring</span></code> metric.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X</strong> : scipy.sparse.csr_matrix, shape=(n_samples, n_products)</p>
+<blockquote>
+<div><p>The sparse ratings matrix.</p>
+</div></blockquote>
+<p><strong>recommend_kwargs</strong> : dict or None</p>
+<blockquote>
+<div><p>Any keyword args to pass to the <code class="docutils literal notranslate"><span class="pre">recommend_for_all_users</span></code>
+function.</p>
+</div></blockquote>
+<p><strong>**score_kwargs</strong> : dict or None, optional (default=None)</p>
+<blockquote class="last">
+<div><p>Any keyword args to pass to the scoring function.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="reclab.model_selection.RecommenderGridSearchCV.set_params">
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/../../sklearn/base.py#L189"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.set_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters of this estimator.</p>
+<p>The method works on simple estimators as well as on nested objects
+(such as pipelines). The latter have parameters of the form
+<code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+component of a nested object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">self</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<div class="clearer"></div></div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="reclab.utils.check_consistent_length.html" class="btn btn-neutral float-right" title="reclab.utils.check_consistent_length" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="reclab.model_selection.RandomizedRecommenderSearchCV.html" class="btn btn-neutral" title="reclab.model_selection.RandomizedRecommenderSearchCV" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Taylor G Smith
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../../',
+              VERSION:'0.0.5',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
