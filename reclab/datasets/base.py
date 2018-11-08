@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 
 import numpy as np
-from os.path import join,  dirname
+from os.path import join, dirname
 
 from sklearn.datasets.base import Bunch
 from sklearn.preprocessing import LabelEncoder

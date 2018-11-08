@@ -2,7 +2,7 @@ version: 2
 
 jobs:
   # For testing conventional CPython dists
-  python3:
+  python36:
     docker:
       # Use the python 3.6 image for simplicity, since version is managed by
       # the miniconda dist anyways.
@@ -43,6 +43,7 @@ jobs:
           - pypy3-ccache
 
       - checkout
+      - run: ./build_tools/circle/before_install.sh
       - run: ./build_tools/circle/build_test_pypy.sh
       - save_cache:
           key: pypy3-ccache-{{ .Branch }}-{{ .BuildNum }}
@@ -50,15 +51,46 @@ jobs:
             - ~/.ccache
             - ~/.cache/pip
 
+  # For testing lint
+  test-linting:
+    docker:
+      - image: python:3.6
+    working_directory: ~/reclab
+    steps:
+    - checkout
+    - run: make test-lint
+
+  # For documentation deployment. You'll need the following environment vars
+  # in your Circle CI settings, otherwise this will not work.
+  #
+  # GH_NAME (your git username)
+  # GH_EMAIL (your git email)
+  # GH_TOKEN (the personal Git token with pushes enabled)
+  deploy-doc:
+    docker:
+    - image: python:3.6
+    environment:
+      - BUILD_EXAMPLES: "true"
+    working_directory: ~/reclab
+    steps:
+    - checkout
+    - run: ./build_tools/circle/before_install.sh
+    - run: make doc-requirements
+    - run: make install
+    - run: ./build_tools/circle/build_push_doc.sh
+
+
 workflows:
   version: 2
 
-  # All CPython jobs:
-  cpython:
+  # All testing jobs:
+  testing:
     jobs:
-      - python3
-
-  # All PyPy jobs:
-  pypy:
-    jobs:
+      - python36
       - pypy36
+      - test-linting
+
+  # All deployment
+  deploy:
+    jobs:
+      - deploy-doc

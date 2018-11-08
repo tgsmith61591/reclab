@@ -297,15 +297,15 @@ class KFold(BaseCrossValidator):
     >>> splits = list(cv.split(lfm.ratings))
     >>> splits  # doctest: +SKIP
     [(<1892x17632 sparse matrix of type '<class 'numpy.float32'>'
-            with 61889 stored elements in Compressed Sparse Row format>, 
+            with 61889 stored elements in Compressed Sparse Row format>,
       <1892x17632 sparse matrix of type '<class 'numpy.float32'>'
-            with 30945 stored elements in Compressed Sparse Row format>), 
+            with 30945 stored elements in Compressed Sparse Row format>),
      (<1892x17632 sparse matrix of type '<class 'numpy.float32'>'
-            with 61889 stored elements in Compressed Sparse Row format>, 
+            with 61889 stored elements in Compressed Sparse Row format>,
       <1892x17632 sparse matrix of type '<class 'numpy.float32'>'
-            with 30945 stored elements in Compressed Sparse Row format>), 
+            with 30945 stored elements in Compressed Sparse Row format>),
      (<1892x17632 sparse matrix of type '<class 'numpy.float32'>'
-            with 61890 stored elements in Compressed Sparse Row format>, 
+            with 61890 stored elements in Compressed Sparse Row format>,
       <1892x17632 sparse matrix of type '<class 'numpy.float32'>'
             with 30944 stored elements in Compressed Sparse Row format>)]
     """

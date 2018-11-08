@@ -101,7 +101,8 @@ def _recommend_aals_annoy(est, userid, R, n, filter_items,
                       return_scores=return_scores, n=n)
 
 
-class _BaseApproximateALS(six.with_metaclass(ABCMeta, AlternatingLeastSquares)):
+class _BaseApproximateALS(six.with_metaclass(ABCMeta,
+                                             AlternatingLeastSquares)):
     """Base class for approximated ALS variants"""
     def __init__(self, *args, **kwargs):
         # Pass the args for the constructor up
@@ -309,7 +310,7 @@ class AnnoyAlternatingLeastSquares(_BaseApproximateALS):
 
     References
     ----------
-    .. [1] https://www.benfrederickson.com/approximate-nearest-neighbours-for-recommender-systems/
+    .. [1] https://www.benfrederickson.com/approximate-nearest-neighbours-for-recommender-systems/  # noqa: E501
     """
     def __init__(self, factors=100, regularization=0.01,
                  use_native=True, use_cg=True, iterations=15,
@@ -517,9 +518,9 @@ class NMSAlternatingLeastSquares(_BaseApproximateALS):
 
     References
     ----------
-    .. [1] https://www.benfrederickson.com/approximate-nearest-neighbours-for-recommender-systems/
+    .. [1] https://www.benfrederickson.com/approximate-nearest-neighbours-for-recommender-systems/  # noqa: E501
     .. [2] Valid NMSLIB method source code
-           https://github.com/nmslib/nmslib/tree/master/similarity_search/include/method
+           https://github.com/nmslib/nmslib/tree/master/similarity_search/include/method  # noqa: E501
     """
     def __init__(self, factors=100, regularization=0.01,
                  use_native=True, use_cg=True, iterations=15,

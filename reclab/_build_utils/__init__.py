@@ -65,9 +65,10 @@ def maybe_cythonize_extensions(top_path, config):
     if is_release:
         build_from_c_and_cpp_files(config.ext_modules)
     else:
-        message = ('Please install cython with a version >= %s in order '
-                   'to build a reclab development version.') \
-                   % CYTHON_MIN_VERSION
+        message = \
+            'Please install cython with a version >= %s in order ' \
+            'to build a reclab development version.' \
+            % CYTHON_MIN_VERSION
         try:
             import Cython
             if LooseVersion(Cython.__version__) < CYTHON_MIN_VERSION:

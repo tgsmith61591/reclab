@@ -339,10 +339,10 @@ class RecommenderGridSearchCV(_BaseRecommenderSearchCV):
     """Exhaustive search on hyper parameters.
 
     Discover the best hyper parameters for a recommender model fit by searching
-    exhaustively over the given parameter space. The parameters of the estimator
-    are optimized by cross-validated search over parameter settings, with the
-    parameters selected being those that maximize the mean score of the held-
-    out cross validation folds, according to the ``scoring`` method.
+    exhaustively over the given parameter space. The parameters of the
+    estimator are optimized by cross-validated search over parameter settings,
+    with the parameters selected being those that maximize the mean score of
+    the held-out cross validation folds, according to the ``scoring`` method.
 
     See notes for exceptions.
 
