@@ -176,7 +176,7 @@
 <h1><a class="reference internal" href="../classes.html#module-reclab.collab" title="reclab.collab"><code class="xref py py-mod docutils literal notranslate"><span class="pre">reclab.collab</span></code></a>.AlternatingLeastSquares<a class="headerlink" href="#reclab-collab-alternatingleastsquares" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="reclab.collab.AlternatingLeastSquares">
-<em class="property">class </em><code class="descclassname">reclab.collab.</code><code class="descname">AlternatingLeastSquares</code><span class="sig-paren">(</span><em>factors=100</em>, <em>regularization=0.01</em>, <em>use_native=True</em>, <em>use_cg=True</em>, <em>iterations=15</em>, <em>use_gpu=False</em>, <em>calculate_training_loss=False</em>, <em>num_threads=0</em>, <em>show_progress=True</em>, <em>random_state=None</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/collab/als.py#L22"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/collab/als.html#AlternatingLeastSquares"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.collab.AlternatingLeastSquares" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">reclab.collab.</code><code class="descname">AlternatingLeastSquares</code><span class="sig-paren">(</span><em>factors=100</em>, <em>regularization=0.01</em>, <em>use_native=True</em>, <em>use_cg=True</em>, <em>iterations=15</em>, <em>use_gpu=False</em>, <em>calculate_training_loss=False</em>, <em>num_threads=0</em>, <em>show_progress=True</em>, <em>random_state=None</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/collab/als.py#L22"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/collab/als.html#AlternatingLeastSquares"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.collab.AlternatingLeastSquares" title="Permalink to this definition">¶</a></dt>
 <dd><p>Alternating Least Squares</p>
 <p>An implicit collaborative filtering algorithm via matrix factorization
 based off the algorithms described in [1] with performance optimizations
@@ -312,13 +312,13 @@ Gradient Method for Implicit Feedback Collaborative Filtering”</td></tr>
 </table>
 <dl class="method">
 <dt id="reclab.collab.AlternatingLeastSquares.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>factors=100</em>, <em>regularization=0.01</em>, <em>use_native=True</em>, <em>use_cg=True</em>, <em>iterations=15</em>, <em>use_gpu=False</em>, <em>calculate_training_loss=False</em>, <em>num_threads=0</em>, <em>show_progress=True</em>, <em>random_state=None</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/collab/als.py#L108"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/collab/als.html#AlternatingLeastSquares.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.collab.AlternatingLeastSquares.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>factors=100</em>, <em>regularization=0.01</em>, <em>use_native=True</em>, <em>use_cg=True</em>, <em>iterations=15</em>, <em>use_gpu=False</em>, <em>calculate_training_loss=False</em>, <em>num_threads=0</em>, <em>show_progress=True</em>, <em>random_state=None</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/collab/als.py#L108"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/collab/als.html#AlternatingLeastSquares.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.collab.AlternatingLeastSquares.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="reclab.collab.AlternatingLeastSquares.fit">
-<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/collab/als.py#L147"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/collab/als.html#AlternatingLeastSquares.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.collab.AlternatingLeastSquares.fit" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/collab/als.py#L147"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/collab/als.html#AlternatingLeastSquares.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.collab.AlternatingLeastSquares.fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit the recommender on the ratings history of users.</p>
 <p>Trains the model, learning its parameters based only on the ratings
 history of a system’s users.</p>
@@ -340,7 +340,7 @@ ranking events (i.e., number of listens, etc.)</p>
 
 <dl class="method">
 <dt id="reclab.collab.AlternatingLeastSquares.get_params">
-<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/../../sklearn/base.py#L166"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.collab.AlternatingLeastSquares.get_params" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/../../sklearn/base.py#L166"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.collab.AlternatingLeastSquares.get_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get parameters for this estimator.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -365,7 +365,7 @@ contained subobjects that are estimators.</p>
 
 <dl class="method">
 <dt id="reclab.collab.AlternatingLeastSquares.n_items">
-<code class="descname">n_items</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/collab/als.py#L160"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/collab/als.html#AlternatingLeastSquares.n_items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.collab.AlternatingLeastSquares.n_items" title="Permalink to this definition">¶</a></dt>
+<code class="descname">n_items</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/collab/als.py#L160"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/collab/als.html#AlternatingLeastSquares.n_items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.collab.AlternatingLeastSquares.n_items" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of items in the recommender.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -384,7 +384,7 @@ to the row dimensions of the item_factors matrix.</p>
 
 <dl class="method">
 <dt id="reclab.collab.AlternatingLeastSquares.n_users">
-<code class="descname">n_users</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/collab/als.py#L172"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/collab/als.html#AlternatingLeastSquares.n_users"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.collab.AlternatingLeastSquares.n_users" title="Permalink to this definition">¶</a></dt>
+<code class="descname">n_users</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/collab/als.py#L172"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/collab/als.html#AlternatingLeastSquares.n_users"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.collab.AlternatingLeastSquares.n_users" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of users in the recommender.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -403,7 +403,7 @@ to the row dimensions of the user_factors matrix.</p>
 
 <dl class="method">
 <dt id="reclab.collab.AlternatingLeastSquares.recommend_for_all_users">
-<code class="descname">recommend_for_all_users</code><span class="sig-paren">(</span><em>R</em>, <em>n=10</em>, <em>filter_previously_rated=True</em>, <em>filter_items=None</em>, <em>return_scores=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/base.py#L174"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.collab.AlternatingLeastSquares.recommend_for_all_users" title="Permalink to this definition">¶</a></dt>
+<code class="descname">recommend_for_all_users</code><span class="sig-paren">(</span><em>R</em>, <em>n=10</em>, <em>filter_previously_rated=True</em>, <em>filter_items=None</em>, <em>return_scores=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/base.py#L174"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.collab.AlternatingLeastSquares.recommend_for_all_users" title="Permalink to this definition">¶</a></dt>
 <dd><p>Produce recommendations for all users.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -447,7 +447,7 @@ this. This naively loops each user, calling the
 
 <dl class="method">
 <dt id="reclab.collab.AlternatingLeastSquares.recommend_for_user">
-<code class="descname">recommend_for_user</code><span class="sig-paren">(</span><em>userid</em>, <em>R</em>, <em>n=10</em>, <em>filter_previously_rated=True</em>, <em>filter_items=None</em>, <em>return_scores=False</em>, <em>recalculate_user=False</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/collab/als.py#L184"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/collab/als.html#AlternatingLeastSquares.recommend_for_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.collab.AlternatingLeastSquares.recommend_for_user" title="Permalink to this definition">¶</a></dt>
+<code class="descname">recommend_for_user</code><span class="sig-paren">(</span><em>userid</em>, <em>R</em>, <em>n=10</em>, <em>filter_previously_rated=True</em>, <em>filter_items=None</em>, <em>return_scores=False</em>, <em>recalculate_user=False</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/collab/als.py#L184"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/collab/als.html#AlternatingLeastSquares.recommend_for_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.collab.AlternatingLeastSquares.recommend_for_user" title="Permalink to this definition">¶</a></dt>
 <dd><p>Produce a recommendation for a user.</p>
 <p>Compute a user’s recommendations as a product of his/her ratings
 history and the extracted latent factors for users and items.</p>
@@ -494,7 +494,7 @@ user. True by default.</p>
 
 <dl class="method">
 <dt id="reclab.collab.AlternatingLeastSquares.set_params">
-<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/../../sklearn/base.py#L189"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.collab.AlternatingLeastSquares.set_params" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/../../sklearn/base.py#L189"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.collab.AlternatingLeastSquares.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the parameters of this estimator.</p>
 <p>The method works on simple estimators as well as on nested objects
 (such as pipelines). The latter have parameters of the form

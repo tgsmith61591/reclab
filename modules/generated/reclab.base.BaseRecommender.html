@@ -174,7 +174,7 @@
 <h1><a class="reference internal" href="../classes.html#module-reclab.base" title="reclab.base"><code class="xref py py-mod docutils literal notranslate"><span class="pre">reclab.base</span></code></a>.BaseRecommender<a class="headerlink" href="#reclab-base-baserecommender" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="reclab.base.BaseRecommender">
-<em class="property">class </em><code class="descclassname">reclab.base.</code><code class="descname">BaseRecommender</code><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/base.py#L100"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/base.html#BaseRecommender"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.base.BaseRecommender" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">reclab.base.</code><code class="descname">BaseRecommender</code><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/base.py#L100"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/base.html#BaseRecommender"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.base.BaseRecommender" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for all recommenders.</p>
 <p>All recommenders must implement a <code class="docutils literal notranslate"><span class="pre">fit</span></code> method as well as the following
 inference methods:</p>
@@ -223,13 +223,13 @@ subclasses of BaseRecommender should. That means some subclasses will have
 </table>
 <dl class="method">
 <dt id="reclab.base.BaseRecommender.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/base.py#L119"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/base.html#BaseRecommender.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.base.BaseRecommender.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/base.py#L119"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/base.html#BaseRecommender.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.base.BaseRecommender.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="reclab.base.BaseRecommender.fit">
-<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/base.py#L124"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/base.html#BaseRecommender.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.base.BaseRecommender.fit" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/base.py#L124"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/base.html#BaseRecommender.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.base.BaseRecommender.fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit the recommender.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -247,7 +247,7 @@ subclasses of BaseRecommender should. That means some subclasses will have
 
 <dl class="method">
 <dt id="reclab.base.BaseRecommender.get_params">
-<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/../../sklearn/base.py#L166"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.base.BaseRecommender.get_params" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/../../sklearn/base.py#L166"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.base.BaseRecommender.get_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get parameters for this estimator.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -272,19 +272,19 @@ contained subobjects that are estimators.</p>
 
 <dl class="method">
 <dt id="reclab.base.BaseRecommender.n_items">
-<code class="descname">n_items</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/base.py#L138"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/base.html#BaseRecommender.n_items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.base.BaseRecommender.n_items" title="Permalink to this definition">¶</a></dt>
+<code class="descname">n_items</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/base.py#L138"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/base.html#BaseRecommender.n_items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.base.BaseRecommender.n_items" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the number of items in the recommender system</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="reclab.base.BaseRecommender.n_users">
-<code class="descname">n_users</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/base.py#L134"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/base.html#BaseRecommender.n_users"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.base.BaseRecommender.n_users" title="Permalink to this definition">¶</a></dt>
+<code class="descname">n_users</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/base.py#L134"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/base.html#BaseRecommender.n_users"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.base.BaseRecommender.n_users" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the number of users in the recommender system</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="reclab.base.BaseRecommender.recommend_for_all_users">
-<code class="descname">recommend_for_all_users</code><span class="sig-paren">(</span><em>R</em>, <em>n=10</em>, <em>filter_previously_rated=True</em>, <em>filter_items=None</em>, <em>return_scores=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/base.py#L174"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/base.html#BaseRecommender.recommend_for_all_users"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.base.BaseRecommender.recommend_for_all_users" title="Permalink to this definition">¶</a></dt>
+<code class="descname">recommend_for_all_users</code><span class="sig-paren">(</span><em>R</em>, <em>n=10</em>, <em>filter_previously_rated=True</em>, <em>filter_items=None</em>, <em>return_scores=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/base.py#L174"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/base.html#BaseRecommender.recommend_for_all_users"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.base.BaseRecommender.recommend_for_all_users" title="Permalink to this definition">¶</a></dt>
 <dd><p>Produce recommendations for all users.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -328,7 +328,7 @@ this. This naively loops each user, calling the
 
 <dl class="method">
 <dt id="reclab.base.BaseRecommender.recommend_for_user">
-<code class="descname">recommend_for_user</code><span class="sig-paren">(</span><em>userid</em>, <em>R</em>, <em>n=10</em>, <em>filter_previously_rated=True</em>, <em>filter_items=None</em>, <em>return_scores=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/base.py#L142"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/base.html#BaseRecommender.recommend_for_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.base.BaseRecommender.recommend_for_user" title="Permalink to this definition">¶</a></dt>
+<code class="descname">recommend_for_user</code><span class="sig-paren">(</span><em>userid</em>, <em>R</em>, <em>n=10</em>, <em>filter_previously_rated=True</em>, <em>filter_items=None</em>, <em>return_scores=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/base.py#L142"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/base.html#BaseRecommender.recommend_for_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.base.BaseRecommender.recommend_for_user" title="Permalink to this definition">¶</a></dt>
 <dd><p>Produce a recommendation for a user given his/her ratings history.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -373,7 +373,7 @@ user. True by default.</p>
 
 <dl class="method">
 <dt id="reclab.base.BaseRecommender.set_params">
-<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/../../sklearn/base.py#L189"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.base.BaseRecommender.set_params" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/../../sklearn/base.py#L189"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.base.BaseRecommender.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the parameters of this estimator.</p>
 <p>The method works on simple estimators as well as on nested objects
 (such as pipelines). The latter have parameters of the form

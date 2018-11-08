@@ -91,7 +91,7 @@ reclab-native LastFM dataset with implicit ratings.
     print("\nUser #%i's top 5 recommended (unheard) artists:\n%s"
           % (mayhem_appreciator, str(mapped_recs)))
 
-**Total running time of the script:** ( 0 minutes  43.192 seconds)
+**Total running time of the script:** ( 1 minutes  35.231 seconds)
 
 
 

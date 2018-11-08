@@ -125,7 +125,7 @@ history.
     print("User #%i's top 5 recommended artists: %s"
           % (rock_listener, str(mapped_recs)))
 
-**Total running time of the script:** ( 1 minutes  19.581 seconds)
+**Total running time of the script:** ( 1 minutes  38.002 seconds)
 
 
 

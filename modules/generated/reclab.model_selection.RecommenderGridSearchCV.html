@@ -176,7 +176,7 @@
 <h1><a class="reference internal" href="../classes.html#module-reclab.model_selection" title="reclab.model_selection"><code class="xref py py-mod docutils literal notranslate"><span class="pre">reclab.model_selection</span></code></a>.RecommenderGridSearchCV<a class="headerlink" href="#reclab-model-selection-recommendergridsearchcv" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="reclab.model_selection.RecommenderGridSearchCV">
-<em class="property">class </em><code class="descclassname">reclab.model_selection.</code><code class="descname">RecommenderGridSearchCV</code><span class="sig-paren">(</span><em>estimator</em>, <em>param_grid</em>, <em>scoring='mean_average_precision'</em>, <em>cv=3</em>, <em>recommend_params=None</em>, <em>scoring_params=None</em>, <em>n_jobs=1</em>, <em>verbose=0</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_selection/_search.py#L338"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/model_selection/_search.html#RecommenderGridSearchCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">reclab.model_selection.</code><code class="descname">RecommenderGridSearchCV</code><span class="sig-paren">(</span><em>estimator</em>, <em>param_grid</em>, <em>scoring='mean_average_precision'</em>, <em>cv=3</em>, <em>recommend_params=None</em>, <em>scoring_params=None</em>, <em>n_jobs=1</em>, <em>verbose=0</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/model_selection/_search.py#L338"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/model_selection/_search.html#RecommenderGridSearchCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exhaustive search on hyper parameters.</p>
 <p>Discover the best hyper parameters for a recommender model fit by searching
 exhaustively over the given parameter space. The parameters of the
@@ -270,13 +270,13 @@ may be necessary.</li>
 </table>
 <dl class="method">
 <dt id="reclab.model_selection.RecommenderGridSearchCV.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>estimator</em>, <em>param_grid</em>, <em>scoring='mean_average_precision'</em>, <em>cv=3</em>, <em>recommend_params=None</em>, <em>scoring_params=None</em>, <em>n_jobs=1</em>, <em>verbose=0</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_selection/_search.py#L387"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/model_selection/_search.html#RecommenderGridSearchCV.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>estimator</em>, <em>param_grid</em>, <em>scoring='mean_average_precision'</em>, <em>cv=3</em>, <em>recommend_params=None</em>, <em>scoring_params=None</em>, <em>n_jobs=1</em>, <em>verbose=0</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/model_selection/_search.py#L387"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/model_selection/_search.html#RecommenderGridSearchCV.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="reclab.model_selection.RecommenderGridSearchCV.fit">
-<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>validation_set=None</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_selection/_search.py#L161"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.fit" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>validation_set=None</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/model_selection/_search.py#L161"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit a grid search.</p>
 <p>Fit the search instance against the sparse ratings matrix, and select
 the optimal hyper parameters that maximize the scoring metric. Finally,
@@ -314,7 +314,7 @@ any lift.</li>
 
 <dl class="method">
 <dt id="reclab.model_selection.RecommenderGridSearchCV.get_params">
-<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/../../sklearn/base.py#L166"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.get_params" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/../../sklearn/base.py#L166"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.get_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get parameters for this estimator.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -339,19 +339,19 @@ contained subobjects that are estimators.</p>
 
 <dl class="method">
 <dt id="reclab.model_selection.RecommenderGridSearchCV.n_items">
-<code class="descname">n_items</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_selection/_search.py#L292"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.n_items" title="Permalink to this definition">¶</a></dt>
+<code class="descname">n_items</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/model_selection/_search.py#L292"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.n_items" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the number of items in the recommender system</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="reclab.model_selection.RecommenderGridSearchCV.n_users">
-<code class="descname">n_users</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_selection/_search.py#L287"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.n_users" title="Permalink to this definition">¶</a></dt>
+<code class="descname">n_users</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/model_selection/_search.py#L287"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.n_users" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the number of users in the recommender system</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="reclab.model_selection.RecommenderGridSearchCV.recommend_for_all_users">
-<code class="descname">recommend_for_all_users</code><span class="sig-paren">(</span><em>R</em>, <em>n=10</em>, <em>filter_previously_rated=True</em>, <em>filter_items=None</em>, <em>return_scores=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/base.py#L174"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.recommend_for_all_users" title="Permalink to this definition">¶</a></dt>
+<code class="descname">recommend_for_all_users</code><span class="sig-paren">(</span><em>R</em>, <em>n=10</em>, <em>filter_previously_rated=True</em>, <em>filter_items=None</em>, <em>return_scores=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/base.py#L174"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.recommend_for_all_users" title="Permalink to this definition">¶</a></dt>
 <dd><p>Produce recommendations for all users.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -395,7 +395,7 @@ this. This naively loops each user, calling the
 
 <dl class="method">
 <dt id="reclab.model_selection.RecommenderGridSearchCV.recommend_for_user">
-<code class="descname">recommend_for_user</code><span class="sig-paren">(</span><em>userid</em>, <em>R</em>, <em>n=10</em>, <em>filter_previously_rated=True</em>, <em>filter_items=None</em>, <em>return_scores=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_selection/_search.py#L297"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.recommend_for_user" title="Permalink to this definition">¶</a></dt>
+<code class="descname">recommend_for_user</code><span class="sig-paren">(</span><em>userid</em>, <em>R</em>, <em>n=10</em>, <em>filter_previously_rated=True</em>, <em>filter_items=None</em>, <em>return_scores=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/model_selection/_search.py#L297"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.recommend_for_user" title="Permalink to this definition">¶</a></dt>
 <dd><p>Produce a recommendation for a user given his/her ratings history.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -440,7 +440,7 @@ user. True by default.</p>
 
 <dl class="method">
 <dt id="reclab.model_selection.RecommenderGridSearchCV.score">
-<code class="descname">score</code><span class="sig-paren">(</span><em>X</em>, <em>recommend_kwargs=None</em>, <em>**score_kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_selection/_search.py#L305"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.score" title="Permalink to this definition">¶</a></dt>
+<code class="descname">score</code><span class="sig-paren">(</span><em>X</em>, <em>recommend_kwargs=None</em>, <em>**score_kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/model_selection/_search.py#L305"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.score" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the score on the test set.</p>
 <p>Generate recommendatinos for all users and compute the score for the
 estimator using the provided <code class="docutils literal notranslate"><span class="pre">scoring</span></code> metric.</p>
@@ -469,7 +469,7 @@ function.</p>
 
 <dl class="method">
 <dt id="reclab.model_selection.RecommenderGridSearchCV.set_params">
-<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/../../sklearn/base.py#L189"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.set_params" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/../../sklearn/base.py#L189"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_selection.RecommenderGridSearchCV.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the parameters of this estimator.</p>
 <p>The method works on simple estimators as well as on nested objects
 (such as pipelines). The latter have parameters of the form

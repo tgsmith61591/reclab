@@ -173,7 +173,7 @@
 <h1><a class="reference internal" href="../classes.html#module-reclab.model_deployment" title="reclab.model_deployment"><code class="xref py py-mod docutils literal notranslate"><span class="pre">reclab.model_deployment</span></code></a>.RecommenderDeployment<a class="headerlink" href="#reclab-model-deployment-recommenderdeployment" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="reclab.model_deployment.RecommenderDeployment">
-<em class="property">class </em><code class="descclassname">reclab.model_deployment.</code><code class="descname">RecommenderDeployment</code><span class="sig-paren">(</span><em>estimator</em>, <em>item_encoder=None</em>, <em>user_encoder=None</em>, <em>filter_items=None</em>, <em>user_missing_strategy='warn'</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_deployment/wrapper.py#L20"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/model_deployment/wrapper.html#RecommenderDeployment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_deployment.RecommenderDeployment" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">reclab.model_deployment.</code><code class="descname">RecommenderDeployment</code><span class="sig-paren">(</span><em>estimator</em>, <em>item_encoder=None</em>, <em>user_encoder=None</em>, <em>filter_items=None</em>, <em>user_missing_strategy='warn'</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/model_deployment/wrapper.py#L20"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/model_deployment/wrapper.html#RecommenderDeployment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_deployment.RecommenderDeployment" title="Permalink to this definition">¶</a></dt>
 <dd><p>A wrapper for deployed recommender models.</p>
 <p>Serves as a model wrapper for recommender models as they are deployed.
 Can map recommendations to different encodings (with a pre-fit sklearn
@@ -281,13 +281,13 @@ than a dictionary (depending on the architecture of your scoring service):</p>
 </table>
 <dl class="method">
 <dt id="reclab.model_deployment.RecommenderDeployment.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>estimator</em>, <em>item_encoder=None</em>, <em>user_encoder=None</em>, <em>filter_items=None</em>, <em>user_missing_strategy='warn'</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_deployment/wrapper.py#L98"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/model_deployment/wrapper.html#RecommenderDeployment.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_deployment.RecommenderDeployment.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>estimator</em>, <em>item_encoder=None</em>, <em>user_encoder=None</em>, <em>filter_items=None</em>, <em>user_missing_strategy='warn'</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/model_deployment/wrapper.py#L98"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/model_deployment/wrapper.html#RecommenderDeployment.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_deployment.RecommenderDeployment.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="reclab.model_deployment.RecommenderDeployment.get_params">
-<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/../../sklearn/base.py#L166"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_deployment.RecommenderDeployment.get_params" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/../../sklearn/base.py#L166"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_deployment.RecommenderDeployment.get_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get parameters for this estimator.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -312,7 +312,7 @@ contained subobjects that are estimators.</p>
 
 <dl class="method">
 <dt id="reclab.model_deployment.RecommenderDeployment.recommend_for_user">
-<code class="descname">recommend_for_user</code><span class="sig-paren">(</span><em>userid</em>, <em>ratings</em>, <em>n=10</em>, <em>filter_previously_rated=True</em>, <em>return_scores=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/model_deployment/wrapper.py#L130"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/model_deployment/wrapper.html#RecommenderDeployment.recommend_for_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_deployment.RecommenderDeployment.recommend_for_user" title="Permalink to this definition">¶</a></dt>
+<code class="descname">recommend_for_user</code><span class="sig-paren">(</span><em>userid</em>, <em>ratings</em>, <em>n=10</em>, <em>filter_previously_rated=True</em>, <em>return_scores=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/model_deployment/wrapper.py#L130"><span class="viewcode-link">[source]</span></a><a class="reference internal" href="../../_modules/reclab/model_deployment/wrapper.html#RecommenderDeployment.recommend_for_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_deployment.RecommenderDeployment.recommend_for_user" title="Permalink to this definition">¶</a></dt>
 <dd><p>Produce a recommendation for a user.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -382,7 +382,7 @@ items will be returned in their inverse-transformed states.</p>
 
 <dl class="method">
 <dt id="reclab.model_deployment.RecommenderDeployment.set_params">
-<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/19640c7/reclab/../../sklearn/base.py#L189"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_deployment.RecommenderDeployment.set_params" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/tgsmith61591/reclab/blob/423c9b5/reclab/../../sklearn/base.py#L189"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reclab.model_deployment.RecommenderDeployment.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the parameters of this estimator.</p>
 <p>The method works on simple estimators as well as on nested objects
 (such as pipelines). The latter have parameters of the form
