@@ -14,7 +14,11 @@ branch=$(git symbolic-ref --short HEAD)
 
 # cd into docs, make them
 cd doc
-make clean html EXAMPLES_PATTERN=ex_*
+if [[ "$BUILD_EXAMPLES" == "true" ]]; then
+    make clean html EXAMPLES_PATTERN=example_*
+else
+    make clean html
+fi
 cd ..
 
 # move the docs to the top-level directory, stash for checkout

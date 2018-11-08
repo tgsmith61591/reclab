@@ -73,12 +73,26 @@ jobs:
       - BUILD_EXAMPLES: "true"
     working_directory: ~/reclab
     steps:
+    # Download cached dependencies
+    - restore_cache:
+        keys:
+        - doc-ccache-{{ .Branch }}
+        # fallback to using the latest cache if no exact match is found
+        - doc-ccache
+
     - checkout
     - run: ./build_tools/circle/before_install.sh
     - run: make doc-requirements
     - run: make install
     - run: ./build_tools/circle/build_push_doc.sh
 
+    # Constantly re-installing the nmslib and doc requirements is pretty
+    # expensive, so cache it.
+    - save_cache:
+        key: doc-ccache-{{ .Branch }}-{{ .BuildNum }}
+        paths:
+        - ~/.ccache
+        - ~/.cache/pip
 
 workflows:
   version: 2
